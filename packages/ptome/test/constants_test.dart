@@ -276,7 +276,7 @@ void main() {
 
     test('normal rules carry the Ruby types and scopes in order', () {
       expect(
-        quoteSubs[false]!.map((q) => '${q.type}:${q.scope}'),
+        quoteSubs[false]!.map((q) => '${q.type}:${q.scope.name}'),
         equals(<String>[
           'strong:unconstrained',
           'strong:constrained',
@@ -296,7 +296,7 @@ void main() {
 
     test('compat rules carry the Ruby types and scopes in order', () {
       expect(
-        quoteSubs[true]!.map((q) => '${q.type}:${q.scope}'),
+        quoteSubs[true]!.map((q) => '${q.type}:${q.scope.name}'),
         equals(<String>[
           'strong:unconstrained',
           'strong:constrained',
@@ -537,7 +537,7 @@ void main() {
     test('holds thirteen rules in Ruby order', () {
       expect(replacements, hasLength(13));
       expect(
-        replacements.map((r) => '${r.replacement}:${r.scope}'),
+        replacements.map((r) => '${r.replacement}:${r.scope.name}'),
         equals(<String>[
           '&#169;:none',
           '&#174;:none',

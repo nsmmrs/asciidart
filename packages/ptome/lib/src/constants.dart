@@ -159,9 +159,32 @@ const Map<String, String> intrinsicAttributes = <String, String>{
   'gt': '>',
 };
 
+/// Whether a quote must be bordered by characters that are not word
+/// characters (`*strong*`) or may be set within a word (`**strong**`).
+enum QuoteScope {
+  /// Bordered by non-word characters.
+  constrained,
+
+  /// Anywhere, within words too.
+  unconstrained,
+}
+
+/// What of a replacement rule's match its replacement keeps: nothing
+/// (the whole match is replaced), the leading capture, or the leading
+/// and trailing captures.
+enum ReplacementScope {
+  /// The whole match is replaced.
+  none,
+
+  /// The first capture, before the replacement, is kept.
+  leading,
+
+  /// The first and second captures, around the replacement, are kept.
+  bounding,
+}
+
 /// One quoted-text substitution rule: a quote [type] (e.g. `'strong'`),
-/// a [scope] (`'constrained'` or `'unconstrained'`), and the [pattern]
-/// that matches it.
+/// a [scope], and the [pattern] that matches it.
 ///
 /// A quote rule: type, scope and pattern; the [guard] lets callers skip
 /// the pattern when it cannot match.
@@ -175,7 +198,7 @@ class QuoteSub {
   final String type;
 
   /// Whether the quote must be bordered by non-word characters.
-  final String scope;
+  final QuoteScope scope;
 
   /// The pattern matching the quoted span.
   final RegExp pattern;
@@ -549,7 +572,7 @@ List<int> _emDashStarts(String string, int start) {
 final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   QuoteSub(
     'strong',
-    'unconstrained',
+    QuoteScope.unconstrained,
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt'
@@ -561,7 +584,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'strong',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?\*([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
@@ -575,7 +598,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   // Curved quotes may stand inside an emphasis's underscores (#2128).
   QuoteSub(
     'double',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|_|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?"`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
@@ -589,7 +612,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'single',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|_|[^$ccWord;:`}])(?:$quoteAttributeListRxt'
       r")?'`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]"
@@ -603,7 +626,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'monospaced',
-    'unconstrained',
+    QuoteScope.unconstrained,
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt)?``($ccAll+?)``',
@@ -612,7 +635,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'monospaced',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       "(^|[^$ccWord;:\"'`}])(?:$quoteAttributeListRxt)?`([^ \\t\\n\\v\\f\\r]|[^ \\t\\n\\v\\f\\r]$ccAll*?[^ \\t\\n\\v\\f\\r])"
       "`(?![$ccWord\"'`])",
@@ -622,7 +645,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'emphasis',
-    'unconstrained',
+    QuoteScope.unconstrained,
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt)?__($ccAll+?)__',
@@ -633,7 +656,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   // its character reference (#2128).
   QuoteSub(
     'emphasis',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|&#82(?:16|20);|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?_([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
@@ -646,7 +669,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'mark',
-    'unconstrained',
+    QuoteScope.unconstrained,
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt)?##($ccAll+?)##',
@@ -655,7 +678,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'mark',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|[^$ccWord&;:}])(?:$quoteAttributeListRxt'
       r')?#([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
@@ -671,7 +694,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   // macro's markup across its end (#4076).
   QuoteSub(
     'superscript',
-    'unconstrained',
+    QuoteScope.unconstrained,
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt'
@@ -681,7 +704,7 @@ final List<QuoteSub> _normalQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'subscript',
-    'unconstrained',
+    QuoteScope.unconstrained,
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt'
@@ -702,7 +725,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   _normalQuoteSubs[1],
   QuoteSub(
     'double',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?``([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
@@ -716,7 +739,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'emphasis',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r")?'([^ \t\n\v\f\r]|[^ \t\n\v\f\r]"
@@ -729,7 +752,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'single',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?`([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
@@ -743,7 +766,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'monospaced',
-    'unconstrained',
+    QuoteScope.unconstrained,
     RegExp(
       r'\\?(?:'
       '$quoteAttributeListRxt'
@@ -755,7 +778,7 @@ final List<QuoteSub> _compatQuoteSubs = <QuoteSub>[
   ),
   QuoteSub(
     'monospaced',
-    'constrained',
+    QuoteScope.constrained,
     lineRx(
       '(^|[^$ccWord;:}])(?:$quoteAttributeListRxt'
       r')?\+([^ \t\n\v\f\r]|[^ \t\n\v\f\r]'
@@ -779,7 +802,7 @@ final Map<bool, List<QuoteSub>> quoteSubs = <bool, List<QuoteSub>>{
 };
 
 /// One textual replacement rule: the [pattern] to match, its [replacement],
-/// and the [scope] (`'none'`, `'leading'` or `'bounding'`).
+/// and the [scope] (what of the match it keeps).
 ///
 /// A replacement rule: pattern, replacement and scope.
 class Replacement {
@@ -804,7 +827,7 @@ class Replacement {
   final String replacement;
 
   /// How the match boundaries are preserved.
-  final String scope;
+  final ReplacementScope scope;
 
   /// A literal every match of [pattern] contains.
   ///
@@ -820,13 +843,31 @@ class Replacement {
 ///
 /// Order is significant: replacements apply in list order.
 final List<Replacement> replacements = <Replacement>[
-  Replacement(RegExp(r'\\?\(C\)'), '&#169;', 'none', '(C)', before: 1),
-  Replacement(RegExp(r'\\?\(R\)'), '&#174;', 'none', '(R)', before: 1),
-  Replacement(RegExp(r'\\?\(TM\)'), '&#8482;', 'none', '(TM)', before: 1),
+  Replacement(
+    RegExp(r'\\?\(C\)'),
+    '&#169;',
+    ReplacementScope.none,
+    '(C)',
+    before: 1,
+  ),
+  Replacement(
+    RegExp(r'\\?\(R\)'),
+    '&#174;',
+    ReplacementScope.none,
+    '(R)',
+    before: 1,
+  ),
+  Replacement(
+    RegExp(r'\\?\(TM\)'),
+    '&#8482;',
+    ReplacementScope.none,
+    '(TM)',
+    before: 1,
+  ),
   Replacement(
     lineRx(r'(?: |\n|^|\\)--(?: |\n|$)'),
     '&#8201;&#8212;&#8201;',
-    'none',
+    ReplacementScope.none,
     '--',
     before: 1,
   ),
@@ -842,12 +883,24 @@ final List<Replacement> replacements = <Replacement>[
       unicode: true,
     ),
     '&#8212;&#8203;',
-    'leading',
+    ReplacementScope.leading,
     '--',
     scan: (pattern) => StartsScan(pattern, _emDashStarts),
   ),
-  Replacement(RegExp(r'\\?\.\.\.'), '&#8230;&#8203;', 'none', '...', before: 1),
-  Replacement(RegExp(r"\\?`'"), '&#8217;', 'none', "`'", before: 1),
+  Replacement(
+    RegExp(r'\\?\.\.\.'),
+    '&#8230;&#8203;',
+    ReplacementScope.none,
+    '...',
+    before: 1,
+  ),
+  Replacement(
+    RegExp(r"\\?`'"),
+    '&#8217;',
+    ReplacementScope.none,
+    "`'",
+    before: 1,
+  ),
   Replacement(
     RegExp(
       '($cgAlnum'
@@ -856,22 +909,46 @@ final List<Replacement> replacements = <Replacement>[
       unicode: true,
     ),
     '&#8217;',
-    'leading',
+    ReplacementScope.leading,
     "'",
     // (An astral letter or digit is two code units.)
     before: 3,
   ),
-  Replacement(RegExp(r'\\?-&gt;'), '&#8594;', 'none', '-&gt;', before: 1),
-  Replacement(RegExp(r'\\?=&gt;'), '&#8658;', 'none', '=&gt;', before: 1),
-  Replacement(RegExp(r'\\?&lt;-'), '&#8592;', 'none', '&lt;-', before: 1),
-  Replacement(RegExp(r'\\?&lt;='), '&#8656;', 'none', '&lt;=', before: 1),
+  Replacement(
+    RegExp(r'\\?-&gt;'),
+    '&#8594;',
+    ReplacementScope.none,
+    '-&gt;',
+    before: 1,
+  ),
+  Replacement(
+    RegExp(r'\\?=&gt;'),
+    '&#8658;',
+    ReplacementScope.none,
+    '=&gt;',
+    before: 1,
+  ),
+  Replacement(
+    RegExp(r'\\?&lt;-'),
+    '&#8592;',
+    ReplacementScope.none,
+    '&lt;-',
+    before: 1,
+  ),
+  Replacement(
+    RegExp(r'\\?&lt;='),
+    '&#8656;',
+    ReplacementScope.none,
+    '&lt;=',
+    before: 1,
+  ),
   Replacement(
     RegExp(
       r'\\?(&)amp;((?:[a-zA-Z][a-zA-Z]+\d{0,2}|#\d\d\d{0,4}|#x[\da-fA-F]'
       r'[\da-fA-F][\da-fA-F]{0,3});)',
     ),
     '',
-    'bounding',
+    ReplacementScope.bounding,
     '&amp;',
     before: 1,
   ),

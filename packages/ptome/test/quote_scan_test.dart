@@ -64,25 +64,28 @@ Iterable<Match> _reference(
 void main() {
   final rules = {...quoteSubs[false]!, ...quoteSubs[true]!};
   for (final rule in rules) {
-    test('${rule.type} ${rule.scope} (${rule.guard}): the same matches', () {
-      final random = Random(rule.guard.hashCode);
-      for (var i = 0; i < 4000; i++) {
-        final text = _text(random);
-        final start = text.isEmpty ? 0 : random.nextInt(text.length + 1);
-        final scan = rule.scan;
-        expect(
-          _describe(scan.allMatches(text, start)),
-          _describe(rule.pattern.allMatches(text, start)),
-          reason: 'in ${Uri.encodeComponent(text)} from $start',
-        );
-        bool skip(Match m) => m.start.isOdd;
-        expect(
-          _describe(scan.matchesFrom(text, start, skip: skip)),
-          _describe(_reference(rule.pattern, text, start, skip)),
-          reason: 'skipping, in ${Uri.encodeComponent(text)} from $start',
-        );
-      }
-    });
+    test(
+      '${rule.type} ${rule.scope.name} (${rule.guard}): the same matches',
+      () {
+        final random = Random(rule.guard.hashCode);
+        for (var i = 0; i < 4000; i++) {
+          final text = _text(random);
+          final start = text.isEmpty ? 0 : random.nextInt(text.length + 1);
+          final scan = rule.scan;
+          expect(
+            _describe(scan.allMatches(text, start)),
+            _describe(rule.pattern.allMatches(text, start)),
+            reason: 'in ${Uri.encodeComponent(text)} from $start',
+          );
+          bool skip(Match m) => m.start.isOdd;
+          expect(
+            _describe(scan.matchesFrom(text, start, skip: skip)),
+            _describe(_reference(rule.pattern, text, start, skip)),
+            reason: 'skipping, in ${Uri.encodeComponent(text)} from $start',
+          );
+        }
+      },
+    );
   }
 
   for (final (name, scan, pieces) in [

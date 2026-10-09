@@ -663,20 +663,20 @@ final class _OutsideSpans implements Pattern {
 /// Converts a quoted text region.
 ///
 /// [match] is the match for the quoted text region, [type] the quoting type
-/// and [scope] the quoting scope (`'constrained'` or `'unconstrained'`).
+/// and [scope] the quoting scope.
 ///
 /// Port of `Substitutors#convert_quoted_text`.
 String convertQuotedText(
   AbstractNode node,
   RegExpMatch match,
   String type,
-  String scope,
+  QuoteScope scope,
 ) {
   final full = match.group(0)!;
   var resolvedType = type;
   String? unescapedAttrs;
   if (full.startsWith(rs)) {
-    if (scope == 'constrained' && match.group(2) != null) {
+    if (scope == QuoteScope.constrained && match.group(2) != null) {
       unescapedAttrs = '[${match.group(2)}]';
     } else {
       return full.substring(1);
@@ -684,7 +684,7 @@ String convertQuotedText(
   }
 
   final block = _blockOf(node);
-  if (scope == 'constrained') {
+  if (scope == QuoteScope.constrained) {
     if (unescapedAttrs != null) {
       final quoted = Inline(
         block,
@@ -958,28 +958,29 @@ bool hasReplaceableText(String text) =>
 /// Substitutes replacement text for the matched location.
 ///
 /// [match] is the match, [replacement] the replacement text and [restore]
-/// how surrounding captures are restored (`'none'`, `'leading'` or
-/// `'bounding'`).
+/// which surrounding captures are restored.
 ///
 /// Port of `Substitutors#do_replacement`.
-String doReplacement(RegExpMatch match, String replacement, String restore) {
+String doReplacement(
+  RegExpMatch match,
+  String replacement,
+  ReplacementScope restore,
+) {
   final captured = match.group(0)!;
   // A leading capture that starts the match may hold a backslash of its
   // own (the man page's closing font markup); the escape follows it.
-  final group1 = restore == 'none' ? '' : match.group(1)!;
+  final group1 = restore == ReplacementScope.none ? '' : match.group(1)!;
   final lead = captured.startsWith(group1) ? group1 : '';
   if (captured.indexOf(rs, lead.length) != -1) {
     // we have to use sub since we aren't sure it's the first char
     return '$lead${captured.substring(lead.length).replaceFirst(rs, '')}';
   }
-  switch (restore) {
-    case 'none':
-      return replacement;
-    case 'bounding':
-      return '${match.group(1)}$replacement${match.group(2)}';
-    default: // 'leading'
-      return '${match.group(1)}$replacement';
-  }
+  return switch (restore) {
+    ReplacementScope.none => replacement,
+    ReplacementScope.leading => '${match.group(1)}$replacement',
+    ReplacementScope.bounding =>
+      '${match.group(1)}$replacement${match.group(2)}',
+  };
 }
 
 /// Whether [regexp] declares any named capture groups (`(?<name>...)`,
