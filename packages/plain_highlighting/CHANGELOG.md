@@ -16,6 +16,16 @@
   only where they can start (read from their sources), each alone,
   instead of searching for one alternation of them (see
   `benchmark/BASELINE.md`). JavaScript keeps the platform's engine.
+- Three times faster again on the Dart VM (warm 0.52 s to 0.17 s, first
+  pass 0.68 s to 0.32 s on the same corpus, measured side by side), with
+  the same output: fewer calls into the regular expression engine (rules
+  tried only at line starts, where their literal prefix is, where what
+  follows their leading run or span can, near a literal a few characters
+  in; literal rules and `\B|\b` matched in Dart; Unicode-mode languages
+  dispatched too), keywords scanned in Dart, the mode buffer kept as a
+  slice of the code, HTML written as it is emitted and escaped in one
+  pass, and rule metadata read once per rule (the first `highlightAuto`
+  116 ms to 91 ms).
 - The languages are data, not code: the generator writes each mode graph
   as a compact grammar (a string table and the modes' keys), all of them
   one Brotli stream decoded the first time a language is used (15 ms),
