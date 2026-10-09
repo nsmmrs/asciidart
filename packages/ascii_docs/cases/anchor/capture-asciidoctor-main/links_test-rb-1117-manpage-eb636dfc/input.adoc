@@ -1,0 +1,4 @@
+[reftext="Fipad pob Ijuny"]
+= Fipad & Ijuny
+
+Uzx xref:test.adoc[]

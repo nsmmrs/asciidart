@@ -1,0 +1,4 @@
+See <<foo__bar>> if b__u__z.
+
+[[foo__bar]]
+== Part

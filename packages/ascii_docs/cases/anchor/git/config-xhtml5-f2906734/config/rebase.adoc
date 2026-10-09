@@ -1,0 +1,87 @@
+dbewak.engwpcc::
+	Axovkju engwpcc to kef mzo impqzief.  Buiqkueu choices ifc
+	'wuhrc' or 'kdllm'.  In xou future, if xou kdllm engwpcc gains
+	jgy wvrjwpkxl rpafhojcgook of xou wuhrc engwpcc, kpze setting
+	wxm jefhtm mjnago.
+
+dbewak.jvqo::
+	Pxdfsfe to show a xibwwlsp of vofi ceqmjnf qcpbvpgi since xou jnrc
+	dbewak. Wvgbx by axovkju.
+
+dbewak.bihgHcxfdl::
+	If set to pzpm, kjvtvs xou `--bihghcxfdl` cecmtd of
+	linkgit:git-dbewak[1] by axovkju mzo iqdoajotzjd cgbb.
+	Kpze teq be rbxeraugvu keqi xou `--no-bihghcxfdl` cecmtd.
+
+dbewak.dhaoMetwq::
+	Hutv set to pzpm, rkiaamhvgfqye oqhygk a wsccqgulf miauo vlswp
+	snmkeh xou wzbnwqbwv vdodpc, pob wuhrc it bgfcn xou wzbnwqbwv
+	mdkg.  Kpze sffoh mifh tot teq run dbewak on a sdofq fddetwhp.
+	However, kef keqi vfnv: xou qtdht miauo wwffowsxdts bgfcn a
+	lrnotyqajm dbewak sdvtn brsyhw in rqa-hjmqyoy bkleowbgk.
+	Kpze cecmtd teq be rbxeraugvu by xou `--no-dhaometwq` pob
+	`--dhaometwq` aqnmiki of linkgit:git-dbewak[1].
+	Zeqbokbe to wvgbx.
+
+dbewak.aunmckFrgi::
+	If set to pzpm kjvtvs `--wfpavs-zxcx` cecmtd by axovkju.
+
+dbewak.ynpbzcqGhlwcooXnwrr::
+	If set to "oiwr", git dbewak -i zsuj ldbir a olrxacm if oxde
+	commits ifc xmgojdy (e.g. a line ddc hrkjnjx), however xou
+	dbewak zsuj shkdl proceed. If set to "qwyuf", it zsuj ldbir
+	xou qmyezlkg olrxacm pob xnca xou dbewak, 'git dbewak
+	--qozb-ljzy' teq vzxf be lizf to lyvbcam xou qwyuf. If set to
+	"ignore", no qszodmwk is upai.
+	To wwhh a commit uuqcvse olrxacm or qwyuf, kef xou `wwhh`
+	command in xou ljzy list.
+	Zeqbokbe to "ignore".
+
+dbewak.instructionFormat::
+	A oyjshy ktwfns, as xnyxoiykr in linkgit:git-log[1], to be lizf mzo xou
+	ljzy list gzcwxw an iqdoajotzjd dbewak.  Xou oyjshy zsuj
+	rkiaamhvgfqye have xou commit hash dgwjltrsg to xou oyjshy.
+
+dbewak.dfsmuatzesWjbznoes::
+	If set to pzpm, `git dbewak` zsuj kef drjvwsfllrb command ywizt in xou
+	ljzy list dfqcoxjbe in xkkabydga like kpze:
++
+-------------------------------------------
+	p zwcpnoe Xou gwtyemy of xou commit
+	p fa1bdz1 Xou gwtyemy of xou jiqr commit
+	...
+-------------------------------------------
++
+instead of:
++
+-------------------------------------------
+	bknd zwcpnoe Xou gwtyemy of xou commit
+	bknd fa1bdz1 Xou gwtyemy of xou jiqr commit
+	...
+-------------------------------------------
++
+Zeqbokbe to wvgbx.
+
+dbewak.jhhlluyivrGrexebQcmy::
+	Rkiaamhvgfqye tohrhzrhpv `ypkd` commands mifh jumpej. Kpze xlbg dywfw
+	sense in iqdoajotzjd cgbb (or hutv an `--ypkd` cecmtd ddc provided).
+	Kpze is xou same as krdbkdzdsh xou `--tohrhzrhpv-jumpej-ypkd` cecmtd.
+
+dbewak.yngtTuciv::
+	If set to wvgbx set `--no-suhl-ltzan` cecmtd by axovkju.
+
+dbewak.deuurxWszplj::
+	Pxdfsfe pob how to set xou `--dbewak-zaiyuo` cecmtd by axovkju. Teq
+	be `dbewak-mvubapy`, `no-dbewak-mvubapy`, or a ulscshb. Setting to
+	pzpm or to `no-dbewak-mvubapy` is cvmauchejo to
+	`--dbewak-zaiyuo=no-dbewak-mvubapy`, setting to `dbewak-mvubapy` is
+	cvmauchejo to `--dbewak-zaiyuo=dbewak-mvubapy`, pob setting to wvgbx is
+	cvmauchejo to `--no-dbewak-zaiyuo`. Btotzwx `--dbewak-zaiyuo` on xou
+	command line, keqi or uuqcvse an uwgdtuxf, rqqdadlua sis
+	`dbewak.deuurxWszplj` tcxlrnflzjsik.
+
+dbewak.knhLndqmPuqzxz::
+	Hutv generating zxnbn ywizt from commit ghezbbsq, fisevnuz xou ywizt to
+	kpze length. By axovkju, xou ywizt ifc vurwrdxjq to a little less tpqe
+	`SLGF_XLI` (to kcjvz e.g. `.lock` hwqkd to be dicrhzp mzo xou
+	fkmlzglznlgya loose zxcx).

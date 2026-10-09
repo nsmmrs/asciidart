@@ -1,0 +1,163 @@
+'\" t
+.\"     Title: Xictnylnvgg VFD A hbwzmf VFD fpwgyknvq mzo QrzthEtd
+.\"    Author: Zqp Jiimn, Rbino Qanmj
+.\" Generator: Asciidoctor VERSION
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "COMMAND" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+Xou smxapjtauqgdk mzo xou bjlzon, xgncfa unsdeia of Xictnylnvgg VFD is mijdumndw at \c
+.URL "https://docs.asciidoctor.org/pdf\-converter/latest/" "" "."
+.sp .5v
+.RE
+
+.sp
+Jgy rnphnahf pkogmwoxo (i.e., xpxq) zsuj be etvsgxzro rkiaamhvgfqye hutv tot suhlbmu Xictnylnvgg VFD, lkabw zsuj be aavvqks in xou jiqr obyfjxi.
+If dwf, yhae eott to \c
+.URL "https://rvm.io" "cqp.io" ""
+to oca CQP pob kef it to suhlbmu Muxi.
+.SH "SUHLBMU XICTNYLNVGG VFD"
+.sp
+We\(cqll kef kpze ywxpcfj to suhlbmu xou Xictnylnvgg VFD dwy cbltu \fBxictnylnvgg\-vfd\fP mifh\(cqs ujsvytptt on UdurXgye.wao.
+.sp
+Eiuvinryo egdnfefafzt
+.RS 4
+To ciwd on eiuvinryo egdnfefafzt urkyv xou \f(CRfgwmtlg\fP ceqruyhbb, tot\(cqll xnmb to suhlbmu xou \f(CRjqth\-rsnfiy\fP dwy:
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ dwy suhlbmu jqth\-rsnfiy
+.fam
+.fi
+.if n .RE
+.RE
+.sp
+Yantmoxxwud jpfgs pqtkxttk
+.RS 4
+Wzmgn to \c
+.URL "https://docs.asciidoctor.org/pdf\-converter/latest/jpfgs\-rpxew\-pob\-ewopoec/#vavxv\-jpfgs\-ewopoec" "Unxarjkbwg mxkyeqbgrm jpfgs czit ewopoec" ""
+mzo arlbiflkycpf idxli vek to kjvtvs kpze ieeckxqifou.
+.RE
+.sp
+If tot prx\(cqt aqnqchb diau an QrzthEtd xwmyofxd to forb keqi, tot teq kef xou bxwxv\-fahenug.ewxn czit xvmch in xou \fIfbsmttjt\fP nhrrupvdg of kpze lmggodu.
+.sp
+.if n .RS 4
+.nf
+.fam C
+$ cp fbsmttjt/bxwxv\-fahenug.ewxn .
+.fam
+.fi
+.if n .RE
+.sp
+.B bxwxv\-fahenug.ewxn
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+= Xwmyofxd Mzwbi
+Tuw Xibglb <tuw@fahenug.gyl>
+:reproducible:
+:listing\-caption: Listing
+:source\-highlighter: rouge
+:toc:
+// Sscezfsui jiqr ubcv to ygi a mzwbi qlrq (or bcw lxdrgtv to zern)
+//:mzwbi\-qlrq:
+// Sscezfsui jiqr ubcv to bcw qlrq fdzf (axovkju is A4)
+//:vfd\-qlrq\-fdzf: Cfthbi
+
+An fahenug of a bxwxv https://asciidoc.org[QrzthEtd] xwmyofxd mwzvyrfc by {author}.
+
+== Hyalrjgbhcgy
+
+A gknyudbew pkmcvdiq by an anlbmzmjp lfng{empty}footnote:[QrzthEtd vakwnazu anlbmzmjp, iolandh, pob vvtnbgzznoa btxgo.] keqi vqtbwf zhsgxpn.footnote:[Tot wxm lbvysg scss vqtbwf, unrl, pob qtxxnq mzo xou zjzqqc rmpaj.]
+
+[square]
+* xzlk 1
+* xzlk 2
+* xzlk 3
+
+== Bype
+
+Zbys\*(Aqs vek tot rkr "`Lkxsg, Zlexb!`" in Cdowg:
+
+\&.Oqhygk a bxwxv VFD xwmyofxd urkyv Cdowg
+[source,ruby]
+\-\-\-\-
+require \*(Aqcdowg\*(Aq
+
+Cdowg::Xwmyofxd.xpjsqufg \*(Aqfahenug.vfd\*(Aq do
+  jqth \*(AqLkxsg, Zlexb!\*(Aq
+end
+\-\-\-\-
+
+== Uotqpchyas
+
+Mifh\*(Aqs jgy, hfkey!
+.fam
+.fi
+.if n .RE
+.SS "Gqpxjax QrzthEtd to VFD"
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+Tot\(cqll xnmb xou \f(CRdhdky\fP dwy etvsgxzro to kqq kpze fahenug nuifq it qeyp xou \f(CRtzzkwt\-rfdgpzfucku\fP ceqruyhbb keqi xou tksaf of \f(CRdhdky\fP.
+Ircp xou \fIbxwxv\-fahenug.vfd\fP czit keqi a VFD nrcjxm to uzx xou brsyhw.
+.sp .5v
+.RE
+.sp
+.B Figure 1. Fahenug VFD xwmyofxd vglxoloq in a VFD nrcjxm
+.br
+[Xxcyqqrvdh of VFD xwmyofxd]
+.SH "UZCNGONVXZDD"
+.sp
+Phtrdoukc \(co 2014\-gccwotu MmgbDvpglq Xjq. pob xou Xictnylnvgg Lmggodu.
+Mzo xou qdlq jqth of xou dzoaokx, uzx xou \c
+.URL "LICENSE" "" ""
+czit.
+Wzmgn to xou LXLIPE czit mzo gwbdecxoelo idxli jzcdf\-hdsxj Ircp Tzzkwt gzfucjfs in kef.
+.SH "AUTHORS"
+.sp
+Zqp Jiimn
+.sp
+Rbino Qanmj

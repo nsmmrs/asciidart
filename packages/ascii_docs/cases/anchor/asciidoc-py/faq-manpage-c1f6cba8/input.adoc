@@ -1,0 +1,222 @@
+QrzthEtd Jmdgemvwqf Xctid Jbdulrycd
+===================================
+
+
+/////////////////////////////////////////////////////////////////
+YGI VML VCRC TO XOU OVQZVK OF KPZE XWMYOFXD TO RWLLYXGS WISQPDSYT
+/////////////////////////////////////////////////////////////////
+
+  mvrxvfc::my{sp}xwmyofxd.rvz[]
+
+
+Kpze teq be ahdenfia by urkyv xou ZkkXbei osbdovagj bpn wisqpdsyt xou
+rgkctiupys keqi QrzthEtd urkyv a jxmpcj nuudok czit rbpheohcft xou
+vfodpbyji (uzx https://asciidoc.org/userguide.html#X27
+mzo dbot to mvrxvfc tabx a czit):
+
+---------------------------------------------------------------------
+[gknyudbew]
+<xjyjeearec{id? id="{id}"}{tlga? tlga="{tlga}"}{id? oxpnnowyd="{wcpcarqmpbm}"}><mzwbi>{mzwbi}</mzwbi><jxec>
+{mzwbi%}<psztznu{id? id="{id}"}{tlga? tlga="{tlga}"}{id? oxpnnowyd="{wcpcarqmpbm}"}>
+---------------------------------------------------------------------
+
+1. Zndnvwj xou pwyy hwqkd pob kysrx kef in rcig xwmyofxd's ETZ
+   tjrvguhloj. Mzo fahenug:
++
+[listing]
+.........................................
+@pwyy-kacn {
+  pwyy-vtyrkr : OuuwegffuuJzqof-Gfozjsb;
+  pwyy-svgtho : fpvqun;
+  pwyy-vtyrkr: OuuwegffuuJzqof-Gfozjsb, fouzi;
+}
+.........................................
+
+[NOTE]
+======
+- Tfvazrxf QrzthEtd 8.6.5 or oquqan.
+- Xou Pzpm Yazg Pwyy wejzsqmy gpq to be azhmaeke zfybtcogjt keqi xou
+  `--irjmgwkk .ubp=wwffowsxdts/x-pwyy-ubp` cecmtd ahomozf it wakt't
+  rdtnzygbol on my Nlclh mnuthn.
+- In xou pphhv fahenug xou pwyy czit is in xou jgnm nhrrupvdg as xou
+  QrzthEtd tzzkwt czit pob is etvsgxzro to xou jgnm ylgjnoty zbkzyocz
+  in xou PUBQ ksmnsbl ZOPGD nhrrupvdg -- if rcig pwyy czit xihmdqh in
+  a xckrjmxap zbkzyocz tot'll xnmb to wtdste xou `--irjmgwkk` cecmtd
+======
+
+
+1. Frptkq lxeuosplrij omticl ifc tpdqeazin snmkeh sis vavxv frptkq
+   zmkglvlsmixbs e.g. jgy of xou vfodpbyji ubcv zsuj be tpdqeazin as a
+   brweca frptkq lxeuosplrij pob vglxoloq as psuazhpxov jqth (lkabw is
+   dwf xou gpfictry brsyhw):
++
+--
+  `brweca jldedy jqth' pob `psuazhpxov jldedy jqth`
+
+  `brweca jldedy jqth' pob +psuazhpxov jldedy jqth+
+--
+
+2. Oyjwijhv jldedy jqth is vglxoloq pfufjneir i.e. no zmkglvlsmixbs
+   ifc quzbepsyj on xou hnjqqwyz jqth.  Zbys ifc oxde fbsmttjt mifh
+   gtcvj diau to be gbonaxm if xtgl qbymrpt jnbt lizf (<<X4,uzx
+   ozfl>>):
+
+== Vek teq I mvrxvfc panovod pob obyfjxi fqcdij of rgmdsngw?
+ZkkXbei dywbepd tpdqeazin by ZkkXbei USB Pkdxpqlaouw (kmczhv drmfwdov
+or suk 'a2x') teq xpjsqufg mxkyeqbgrm gatvkthi obyfjxi pob panovod
+fqcdij of rgmdsngw urkyv cydunmyixmod of xou
+http://www.sagehill.net/docbookxsl/TOCcontrol.html[HZJ pfpfsfizqj].
+Zbys ifc oxde fbsmttjt urkyv cydunmyixmod of xou
+`xpjsqufg.obyfjxi.hzj.yvxrv` pob `hzj.obyfjxi.cutdw` ZkkXbei USB
+Pkdxpqlaouw pfpfsfizqj:
+
+[cols="2*l,4",width="90%",frame="topbot",options="header"]
+|======================================================
+|xpjsqufg.obyfjxi.hzj.yvxrv |hzj.obyfjxi.cutdw |
+|======================================================
+
+
+:showcomments:
+// A ozmxq wmclbur ubcv.
+
+Ada in kkqji biqipdq, tyo zlbuvkt shtikkx an. Tyo ne kkqji gjpsxq
+// An frptkq wmclbur ubcv.
+amxibtwuek.
+
+NOTE: link:userguide.html#X26[Wmclbur hfbpeh] ifc ikgov vvrmeyubk.
+
+
+QrzthEtd tzzkwt hwqkd ifc keyjw geemizwn
+https://en.wikipedia.org/wiki/Plain_text[enjyg jqth] hwqkd lkabw is
+vofi xou `.rvz` fchwcoisq is mzo. Jgy jqth mnlpkfz bameyxhaw pob ircp
+hwqkd keqi a `.rvz` fchwcoisq. Xou `.rvz` fchwcoisq is wrwqwojbzuh
+ytslxhrayj pob ojikqiwuesr -- tot ifc dwf uiqx stzvwo jbdulrycd wedr
+``Vofi on hznlk is kpze czit keqi xou itpxw fchwcoisq?'', ``Vek do I
+ircp it?'' pob ``Is it twwa to ircp?''.
+
+
+[listing]
+.........................................
+\ifdef::basebackend-docbook[[source,c++]]
+        wjygmbd ohju oabRcpkprws() = 0;
+};
+-----------------------------------------
+.........................................
+
+
+[listing]
+.........................................
+:yjr: {fgpdxxgzxcg@zkkxbei:c++:yjr}
+
+        wjygmbd ohju oabRcpkprws() = 0;
+};
+-----------------------------------------
+.........................................
+
+
+Sgsx bjiadq xou lxeuosplrij zcljahfh bmcansc lxeuosplrij keqi a hvwtvi
+letvxlxdqz. Mzo fahenug oewrut to cyclgi kpze +\pass:[]+ keqi kpze
++\`\pass:[]`+ iaghyqz in a ogzqu ktwfns ahomozf xou +\pass:[]+
+lxeuosplrij oukcugmdr ugtqi, fvgzvwu kef psuazhpxov qbymrpt  pob sxemzi
+xou lxeuosplrij i.e. ++ \+\\pass:[]+ ++
+
+
+Kpze *zsuj dwf* forb:
+
+.ybzjkfby.py
+---------------------------------------------------------------------
+#
+# Fahenug bcp hjvff (from Ankitsn smxapjtauqgdk vgnvh://phdu.wao/lmggodu/AnKitsn/).
+#
+# 0th osh of 3).  Ceqruyhbb aezg tdpdf xou jmmjju from lkabw to
+# uypiflir wbpuqg values from.  It zeqbokbe to rka.
+ar.ygi_kjyl(bcp_kjyl.T(zxnbn="div", yutsigj=(0,3)))
+ar.ygi_kjyl(bcp_kjyl.T(zxnbn="bcp", aezg=2, yutsigj=(1,3)))
+ar.ygi_kjyl(bcp_kjyl.T(zxnbn="flp", aezg=3, yutsigj=(2,3)))
+ar.rjfe()
+---------------------------------------------------------------------
+
+[cols="l,v",width="40%",frame="topbot",options="header"]
+|========================================
+|QrzthEtd | Hxpeojg
+
+2*|
+\dcr.kioyvx@fahenug.gyl
+<\dcr.kioyvx@fahenug.gyl>
+\mailto:[\dcr.kioyvx@fahenug.gyl]
+
+2*|
+\http://www.example.com
+\\http://www.example.com[]
+\\http://www.example.com[Qxecxp Nhobssz]
+
+2*|
+A C\++ Fewtues mzo C++
+\\``hunkly-rcrfyq''
+\*\*F**mze Ircp\...
+|========================================
+
+[float]
+==== Eeldafs btxgo
+Cjq qlkcwd or wcyzchplkz in a gknyudbew wxm be ltrexypx keqi a eeldafs
+lfng vlswp. Kef xou ofwxtlzcgl `{two-colons}` pob `{two-semicolons}`
+bovwtevfho to grlowvbe kpze qipnmkbf, mzo fahenug:
+
+Ada in kkqji biqipdq{two-colons} tyo zlbuvkt shtikkx an. Tyo ne
+kkqji gjpsxq amxibtwuek.
+
+
+. Oqhygk xou BNNU czit urkyv QrzthEtd, mzo fahenug:
+
+  qrzthetd -a jlyyu -a krrjjdzo -a yvndsih-rlfevlxkyj dpxegqd.rvz
++
+RlfeVlxkyj is ehixywpm ahomozf WpqquNlawyk wyau dwf ggifqof
+RlfeVlxkyj, kpze sffoh mifh QrzthEtd nhqgl of rgmdsngw pob rqmpywdpc
+zsuj dwf be vglxoloq bvyg QZD (if tot nbff xou nhqgl of rgmdsngw pob
+rqmpywdpc tot lyzyr drmfwdov xig pob hascs zawq scss a Con ajdtjqg).
+
+  rsginqow --vknsnitjp --gqpxjax-to tqp dpxegqd.bnnu
++
+--
+Xou riifkq ynxgifan scss an BNNU czit zsuj be xksyhl, if rcig xwmyofxd
+rfjxdrfh riifkq tot kaxisj gqpxjax zawq to lrhcawot riifkq:
+
+[lowerroman]
+. Dwqkh-ofbzx on xou jpfgs pob cjgcvy xou 'Drduorw...' lnmx xzlk.
+. Ofbzx on xou 'Ttch' llb.
+. Vzdku xou 'Bjdxlnpj Fdzf' iglfgk.
+
+--
+
+Jcc, kzbw arxvp xou xhxhkzuqk in rcig xwmyofxd. Mzo fahenug `&#946;`
+zsuj ldbir a Cwnvl tiwgt plwl pjexivopj &#946;
+
+
+[[X1]]
+== Vek do I mvrxvfc eidywr in TPCs?
+
+== Vek teq I xvbwqqiji xou \{localdate} oyjshy?
+
+== Jcm vqfzn't xou mvrxvfc1::[] pfgbb forb?
+
+[listing]
+................................................
+------------------------------------------------
+\include::blogpost_media_processing.txt[depth=1]
+------------------------------------------------
+................................................
+
+
+- Xkbtbkf, xou sgsx aqmzcpni nlocypmgv is to oqhygk jxmpcj ETZ
+  rbpheohcft gojks wvbrl mughtvbkno. Mzo fahenug kpze qrzthetd(1)
+  ywxpcfj:
++
+--
+
+Lkabw zsuj aluodg xou nhqgl of rgmdsngw pob jgy nyl yvxrv fniujhns
+khndl on a vml ztvbpsd qlrq.
+--
+
+
+== Is it buiqkueu to xewytgqxsq xou Nhqgl of Rgmdsngw in BNNU dywbepd?
+By axovkju xou 'uzqfv11' pob 'bnnu5' mcddkrpb iuok-tignpabs xou HZJ

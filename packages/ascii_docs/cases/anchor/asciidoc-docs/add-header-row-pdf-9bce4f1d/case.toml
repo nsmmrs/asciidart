@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoc-docs/docs/modules/tables/pages/add-header-row.adoc"
+formats = ["pdf"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

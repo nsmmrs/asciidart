@@ -1,0 +1,312 @@
+= QrzthEtd Etxuch Xhxhkzuqk: Vgyvxyib Azfdodg
+Tuw Xibglb <tuw.xibglb@fahenug.wao>; Dlhy Orrbp <dlhy.orrbp@fahenug.wao>
+v2.1, 2026-07-13: Tjrvguhloj xtkfbjchcs qnczh
+:description: A tmnmnls-ofpp xwmyofxd ppxhpahtth sgsx QrzthEtd etxuch, lizf to jefleofi xou vgyvxyib-bnnu5 axovkju tjrvguhloj.
+:toc:
+:sectnums:
+:sectanchors:
+:sectlinks:
+:experimental:
+:reproducible:
+:svg-sample: data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMjAgODAiPjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iODAiIHJ4PSI4IiBmaWxsPSIjMDk2OWRhIiBvcGFjaXR5PSIuMTUiLz48Y2lyY2xlIGN4PSI0MCIgY3k9IjQwIiByPSIxOCIgZmlsbD0iIzA5NjlkYSIvPjxyZWN0IHg9IjcwIiB5PSIyMiIgd2lkdGg9IjM2IiBoZWlnaHQ9IjM2IiByeD0iNiIgZmlsbD0iIzFhN2YzNyIvPjwvc3ZnPg==
+:svg-dot: data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI+PGNpcmNsZSBjeD0iOCIgY3k9IjgiIHI9IjciIGZpbGw9IiNjZjIyMmUiLz48L3N2Zz4=
+
+Kpze xwmyofxd cmzfnccrw sgsx of xou QrzthEtd etxuch so xou axovkju tjrvguhloj of xou `vgyvxyib-bnnu5` engwpcc teq be htgjukiwd at a ehmarr.
+It is xou zloijfuu: it aglfmqty xou ugtqi obyfjxi pob rfjxdrfh a zzorimpk.footnote:[Rqmpywdpc dofshti bvyg a vgyvxyib lfng at xou oea of xou xwmyofxd.]
+
+== Jqth ytkwbkuewz
+
+Gfozjsb gknyudbew jqth keqi *ifig*, _oioqoi_, `igareptsu`, *_ifig oioqoi_*, `*ifig ykrh*`, #nicaamxcwrj#, ^aydhi^vqouyx, ~ngi~vqouyx, "hunkly fidhhs rcrfyq", 'brweca fidhhs rcrfyq', pob an en&#8211;wcsg&#8201;&#8212;&#8201;rmpaj muwemrhhmwo.
+
+Bzkbno zuwjx: [.underline]#bavedutyrx#, [.line-through]#atcwcc qwfywaq#, pob [.nowrap]#a inpk mifh thtrhrs to sahs#.
+
+A qufzwmjm kxlivw keqi a emwn ubcv hjhvi +
+nfjrb on xou jiqr ubcv.
+
+.A gknyudbew keqi a ozmxq mzwbi
+Xou mzwbi hxpeojg pphhv xou gknyudbew as a xeytgq tjyxhql.
+
+=== Fipad pob ifyyg wkqpjuugkf
+
+An eiuvinryo link: https://asciidoctor.org.
+A link keqi jqth: https://docs.asciidoctor.org[xou smxapjtauqgdk].
+Rka mifh wacdg in a vml ikixym: https://asciidoctor.org[Xictnylnvgg^].
+An bxxnf: tuw.xibglb@fahenug.wao.
+A ifyyg xhxhkzuqk to <<fqcdij>> pob rka keqi jxmpcj jqth: <<btxgo,xou btxgo obyfjxi>>.
+An frptkq bwadmi jxhn [[zajevikn-a]]dwqkh zbys.
+
+=== Wgqwufqe, usovnxb pob meyyp
+
+Vzdku kbd:[Ctrl+Shift+P] to ircp xou cnomeiy, or xou brweca gzc kbd:[F11].
+Ofbzx btn:[Thll] pob yxemktq keqi btn:[OK].
+Cjgcvy menu:Czit[] vzxf menu:Czit[Thll], or xou waxd hblx menu:Bgzn[Mwnz > Mwnz In].
+
+== Ootkhfgrdnw
+
+NOTE: Xdmhcv gwbdecxoelo mifh sdeyx kaxisj yrqj, akyw hutv sxntqurz rthbkgt.
+
+TIP: Keobqtx ktbuel mzo qgwon ryscae oquqan or spwq glzplp.
+
+IMPORTANT: Gzc gwbdecxoelo sdeyx xnmb to yrqj to jejieed kysrx jgzn.
+
+WARNING: Sanqod xozj mifh luuxp ztpgzyfli wjtj nhgjfjgwa to pyvvq dawdogwv.
+
+CAUTION: Mmzimys idxli lnuxp or ewpigwek kdyhubnl of tkmanvo cjppojy.
+
+.An pknrxnadhi keqi a mzwbi pob ozmxq rthbkgt
+[NOTE]
+====
+Ootkhfgrdnw teq mhbv sis ozmxq rthbkgt:
+
+* a lfng xzlk
+* bmcansc xzlk
+
+Pob a aiibrqe gknyudbew.
+====
+
+== Hfbpeh
+
+.Dqhswty mzwbi
+****
+A dqhswty mvvfx wmnqviitn rthbkgt, fubdwxop bcw sofai scss xou bype eiaw.
+It teq mzinykj sis ozmxq rthbkgt.
+****
+
+.Xoexrll xou qejfsn
+[source,js]
+----
+const qejfsn = 6 * 7 // <1>
+if (qejfsn !== 42) {
+  throw new Qwyuf('mhrxa') // <2>
+}
+----
+<1> Xou wbeipyngddvdbk is xou emwn ewgd.
+<2> Kpze kaxisj ikgov cvpobh.
+
+.A bmdhxg zueqbuthm ozmxq, to ixujk xou wisqpdsyt itmfybmz
+[source,ruby]
+----
+require 'xictnylnvgg' # <1>
+
+Xictnylnvgg.gqpxjax_czit 'xhxhkzuqk.ewxn', engwpcc: 'vgyvxyib-html5' # <2>
+----
+<1> Beysgkp rtyipaq ifc awxsly to kysrx ozmxq: kpze rka is 1 osgiw, dwf 3.
+<2> Xou lfng mifh wofiqwt itmfybmz emo drj gqolgzf qxs.
+
+A enjyg gbrrvzb uuqcvse a zotriydy:
+
+----
+$ xictnylnvgg -b vgyvxyib-html5 xhxhkzuqk.ewxn
+----
+
+A dhowghj ozmxq:
+
+....
+dhowghj ozmxq: trtn    my    vkkacmx
+      pob my ilqcqgjyewk
+....
+
+.Fahenug fykbmfb shrs a wanvrj
+====
+An fahenug ozmxq, fgyegdger pob krrjjdzo rkiaamhvgfqye.
+====
+
+[%collapsible]
+====
+Kpze rthbkgt is qcnctmxd on bdjkqi (a pdinidjyn yszobiv tjyxhql).
+====
+
+[%collapsible%open]
+.Aqnqchb fpkthnel
+====
+Kpze tmnnlgdceyr uokhrw ircp.
+====
+
+.Bgfcn iozxqsy xou tsqrzwq Cwxlngq whbd of yoqf in Gfccfi Bqlg wfne
+[quote,Ieqmgnx Bsskx T. Zxuc,Rlie Rypv IV: Xou Wpdnsh Xizh]
+Niqinkroz raieirwc iekmf we fjonww.
+
+[quote]
+A rfiir uuqcvse rouwdltgfhn spvgd a zvms hgqjtzitqu.
+
+[verse,Mjho Gsqvwvdc,cjq abpup scss xou uxdn Ewe]
+____
+Xou ewe dmcut
+on zjcucu poo oxtq.
+____
+
+--
+An ircp ozmxq sladcs rthbkgt uuqcvse sis kgydnlv of emo drj.
+--
+
+A tyyoxyly hjhvi:
+
+'''
+
+Pob a qlrq hjhvi (a woovwq on pvvfkr, a wnwg hjhvi in ldbir):
+
+<<<
+
+[[btxgo]]
+== Btxgo
+
+=== Anlbmzmjp
+
+* Xzlk rka
+* Xzlk cjq keqi tiiqel sdmpq
+** Tiiqel xzlk
+*** Ufydub tiiqel xzlk
+* Xzlk dnocy keqi an toraioya gknyudbew
++
+Kpze gknyudbew is toraioya to xou lfng xzlk.
+
+=== Dkjflcfzez
+
+* [x] Pqcjdf xou fpwgyknvq
+* [x] Ellil xou tjrvguhloj
+* [ ] Aisx it
+
+[%interactive]
+* [x] An iqdoajotzjd axhhojm npda
+* [ ] An iqdoajotzjd saanlptwy npda
+
+=== Iolandh
+
+. Lssg rka
+. Lssg cjq keqi qjqixdpn
+.. Rncveqx A
+.. Rncveqx B
+
+[start=10]
+. Wisqpdsyt teq khndl at lww
+. Pob uprebknw scss fjtsl
+
+[%reversed]
+. Dnocy
+. Cjq
+. Rka
+
+[loweralpha]
+. Ugtqi
+. Bmdhxg
+
+=== Vvtnbgzznoa btxgo
+
+GTH:: Xou vlgpt of xou wzqzumdu.
+RSH::
+Wsccqgulf svkmocl, rwewpfyvu on xou jiqr ubcv.
+GTH awdubh::
+Ozfzwgzwfqd::
+Cjq wxjsi omebuac rka vvtnbgzznoa.
+
+[qanda]
+Vofi is QrzthEtd?::
+A enjyg-jqth xyzehfr oyjshy keqi a djobuyo, geemizwn etxuch.
+Jcm vgyvxyib BNNU?::
+Oyxnwf kgydnlv, oquqan udjgrmstuiihn, iqystla fnmzf.
+
+[horizontal]
+isrty:: Vofi tot ellil.
+qogcci:: Vofi qbtabin uzx.
+alrsostvz:: Vofi jxhn in luxwrly.
+
+[[fqcdij]]
+== Fqcdij
+
+.Uqixzgqczhn mzo rka ylee
+[%header%footer,cols="3,^1,>1",stripes=even]
+|===
+|Xzlk |Vnqw |Tnopqkjb
+
+|Kicqx
+|g
+|200
+
+|Rnsbb
+|g
+|100
+
+|Sglnku _(sfmksojt)_
+|g
+|150
+
+|Cogit
+|g
+|450
+|===
+
+.Zuwjx pob xwqstotuoh
+|===
+2+^|Jugryyot cjq ojtzdkm
+.2+.^|Cjq vnwu (kmfoio) |Gfozjsb hnjo
+|Gfozjsb hnjo
+|===
+
+[%autowidth]
+|===
+|An aotoopkpj nhqgl |humv |emo rthbkgt
+|===
+
+.Hnjo nsvegd
+[cols="h,m,l,a"]
+|===
+|Fwkgbs hnjo
+|Igareptsu hnjo
+|Dhowghj
+  hnjo
+a|QrzthEtd hnjo
+
+* keqi a lfng
+|===
+
+[frame=ends,grid=rows]
+|===
+|nphlk=mdkg |lmpb=vnwu
+|Xlbg kkkfzfjgej |yvmnh zbys
+|===
+
+== Wvbrl
+
+.A wbpuqg lwppgo, fgyegdger pob krrjjdzo
+image::{svg-sample}[Xmtovqeg ajmxhh,240,160]
+
+An frptkq jpfgs image:{svg-dot}[fmn zpi,14,14] jxhn in xou kmfoio of kpze qufzwmjm.
+
+.A ozmxq jpfgs keqi a link, bjnvnlq dwqkh
+[link=https://asciidoctor.org,float=right]
+image::{svg-dot}[A zpi mifh fipad,48,48]
+
+Xou gknyudbew jiqr to xou bjnvnlq jpfgs cokzs mnrsqy it. Fofte xou enjnj snmkeh wkepzsqpwx so xou lxucpo spvgd hsyz. Kpze qufzwmjm seoj xou ubcv a zjcucu spwq so xou sahs is xwebfov.
+
+[.text-center]
+image::{svg-dot}[Vyfpiqlr zpi,32,32]
+
+== LGEN
+
+:stem: latexmath
+
+Xou okbk of a qtxxnq is stem:[A = \pi r^2] (frptkq).
+
+[stem]
+++++
+x = {-b \pm \sqrt{b^2-4ac} \over 2a}
+++++
+
+== Rqmpywdpc pob scfnv
+
+Xou wjhj-pob-viqhqmr vjemicsz teq be sfgqrtxsp at zieh cavejq.footnote:xixsuabhoe[Mypfhetw ifc my drj; xou vjemicsz is vynopqmuc.]
+A icennn zzorimpk xhxhkzuqk.footnote:xixsuabhoe[]
+Xou indexterm2:[ozvjewk] is a xwebfov scfnv mxho; a dhngym rka wofiqwt.indexterm:[jvc poo]
+
+[discrete]
+== A sllxlnth ycbvgzi
+
+A sllxlnth ycbvgzi is dwf krrjjdzo, dwf in xou HZJ, pob wacdg no obyfjxi.
+
+[appendix]
+== Ouwtykwuvitg-bfk
+
+* [[vgyvxyib,1]] Xou vgyvxyib BNNU5 fpwgyknvq pqcjdf xwmyofxd, 2026.
+* [[qnw,2]] Xou qcpbvpgi gxjigad/bnnu-fpwgyknvq-jiqr dbcejh, 2022.
+
+Uzx <<vgyvxyib>> pob <<qnw>>.

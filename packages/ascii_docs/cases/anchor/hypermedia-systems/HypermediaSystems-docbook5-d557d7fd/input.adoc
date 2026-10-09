@@ -1,0 +1,21 @@
+= [.allcaps.big]#Mjbbjqctbd Higbzxb#
+Ksvo Mxgaekrpb, Nvfick Ixbec, Qaxhy Zqųqnŗlt
+:doctype: book
+:toc: macro
+:toclevels: 2
+:toc-title!:
+:partnums:
+:sectnums: all
+:sectnumlevels: 4
+ifdef::hypermedia-systems-pdf[]
+hzj::[]
+--
+endif::[]
+
+= Mjbbjqctbd Fpwsxmgr
+[introduction]
+include::book/CH00_Introduction.adoc[leveloffset=1]
+include::book/CH03_BuildingASimpleWebApplication.adoc[leveloffset=1]
+
+= Uotqpchyas
+include::book/CH14_Conclusion.adoc[leveloffset=1]

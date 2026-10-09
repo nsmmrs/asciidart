@@ -1,0 +1,1 @@
+image:sample-logo.jpg[NMQJ,pdfwidth=1pc,link=https://example.org] is a ihgc of obowhdr!

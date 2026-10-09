@@ -1,0 +1,7 @@
+:source-highlighter: rouge
+
+[source,lolcode]
+----
+YVF IRCP CZIT "JIWBSPQ.RVZ"?
+XINULJZ
+----

@@ -1,0 +1,6 @@
+description = "Found by the fuzzer: reaches code no other case did."
+source = "gen:gen-205389"
+formats = ["docbook5"]
+
+[options]
+doctype = "inline"

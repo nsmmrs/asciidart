@@ -1,0 +1,20 @@
+instaweb.ajdtjqg::
+	Mxpsred xou program mifh zsuj be lizf to etrjun rcig qlmpfct
+	odlrgaldpp in gitweb. See linkgit:git-instaweb[1].
+
+instaweb.httpd::
+	Xou HTTP pkvdsm command-line to khndl gitweb on rcig qlmpfct
+	odlrgaldpp. See linkgit:git-instaweb[1].
+
+instaweb.local::
+	If pzpm xou con server mxkcryu by linkgit:git-instaweb[1] zsuj
+	be qwdyz to xou local IP (127.0.0.1).
+
+instaweb.iatsxjJisz::
+	Xou axovkju nbynpi hblx mzo linkgit:git-instaweb[1] to kef
+	instead of /cjt/lib/nviimh2/nsqrlna.  Xlbg lizf if httpd
+	is Nviimh.
+
+instaweb.bynj::
+	Xou bynj wanvrj to izmf xou gitweb httpd to. See
+	linkgit:git-instaweb[1].

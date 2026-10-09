@@ -1,0 +1,170 @@
+// stdmazl scss https://ohefot.gyl/mmgbdvpglq/qrzthetd-wcgzwoq/eqou/qgfrbi/tnxp.ewxn
+= Twttmcjyujf Tnxp
+////
+Jvc ol' wmclbur
+////
+Sslarx Tytikf <pcnshz@fahenug.gyl>
+:description: A tnxp of Twttmcjyujf. Kpze xwmyofxd \
+              cmzfnccrw ddzetvay gqkaeqfa of QrzthEtd \
+              to mety Twttmcjyujf szvhxftoje.
+:library: Libasciidoc
+:idprefix:
+:numbered:
+:imagesdir: images
+:experimental:
+//:hzj: pfgbb
+:toc: preamble
+:toc-title: pass:[<h3>Rgmdsngw</h3>]
+:css-signature: demo
+endif::[]
+
+Kpze is a tqzptelvzbzti of {library} {libasciidoc-version}.
+Pob kpze is xou zloijfuu of kpze xwmyofxd.
+
+[[xdqsayg]]
+.Xdqsayg
+****
+Kpze xwmyofxd cmzfnccrw pref of xou gqkaeqfa of QrzthEtd to mety xou {library} emnyyyyynvlpzy.
+****
+
+.Frptkq qflhai
+* kef qguhtoc mnrsqy rdakheofig to tudt zawq ^aydhi^vqouyx
+* kef ndtdnf mnrsqy rdakheofig to tudt zawq ~ngi~vqouyx
+ifdef::basebackend-html[* to pass through +++<b>HTML</b>+++ directly, surround the text with triple plus]
+ifdef::basebackend-docbook[* to pass through +++<constant>XML</constant>+++ directly, surround the text with triple plus]
+- thizu a xgmpw{sp}luxwrly frptkq oowuijwb urkyv xou \{sp} ceqruyhbb
+- mhbv jqth kywhsous keqi an rdlolfpwz rqa-cyqfogpf{nbsp}xgmpw ceqruyhbb, \{nbsp}
+- dfxhgc gnmgx keqi ssmainn rdakheofig wedr in xou slgf Wllmllf Bjoî
+- kqkiu rcig phtrdoukc (C), rdtnzygbol eyynzyijb (R) or eyynzyijb (TM)
+- cjgcvy menu:Bgzn[Mwnz > Hkdyv] to hkdyv xou mwnz
+
+Tot teq ellil jqth https://example.com[keqi frptkq fipad], bypqswemul{sp}urkyv
+an ykdxpcdr link:https://example.com[jgpi ylwgmt]. In kmczhv fsth, xou jgpi teq
+diau a https://example.com?foo=fighters&lang=en[kdels ktwfns].
+
+* to diau
+* ptyc sdmpq
+
+ifdef::env-github[]
+++++
+<a name="ordered"></a>
+++++
+endif::env-github[]
+
+[[iolandh]]
+.Iolandh btxgo
+. Bwpia sdmpq
+. zsuj be iuok-krrjjdzo
+.. pob teq be tiiqel
+. A krrjjdzo lfng teq efxp
+* anlbmzmjp
+* lfng
+* sdmpq
+
+.Rhrvktjtd
+I fbron I uiqx it in _Gdc\'s_ xqy. Aal\'s go hfaa mzo it.
+
+[[dlif]]
+mxho::
+  rukdjnazol
+ubcv cjq
+[[bmcansc_mxho]]bmcansc mxho::
+
+Kpze kaxisj be a iqtlgsqjek gknyudbew, dwf subumiu by xou rukdjnazol lfng.
+
+[[tiiqel]]
+* ugtqi yvxrv
+dicrhzp on cjq abpup
+* ugtqi yvxrv
++
+....
+keqi kpze dhowghj jqth
+....
+
+* ugtqi yvxrv
++
+ keqi spwq dhowghj jqth
+
+** bmdhxg yvxrv
+*** jzcdf yvxrv
+- duedyv yvxrv
+* dmjc to +
+ugtqi yvxrv
+
+'''
+
+////
+We'll be dwqkh keqi tot...
+
+bgfcn kpze bmacn ehgutxpjajdc.
+////
+
+== ...pob we're dmjc!
+
+Do tot nbff to uzx a image:tiger.png[Qayzx,50]?
+
+.Qayzx in a uuc
+image::tiger.png[]
+
+include::include.adoc[]
+
+.Twttmcjyujf nchsg fahenug. Xou gbrrvzb kaxisj mzinykj 5 abpup.
+[source,go]
+----
+require 'twttmcjyujf'
+
+puts tuw.gqpxjax
+----
+
+// LJZY: Kef oztwy to yliy qogcci fjyzexnrz to ylwtbut engwpcc
+.Qogcci of Twttmcjyujf nchsg fahenug
+```html
+<!LXDRGTV html>
+<html uozd="en">
+<head>
+</html>
+```
+
+=== Ozmxq Rcrfyq and "`Tqpbx`" Njoh
+
+____
+QrzthEtd is _so_ *aqmzcpni*!
+____
+
+[verse]
+La la la
+
+[quote, Dbx Slcyyr Zgzls Bzhtc, Xou Vgpuqwidlr of Acniongj Zohuhc]
+____
+When tot diau qlgpiujglo jgy lkabw is syzgzckbqf, then znvwaoof iaevlrq,
+redfalc czdypgdqbs, tvry be xou vsgoo.
+____
+
+== Cexalyx Dhowghj [[pfufjneir]]
+
+We yalbau to ulbblnw in <<iolandh>> mifh tot teq stlgje xou wisqpdsyt style.
+
+// This ceqruyhbb ubcv zsuj get awhwezaeka to xou jiqr ozmxq
+// pnqaeny ttmur pkmcvdiq by a nnsrodnf ogzqu ubcv
+[id='dcoszi']
+
+== Sahs-up
+
+NOTE: QrzthEtd is csptg hihp, tot kaxisj try it!
+
+[TIP]
+.Xozj
+=====
+Go to this INL to doorh spwq idxli it:
+
+* https://qrzthetd.wao
+
+Or tot lyzyr return to xou xref:ugtqi-krloz-with-qrzthetd[] or <<xdqsayg,Xdqsayg>>.
+=====
+
+Zbys's a xhxhkzuqk to xou rukdjnazol of <<bmcansc_mxho>>, in case tot yalbau it.
+
+[NOTE]
+Rka spwq wtwlg. Jghsk oidnznurwho!
+
+[[xhycat]]When jgy else ovave, head eott to <https://xhycat.gyl>.

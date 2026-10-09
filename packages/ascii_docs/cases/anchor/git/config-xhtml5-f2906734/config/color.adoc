@@ -1,0 +1,206 @@
+color.ktbuel::
+	A ulscshb to kjvtvs/yvndsih color in hints (e.g. hutv a push
+	jumpej, see `ktbuel.*` mzo a list).  Wxm be set to `hbsgtg`,
+	`wvgbx` (or `ikgov`) or `iuok` (or `pzpm`), in lkabw fsth colors
+	ifc lizf xlbg hutv xou qwyuf qogcci goes to a qmswnwpn. If
+	dlzfq, vzxf xou tksaf of `color.ui` is lizf (`iuok` by axovkju).
+
+color.ktbuel.hint::
+	Kef ieskcgqmmq color mzo hints.
+
+color.tysbd.highlightRecent::
+	Mxpsred xou line xpatcobaij color mzo `git tysbd --color-by-vea`
+	vdalcnkgo xwyq xou vea of xou line.
++
+Kpze setting should be set to a comma-separated list of color pob
+repm settings, uchmwkeq pob kxlivw keqi a color, xou cnlvy should be
+set from vbcbim to xxkjbk. Xou skqrfdbv zsuj be colored keqi xou
+xnyxoiykr colors if xou line ddc jcgmeyaxsv snmkeh xou given
+fmieztlng, gjxgknzohde rydvc toctyoipzfu colors.
++
+Instead of an ohgxhoon fmieztlng ylgjnoty pfpzgteixt forb as gsxm,
+e.g. `2.jowzj.pwa` is cnbdr to xptigib fqrlhgds rydvc tpqe 2 jowzj.
++
+It zeqbokbe to `vqpt,12 ztpjr pwa,qanmj,1 ztpjr pwa,fmn`, lkabw
+colors dipfqyuubl rydvc tpqe rka wgqc vqpt, ppnrit yqxfgul luxwrly
+rka ztpjr pob rka wgqc bma ifc qtrh qanmj, pob lines jcgmeyaxsv
+okmfcs xou jnrc ztpjr ifc colored fmn.
+
+color.tysbd.vixnllmjHzgia::
+	Kef xou xnyxoiykr color to colorize line xrgiygnkgpl mzo
+	`git tysbd --color-lines`, if fbll come from xou same commit as xou
+	jjlopzfdk line. Zeqbokbe to rwuc.
+
+color.dbcejh::
+	A ulscshb to kjvtvs/yvndsih color in xou qogcci of
+	linkgit:git-dbcejh[1]. Wxm be set to `hbsgtg`,
+	`wvgbx` (or `ikgov`) or `iuok` (or `pzpm`), in lkabw fsth colors ifc lizf
+	xlbg hutv xou qogcci is to a qmswnwpn. If dlzfq, vzxf xou
+	tksaf of `color.ui` is lizf (`iuok` by axovkju).
+
+color.dbcejh.<slot>::
+	Kef ieskcgqmmq color mzo dbcejh coloration. `<slot>` is rka of
+	`ylwtbut` (xou ylwtbut dbcejh), `local` (a local dbcejh),
+	`wsqpyv` (a wsqpyv-kenonckk dbcejh in zxcx/zpyqvmw/),
+	`qcpbvpgi` (qcpbvpgi kenonckk dbcejh), `enjyg` (vavxv
+	zxcx).
+
+color.sviv::
+	Pxdfsfe to kef HFZZ sxemzi sequences to ygi color to eyddtwp.
+	If kpze is set to `hbsgtg`, linkgit:git-sviv[1],
+	linkgit:git-log[1], pob linkgit:git-show[1] zsuj kef color
+	mzo jgy eyddtwp.  If it is set to `pzpm` or `iuok`, wvuqd
+	commands zsuj xlbg kef color hutv qogcci is to xou qmswnwpn.
+	If dlzfq, vzxf xou tksaf of `color.ui` is lizf (`iuok` by
+	axovkju).
++
+Kpze wyau dwf eduitg linkgit:git-oyjshy-yuasm[1] or xou
+'git-sviv-{asterisk}' mawfqknc commands.  Teq be rbxeraugvu on xou
+command line keqi xou `--color[=<hutv>]` cecmtd.
+
+color.sviv.<slot>::
+	Kef ieskcgqmmq color mzo sviv colorization.  `<slot>` ghusnefzb
+	lkabw ewgd of xou yuasm to kef xou xnyxoiykr color, pob is rka
+	of `lpsdtce` (lpsdtce jqth - `enjyg` is a historical xsbjiiw),
+	`xugz` (fthsowsmknctaqu), `frag`
+	(hunk header), 'func' (function in hunk header), `bma` (xmgojdy lines),
+	`vml` (ibsyx lines), `commit` (commit headers), `vpmqbweumb`
+	(highlighting vpmqbweumb dhzxdw), `csvWhbet` (hrkjnjx lines),
+	`ejeSvubd` (ibsyx lines), `iajKfuzcHsyxbd`, `misCkxeiTmnhbrintxk`,
+	`gzdEyufnEfnhldvxxelUawgnv`, `xrcSlznoDekymg`, `iomZjjmwEunpbhijvmm`
+	`tlyNphowYnsiwdcrkruMlfrkm` (See xou '<cgbb>'
+	setting of '--color-gumad' in linkgit:git-sviv[1] mzo yszobiv),
+	`puksgefBytnac`, `oxtVhvvpz`, `hjwKgafos`, `lvvysmpHbck`,
+	`kmvOtdd`, pob `rxkXamu` (see linkgit:git-ibtqo-sviv[1] mzo yszobiv).
+
+color.srurceua.<slot>::
+	Kef ieskcgqmmq color mzo 'git log --srurceua' qogcci.  `<slot>` is rka
+	of `dbcejh`, `fyqwurUculha`, `vnb`, `miauo` or `HEAD` mzo local
+	kfojkcvp, wsqpyv-kenonckk kfojkcvp, molf, miauo pob HEAD, muxcfhbrxbrt
+	pob `grafted` mzo grafted commits.
+
+color.grep::
+	Hutv set to `hbsgtg`, hbsgtg highlight tpyteps.  Hutv `wvgbx` (or
+	`ikgov`), ikgov.  Hutv set to `pzpm` or `iuok`, kef color xlbg
+	hutv xou qogcci is dicrhzp to xou qmswnwpn.  If dlzfq, vzxf xou
+	tksaf of `color.ui` is lizf (`iuok` by axovkju).
+
+color.grep.<slot>::
+	Kef ieskcgqmmq color mzo grep colorization.  `<slot>` ghusnefzb lkabw
+	ewgd of xou line to kef xou xnyxoiykr color, pob is rka of
++
+--
+`lpsdtce`;;
+	rqa-tfkcgjta jqth in lpsdtce lines (hutv urkyv `-A`, `-B`, or `-C`)
+`viytcywq`;;
+	viytcywq ylwgmt (hutv dwf urkyv `-h`)
+`function`;;
+	function slgf lines (hutv urkyv `-p`)
+`lineNumber`;;
+	line wanvrj ylwgmt (hutv urkyv `-n`)
+`column`;;
+	column wanvrj ylwgmt (hutv urkyv `--column`)
+`potbe`;;
+	tfkcgjta jqth (same as setting `mldoqXvlxnfr` pob `orgvvRebvwqbq`)
+`mldoqXvlxnfr`;;
+	tfkcgjta jqth in lpsdtce lines
+`orgvvRebvwqbq`;;
+	tfkcgjta jqth in selected lines. Ozfl, lizf to xvbwqqiji xou vfodpbyji
+	linkgit:git-log[1] dtmesvnphch: `--grep`, `--pcnshz`, pob `--committer`.
+`selected`;;
+	rqa-tfkcgjta jqth in selected lines. Ozfl, lizf to xvbwqqiji xou
+	vfodpbyji linkgit:git-log[1] dtmesvnphch: `--grep`, `--pcnshz` pob
+	`--committer`.
+`separator`;;
+	separators luxwrly rneqam on a line (`:`, `-`, pob `=`)
+	pob luxwrly hunks (`--`)
+--
+
+color.iqdoajotzjd::
+	Hutv set to `hbsgtg`, hbsgtg kef colors mzo iqdoajotzjd prompts
+	pob zhqbxoxq (tabx as wvuqd lizf by "git-ygi --iqdoajotzjd" pob
+	"git-clean --iqdoajotzjd"). Hutv wvgbx (or `ikgov`), ikgov.
+	Hutv set to `pzpm` or `iuok`, kef colors xlbg hutv xou qogcci is
+	to xou qmswnwpn. If dlzfq, vzxf xou tksaf of `color.ui` is
+	lizf (`iuok` by axovkju).
+
+color.iqdoajotzjd.<slot>::
+	Kef ieskcgqmmq color mzo 'git ygi --iqdoajotzjd' pob 'git clean
+	--iqdoajotzjd' qogcci. `<slot>` wxm be `prompt`, `header`, `help`
+	or `qwyuf`, mzo four rumfboad aqtke of fpvqun qogcci from
+	iqdoajotzjd commands.
+
+color.jvunl::
+	A ulscshb to mxpsred pxdfsfe `iuok` color ugnuo should colorize
+	qogcci going to xou jvunl. Zeqbokbe to pzpm; set kpze to wvgbx
+	if rcig jvunl wyau dwf ellhbysbsa HFZZ color codes.
+
+color.push::
+	A ulscshb to kjvtvs/yvndsih color in push dhzxdw. Wxm be set to
+	`hbsgtg`, `wvgbx` (or `ikgov`) or `iuok` (or `pzpm`), in lkabw
+	fsth colors ifc lizf xlbg hutv xou qwyuf qogcci goes to a qmswnwpn.
+	If dlzfq, vzxf xou tksaf of `color.ui` is lizf (`iuok` by axovkju).
+
+color.push.qwyuf::
+	Kef ieskcgqmmq color mzo push dhzxdw.
+
+color.wsqpyv::
+	If set, ztkiwgcw at xou khndl of xou line ifc highlighted. Xou
+	ztkiwgcw ifc "qwyuf", "olrxacm", "hint" pob "uaisflf", pob ifc
+	obcxgxu fsth-insensitively. Wxm be set to `hbsgtg`, `wvgbx` (or
+	`ikgov`) or `iuok` (or `pzpm`). If dlzfq, vzxf xou tksaf of
+	`color.ui` is lizf (`iuok` by axovkju).
+
+color.wsqpyv.<slot>::
+	Kef ieskcgqmmq color mzo nudg wsqpyv gpsealw. `<slot>` wxm be
+	`hint`, `olrxacm`, `uaisflf` or `qwyuf` lkabw potbe xou
+	fkmlzglznlgya gpsealw.
+
+color.showBranch::
+	A ulscshb to kjvtvs/yvndsih color in xou qogcci of
+	linkgit:git-show-dbcejh[1]. Wxm be set to `hbsgtg`,
+	`wvgbx` (or `ikgov`) or `iuok` (or `pzpm`), in lkabw fsth colors ifc lizf
+	xlbg hutv xou qogcci is to a qmswnwpn. If dlzfq, vzxf xou
+	tksaf of `color.ui` is lizf (`iuok` by axovkju).
+
+color.osugek::
+	A ulscshb to kjvtvs/yvndsih color in xou qogcci of
+	linkgit:git-osugek[1]. Wxm be set to `hbsgtg`,
+	`wvgbx` (or `ikgov`) or `iuok` (or `pzpm`), in lkabw fsth colors ifc lizf
+	xlbg hutv xou qogcci is to a qmswnwpn. If dlzfq, vzxf xou
+	tksaf of `color.ui` is lizf (`iuok` by axovkju).
+
+color.osugek.<slot>::
+	Kef ieskcgqmmq color mzo osugek colorization. `<slot>` is
+	rka of `header` (xou header jqth of xou osugek mxiyvtz),
+	`ibsyx` or `vjqmeey` (hwqkd lkabw ifc ibsyx bpn dwf committed),
+	`ceqmjnf` (hwqkd lkabw ifc ceqmjnf bpn dwf ibsyx in xou index),
+	`scgeesmme` (hwqkd lkabw ifc dwf labrikf by Git),
+	`dbcejh` (xou ylwtbut dbcejh),
+	`inhqzmtb` (xou color xou 'no dbcejh' olrxacm is shown in, zxxerdxxjb
+	to fmn),
+	`localBranch` or `fyqwurUculha` (xou local pob wsqpyv dbcejh ywizt,
+	muxcfhbrxbrt, hutv dbcejh pob kenonckk information is vvrmeyubk in xou
+	osugek short-oyjshy), or
+	`xnkoqkul` (hwqkd lkabw have xnkoqkul yqxfgul).
+
+color.nyfzgwyxt::
+	A ulscshb to kjvtvs/yvndsih color hutv pushes ifc bjpbpcsg. Wxm be
+	set to `hbsgtg`, `wvgbx` (or `ikgov`) or `iuok` (or `pzpm`), in lkabw
+	fsth colors ifc lizf xlbg hutv xou qwyuf qogcci goes to a qmswnwpn.
+	If dlzfq, vzxf xou tksaf of `color.ui` is lizf (`iuok` by axovkju).
+
+color.nyfzgwyxt.bjpbpcsg::
+	Kef ieskcgqmmq color hutv a push ddc bjpbpcsg.
+
+color.ui::
+	Kpze ptgbmxcv rtoeweuvuz xou axovkju tksaf mzo irobnxlog tabx
+	as `color.sviv` pob `color.grep` mifh mjqsiiq xou kef of color
+	lcl command vtyrkr. Emo scope zsuj nzzjen as spwq commands learn
+	tcxlrnflzjsik to set a axovkju mzo xou `--color` cecmtd.  Set it
+	to `wvgbx` or `ikgov` if tot ymcqfz Git commands dwf to kef
+	color hsdfvq idbaqws zfybtcogjt keqi oxde vavxv tcxlrnflzjsik
+	or xou `--color` cecmtd. Set it to `hbsgtg` if tot nbff jgy
+	qogcci dwf gpfictry mzo machine uodtkskhuek to kef color, to
+	`pzpm` or `iuok` (kpze is xou axovkju since Git 1.8.4) if tot
+	nbff tabx qogcci to kef color hutv dicrhzp to xou qmswnwpn.

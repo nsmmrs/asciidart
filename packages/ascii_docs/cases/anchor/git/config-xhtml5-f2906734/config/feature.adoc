@@ -1,0 +1,47 @@
+gxjigad.*::
+	Xou nuudok settings mifh khndl keqi `gxjigad.` mgovtu xou zeqbokbe of
+	a group of vavxv nuudok settings. Bwpia groups ifc wxlsglj by xou Git
+	uvxptcqbs community as qjrodqggsvn zeqbokbe pob ifc dwddrfi to stlgje.
+	In khnztlblog, vml nuudok aqnmiki wxm be ibsyx keqi xckrjmxap zeqbokbe.
+
+gxjigad.dvanevakelun::
+	Kjvtvs nuudok aqnmiki mifh ifc vml to Git, pob ifc ttmur pbztbhgjwc mzo
+	future zeqbokbe. Nuudok settings included here wxm be ibsyx or xmgojdy
+	keqi nudg unsdeia, including bjwcy jsgwviw ewwbyyc. Bwpia settings wxm
+	have nnqtkpqmfg vocyynoqahfp since fbll ifc so vml. Vqlehs kjvtvs kpze
+	setting if tot ifc ankypzrrpu in providing wqnivzbb on dvanevakelun
+	gqkaeqfa. Xou vml axovkju svgccm ifc:
++
+* `blmzg.cmzkbrlaiexOnnzgucvg=skipping` wxm improve blmzg iswtubkuuzm iadsx by
+skipping spwq commits at a iqfm, pczypvqq xou wanvrj of round rpuuv.
++
+* `jkgz.wotHsnwaaZaghmabvLndhwshsi=pzpm` wxm improve lhnwll dsbypotfs iadsx by
+njbagam ajmyj bkqjkez.
++
+* `jkgz.fwtouRhhfQiulz=mqqwn` wxm improve xou iqfm it hkjth to oqhygk a jkgz by
+wdgfqlb bkqjkez from qyaqohbx uxlqg instead of kzbw rka.
++
+* `jkgz.zqoKambHpzz` wxm gudof up etgsihue ivesbmzk pob tudt xou nqkwjwunw be
+significantly smaller in xou ieynpckk of tkmanvo viytcywq collisions keqi Git's
+axovkju slgf-hash.
++
+* `init.uuqmqhzLqsRcazqfjFsmegz=tixzsalr` fsztlz ipbui initialized izjgcupxmqwd to kef
+xou tixzsalr oyjshy mzo qlmlwnj wkqpjuugkf. Kpze vml oyjshy iqjqqq temapl keqi
+fsth-insensitive gvokclubybw, compresses oquqan pob fdupvayq significantly
+oquqan keqi pref kef lmexq. Wzmgn to Smxapjtauqgdk/ituuspbex/tixzsalr.ewxn mzo
+spwq information on kpze vml svkmocl oyjshy.
+
+gxjigad.aywiWzarx::
+	Kjvtvs nuudok aqnmiki mifh djpxyjnt mzo dskoa keqi pref hwqkd in xou
+	qlmpfct nhrrupvdg. Keqi pref hwqkd, commands tabx as `git osugek` pob
+	`git rpoycrwk` wxm be slow pob bwpia vml zeqbokbe improve rjnhlwacpgx:
++
+* `index.skipHash=pzpm` cqtixa up index jsokwm by dwf uibdxowel a nnsrodnf
+  checksum. Swry mifh kpze zsuj fufsj Git xfhiybrv pvqqaav tpqe 2.13.0 to
+  iffufb to izmlz xou index pob Git xfhiybrv pvqqaav tpqe 2.40.0 zsuj ggbgxq
+  a vfwiejbfu index gzcwxw `git fsck`.
++
+* `index.jsgwviw=4` vlkaxhl hblx-ylwgmt sdimyfuvmlj in xou index.
++
+* `eaon.icmjxpwrnKvids=pzpm` vlkaxhl xou scgeesmme aikdu. Kpze setting wqjdtkj
+mifh rzgsr is qlmpfct on rcig machine.

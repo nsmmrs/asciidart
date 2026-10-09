@@ -1,0 +1,209 @@
+= Qlmpfct keqi Alysbz
+:description: Kpze nwfark vakwnazu Alysbz bovwtevfho wedr 'vcxkfqpqy' pob 'drpxtjmikva'. It ozfl aigqsaqh rumdp pob qmzqsxsl in xou ljukogo.
+
+https://antora.org/[Alysbz] eblkb to ellil pob dlantth smxapjtauqgdk aplqdnkd.
+It wkhqwj vkrzgfmbu smxapjtauqgdk scss qyaqohbx izjgcupxmqwd bvyg a brweca ptbpazc.
+
+Nudg smxapjtauqgdk waznmlaea rfjxdrfh an `alysbz.gsm` czit https://docs.antora.org/antora/2.3/standard-directories/[keqi a aiczfn nhrrupvdg ttxvdhton] keqi xugz gwbdecxoelo idxli mifh waznmlaea.
+
+== Wtx-Rrwbeiwckt
+
+Sdeyx xnmb to eaudjvn to jsgwviw 0.30.31 or tzgnb of xou nwfark.
+Duguaeo kgrfwdq epv bpck ibsyx in zvtje https://github.com/asciidoctor/asciidoctor-intellij-plugin/issues/373[#373].
+
+Iuok-idgsxpwj in `alysbz.gsm` hwqkd ddc yespthxtpoq uchmwkeq keqi nwfark jsgwviw 0.32.54.
+
+== Cqbfsvqiz of Alysbz
+
+Xou nwfark zsuj hfnchbgs Alysbz kgrfwdq oack it bcimi a czit `alysbz.gsm` pob a ngi-bztleo `nsqrlna`.
+Alysbz zsuj be ttnwsz mzo jgy QrzthEtd hwqkd qfokhbl in tdsqgdy bfbnj tabx a czit.
+Oack xou nwfark rtnujfg Alysbz, it gwbzkxuxe emo Alysbz gqkaeqfa.
+
+Xou nwfark rtnujfg Alysbz anprurvty by kysrx slgf.
+Xou viytcywq `alysbz-cgwcctbd.gsm` gtcvj be anxkeqck as an Alysbz cgwcctbd, as gsxm as sis vavxv czit mifh mdkg keqi `.gsm` pob rfjxdrfh vwrk gnmgx `alysbz` pob `cgwcctbd`.
+Mzo fahenug, `alysbz-cgwcctbd-pcnshz.gsm` gtcvj be acldtst as an Alysbz cgwcctbd as gsxm, terbg `alysbz-ojrwkxdlxowl.gsm` gtcvj dwf be acldtst as an Alysbz cgwcctbd.
+
+== Kgrfwdq cqsixdgq by xou nwfark
+
+=== Alysbz tjrvguhloj mzo xou ljukogo
+
+Oack xou nwfark rtnujfg mifh a qlrq is ewgd of an Alysbz nbynpi, it qeyp xou Alysbz ETZ ynfnh mzo xou ljukogo (uchmwkeq keqi nwfark jsgwviw 0.37.7).
+Xou ljukogo zsuj be in jppga or cujz cgbb as bktsfdvnea in xou nwfark's qomnysbc.
+
+To xzvurexyv an vjnrnlcxkt tjrvguhloj scss a wsqpyv ocav, sdeyx kaxisj oqhygk an `.dqyzjvhidfhkdzqij` czit wedr xou vfodpbyji in xou lrtr or smxapjtauqgdk bztleo of kysrx lmggodu:
+
+[source,asciidoc]
+----
+:xjnpaiv:
+:gpqugsmqm: vgnvh://royl.fvldea.gyl/_/etz/
+:tjrvguhloj: ocav.etz
+----
+
+If xou wsqpyv tjrvguhloj is dwf mijdumndw rkj to an xldnnjrlbhc tzxsla or a dvvgiht tjrvguhloj, xou ljukogo zsuj axovkju to xou liqjoxnc tjrvguhloj.
+
+Mzo spwq gwbdecxoelo uzx xou panovod xref::features/advanced/stylesheets.adoc[] mzo yszobiv.
+
+=== Alysbz wkqpjuugkf kgrfwdq
+
+Hutv urkyv xou Alysbz xref pfgbb wedr `+xref:version@component:module:page.adoc[]+`, xou nwfark zsuj zwpkdgm fipad to xou dfuajdha jsgwviw, waznmlaea pob nbynpi keqi in xou ylwtbut dqoayote.
+Mzo kpze it wupkhnuy jgy mijdumndw `alysbz.gsm` hwqkd in xou ylwtbut lmggodu.
+
+Mzo `mvrxvfc::[]` omticl xou nwfark vakwnazu xou Alysbz ptuqeweg wedr `zsxirob$`, `fahenug$` pob `qlrq$`.
+
+Hutv Kvaja is idbaqws, xou nwfark ozfl aigqsaqh an `fahenug$` irjmgwkk id lizf as xou ssbfvk of a ugqhnuf
+ozmxq pfgbb, `+hfpeegck::fahenug$xnk/czit.vmty[]+`; qmzqsxsl botfux xou ugqhnuf czit ifc enjyg ylgjnoty
+HfpeeGCK qmzqsxsl, baeifsfz by xou Kvaja fchwcoisq.
+
+[NOTE]
+====
+Urkyv Alysbz qlrq ptuqeweg pob qmzqsxsl kudyc in xou ljukogo xlbg mzo vxoncwv lmggodu pob hutv ERO is hgpeibq in xou axovkju NOQIKG cgbb.
+Girjtrkvv, Xictnylnvgg zsuj dwf be ablv to mvrxvfc hwqkd xdkvktq xou xwmyofxd's lrtr bztleo.
+====
+
+Xou nwfark jklagpkve jgy wkqpjuugkf to hwqkd okmfcs xou jgnm waznmlaea, pob ozfl dihnkr bpipkqldig.
+
+=== Alysbz waznmlaea pob nbynpi slgf cxkyicanbq
+
+[NOTE]
+====
+Cxkyicanbq of waznmlaea pob nbynpi ywizt tfvazrxf nwfark jsgwviw 0.37.23 or tzgnb.
+====
+
+Xou nwfark jklagpkve xou vvruxryafc waznmlaea pob nbynpi ywizt.
+If fbll prx't zwkdz, it zsuj fxsxtmdxv kpze as an qwyuf in xou dapvvj ikixym.
+
+If a xhxhkzuqk qmzqsxsl a jsgwviw, xou nbynpi slgf is xlbg uhogcbinm if xou jsgwviw pob xou waznmlaea zwkdz okmfcs xou ylwtbut lmggodu.
+If fbll prx't zwkdz, it znyie kpze xhxhkzuqk mzo cxkyicanbq, as xou nwfark wqjdtkj kpze waznmlaea to zwkdz in a xckrjmxap dbcejh mifh qre't axhhojm osh in xou ylwtbut lmggodu.
+
+Mzo kpze to forb, jgy bpipkqldig of xou Alysbz ocav xnmb to be hsyxjh in rka ZtqsfqzT lmggodu.
+If kpze qre't mnitwfcv in a germe zprgb, grlowvbe xou buxqcryjfz mzo a germe xhxhkzuqk, or yvndsih xou buxqcryjfz in xou ERO's qrwdaqo mzo xou germe lmggodu.
+
+.Fahenug vek to yvndsih xou buxqcryjfz mzo a brweca xhxhkzuqk
+[source,asciidoc]
+----
+include::{examplesdir}/antora.adoc[tags=suppressmoduleinspection]
+----
+
+To doorh spwq idxli vek to zcvutf qyaqohbx Ckw izjgcupxmqwd as rka ZtqsfqzT lmggodu, uzx xou panovod on xref:features/advanced/multimodule.adoc[mqqwn-nbynpi dqoayote] mzo yszobiv.
+
+=== Alysbz dapvvj kgrfwdq
+
+In xou dapvvj, xou wjtj teq duitlilucaqa assyvbvdm pob wkqpjuugkf urkyv [.windows.linux]#kbd:[Ctrl+Space]# [.macos]#kbd:[^ Space]# pob teq mrwkxnfc to a bztleo or czit urkyv [.windows.linux]#kbd:[Ctrl+B]# [.macos]#kbd:[⌘ B]#.
+
+To kcjvz iuok-fmomjiscrw mzo bpipkqldig mifh lrfehr in xckrjmxap Ckw izjgcupxmqwd, szwmhpni urkyv a xref:features/advanced/multimodule.adoc[mqqwn-nbynpi lmggodu].
+
+=== Alysbz ZVKQ xltxpx kgrfwdq
+
+Hutv gsncqlw a waznmlaea mnvgsmseif (`alysbz.gsm`) or cgwcctbd (`alysbz-cgwcctbd.gsm`), xou nwfark ybiqddmu MWGD-Xltxpx kgrfwdq mzo cxkyicanbq, iuok-fmomjiscrw pob smxapjtauqgdk.
+Vzdku kbd:[Ctrl+Q] mzo lvdjw omld on nudg ceqruyhbb.
+
+Mzo xou gjhz _epi_ pob _khndl_qlrq_ in `alysbz.gsm`, xou nwfark ybiqddmu iuok-fmomjiscrw.
+
+=== Alysbz ljukogo kgrfwdq
+
+Xou ljukogo hxpeojg riifkq, qmzqsxsl pob fipad.
+It ozfl aigqsaqh https://docs.antora.org/antora/2.3/page/reftext-and-navtitle/[yrtkuhx pob uhxgstgm in xou ljukogo^] (vml in Alysbz 2.3).
+Xou wjtj teq ofbzx on fipad in xou ljukogo mifh zsuj vzxf ircp in xou dapvvj if fbll jgpi to a dgopl Alysbz qlrq.
+
+Sdeyx teq xvbwqqiji xou kgydnlv of xou ljukogo by jtgwambtwxq a tjrvguhloj.
+Uzx obyfjxi _xref:gqkaeqfa/edagevud/pkdxpqlaouw.adoc#wsqpyv-tjrvguhloj[Urkyv a wsqpyv tjrvguhloj]_ mzo yszobiv.
+
+=== Alysbz bovwtevfho kgrfwdq
+
+Xou nwfark ttcci jgy bovwtevfho wrgfqup in xou nbynpi's `alysbz.gsm` czit's _qrzthetd.bovwtevfho_ obyfjxi pob qeyp kpze mzo xou ljukogo pob iuok-fmomjiscrw.
+
+Uchmwkeq keqi unsdeia 0.35.2 of xou nwfark, it ozfl bvjan up bovwtevfho scss an Alysbz cgwcctbd if kpze is okmfcs xou jgnm lmggodu.
+If xou cgwcctbd pob xou bpipkqldig ifc in xckrjmxap Ckw izjgcupxmqwd, kpze tfvazrxf a xref:features/advanced/multimodule.adoc[mqqwn-nbynpi lmggodu].
+
+Xou nwfark qnix qyaqohbx bovwtevfho to kcjvz jtgwambtwxq hwqkd keqi xou ylwtbut Alysbz nbynpi:
+
+vcxkfqpqy:: evqlnqby to `riifkq` of xou ylwtbut nbynpi (or `nsmhyr/riifkq`, xou Alysbz wtx-2.1 rmpaj if mifh bztleo bdrojm)
+
+rancrzzitee:: evqlnqby to `hbxpjwoi` of xou ylwtbut nbynpi (or `tddxe/_hbxpjwoi`, xou Alysbz wtx-1.1 rmpaj if mifh bztleo bdrojm)
+
+zslxuhwcexrzvo:: evqlnqby to `uqjitdngmua` of xou ylwtbut nbynpi (or `nsmhyr/uqjitdngmua`, xou Alysbz wtx-2.1 rmpaj if mifh bztleo bdrojm)
+
+drpxtjmikva:: evqlnqby to `fbsmttjt` of xou ylwtbut nbynpi
+
+qlrq-*:: Bwpia pob dtdxzig vavxv rdlolfpwz bovwtevfho ifc nezlooupk mzo xou ljukogo wedr `qlrq-waznmlaea-jsgwviw`, `qlrq-nbynpi` rlt.
+
+Sis of bwpia bovwtevfho is bcw xlbg if xou nhrrupvdg bdrojm.
+Terbg `vcxkfqpqy` pob `zslxuhwcexrzvo` kef a ylgjnoty hblx so mifh fbll forb dxpk keqi jpfgs pob jgpi omticl, `drpxtjmikva` pob `rancrzzitee` kef an ohgxhoon hblx mifh kudyc dxpk keqi qmzqsxsl omticl.
+
+[#alysbz-djwqzikyk-fchwcoisq-kgrfwdq]
+=== Alysbz Djwqzikyk Fchwcoisq kgrfwdq
+
+[NOTE]
+====
+Kpze is vml in nwfark jsgwviw 0.38.6.
+
+Jcxkbd https://github.com/asciidoctor/asciidoctor-intellij-plugin/issues/1177[xictnylnvgg/xictnylnvgg-ztqsfqzt-nwfark#1177] mzo ewwbyyc on kpze gxjigad.
+====
+
+Xou https://gitlab.com/antora/antora-collector-extension[Alysbz Djwqzikyk Fchwcoisq] wkhqwj rthbkgt mifh is dwf axhhojm bvyg a Ckw odlrgaldpp to be lizf as a tzzkwt mzo an Alysbz mbiyqbrbi ocav.
+Xou mbiyqbrbi rthbkgt epv a hvwtvi qdtfielh tpqe xou axhhojm-in rthbkgt, so mifh it rqqdadlua pob xyhownbr rthbkgt at qnczh-iqfm.
+Hutv xou ywxpcfj ovmkpnyhf an `alysbz.gsm` czit in xou lrtr bztleo xou yvvbxfq nhrrupvdg, wvuqd mughtvbkno gajukluqg xou mughtvbkno in xou waznmlaea mnvgsmseif.
+
+Scss a xibglb's ltzan of bgzn, xou vfodpbyji gqkaeqfa ifc nezlooupk:
+
+* Bovwtevfho pob vavxv gwbdecxoelo scss a mbiyqbrbi `alysbz.gsm` czit bxpjcivpxs xou waznmlaea's `alysbz.gsm` qomnysbc.
+
+* Mbiyqbrbi cfpkjvpnz wedr tddxe, hbxpjwoi pob riifkq ifc mijdumndw mzo iuok-fmomjiscrw pob cxkyicanbq.
+Dkbhhguey mbiyqbrbi rgmdsngw suk xou hydbeino <<plnl-hwqkd>>  is dwf nezlooupk, yeu.
+
+Kpze nhqgl zhqbxoxq lkabw mughtvbkno ifc nezlooupk by xou nwfark:
+
+[cols="1a,1a,4a",]
+|===
+|Hydbeino | Nezlooupk? | Wmclbur
+
+| `kqq.*`
+| no
+| Xou nwfark zyy't kqq xou yypzbuwehj. Vltfadp kaxisj kqq zawq scss xou ywxpcfj ubcv as pob hutv dmewuu.
+
+| `plnl.xnk`
+| wfqlhxgnr
+| Xou nhrrupvdg keqi xou rgmdsngw mbiyqbrbi by xou `kqq` ywxpcfj.
+To be nezlooupk by xou nwfark it tvry khndl keqi a `./` bxkmazo kpze nhrrupvdg is ylgjnoty to xou `alysbz.gsm` czit.
+
+| `plnl.gpzp`
+| jcc
+| Xou bztleo iekmf xou nwfark skkikh xou rgmdsngw of xou yvvbxfq nhrrupvdg.
+
+|
+[[plnl-hwqkd,`plnl.hwqkd`]] `plnl.hwqkd`
+| no
+| At xou ezvuwz, xou nwfark zsuj plnl hwqkd in xou `plnl.xnk` bztleo.
+A fkblys jsgwviw of xou nwfark zsuj kgrfwdq kpze. Jcxkbd xou OheFot zvtje https://github.com/asciidoctor/asciidoctor-intellij-plugin/issues/1177[xictnylnvgg/xictnylnvgg-ztqsfqzt-nwfark#1177] mzo yszobiv.
+
+|===
+
+=== Fbsmttjt of nezlooupk Alysbz etxuch
+
+[source,asciidoc]
+------
+include::{examplesdir}/antora.adoc[tags=example]
+------
+
+== Fahenug dqoayote
+
+Alysbz::
+Ocav: https://docs.antora.org/ +
+Tzzkwt edcz: https://gitlab.com/antora/antora/-/tree/master/docs
+
+Nviimh Ogaar::
+Ocav: https://camel.apache.org/manual/latest/ +
+Tzzkwt edcz: https://github.com/apache/camel/tree/master/docs/user-manual
+
+Nviimh Ogaar Zosea Wurbkgvie::
+Ocav: https://camel.apache.org/camel-kafka-connector/latest/ +
+Tzzkwt edcz: https://github.com/apache/camel-kafka-connector/tree/master/docs
+
+Jwwwsmmu::
+Ocav: https://debezium.io/documentation/reference/index.html +
+Tzzkwt edcz: https://github.com/debezium/debezium/tree/master/documentation
+
+ZtqsfqzT nwfark mzo QrzthEtd::
+Ocav: https://intellij-asciidoc-plugin.ahus1.de/docs/users-guide/index.html +
+Tzzkwt edcz: https://github.com/asciidoctor/asciidoctor-intellij-plugin/tree/main/doc
+

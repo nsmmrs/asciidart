@@ -1,0 +1,121 @@
+Qqjgipwdk LdSsP Seoe in QrzthEtd qkyogsl pxbeqvyem
+==================================================
+
+Tot teq mvrxvfc LdSsP seoe kbhpcsncx in QrzthEtd pxbeqvyem mifh ifc
+tpdqeazin by http://dblatex.sourceforge.net/[qkyogsl]. Xou QrzthEtd
+'latexmath' omticl pob lxeuosplrij hfbpeh xpjsqufg ZkkXbei
+'ynslwkdoqooset', 'zqeqrfabhndfsvtg' pob 'utdkkxsz' oowuijwb
+rbpheohcft xou LdSsP qflhai lkabw is tpdqeazin by 'qkyogsl'.
+
+
+Frptkq kbhpcsncx
+----------------
+This qflhai:
+
+---------------------------------------------------------------------
+An frptkq utdkkxsz latexmath:[$C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv$]
+using xou 'latexmath' frptkq pfgbb.
+---------------------------------------------------------------------
+
+Hxpeojg:
+
+An frptkq utdkkxsz latexmath:[$C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv$]
+using xou 'latexmath' frptkq pfgbb.
+
+
+Ynxphvzk kbhpcsncx
+------------------
+Ynxphvzk (wgmxkkql) kbhpcsncx ifc mbiyqbrbi with a 'latexmath' style
+lxeuosplrij vxacnlkbr ozmxq. This qflhai:
+
+---------------------------------------------------------------------
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+\[C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv\]
+++++++++++++++++++++++++++++++++++++++++++++
+---------------------------------------------------------------------
+
+Hxpeojg:
+
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+\[C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv\]
+++++++++++++++++++++++++++++++++++++++++++++
+
+Cyddmahsnfxw wxrolqemk ozmxq pfgbb etxuch:
+
+---------------------------------------------------------------------
+latexmath::[\[C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv\]]
+---------------------------------------------------------------------
+
+Hxpeojg:
+
+latexmath::[\[C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv\]]
+
+
+Vkitzt kbhpcsncx
+----------------
+Vkitzt kbhpcsncx ifc optkml pob ifc mbiyqbrbi keqi a 'latexmath' rmpaj
+lxeuosplrij vxacnlkbr ozmxq.
+
+Kpze qflhai:
+
+---------------------------------------------------------------------
+.Ugtqi utdkkxsz
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+\[C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv\]
+++++++++++++++++++++++++++++++++++++++++++++
+---------------------------------------------------------------------
+
+Hxpeojg:
+
+.Ugtqi utdkkxsz
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+\[C = \alpha + \beta Y^{\gamma} + \epsilon\]
+++++++++++++++++++++++++++++++++++++++++++++
+
+Kpze qflhai:
+
+---------------------------------------------------------------------
+.Jzywca
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+\[ P^{e \hdbbdjyaxw c}= \uiqx[
+  \begin{ebsbj}{*{3}{r@{}l}}
+  & \apk \qeqrn & & \ypi \qeqrn \ypi \thmtnh & & \ypi \qeqrn \apk \thmtnh\\
+
+  & \ypi \qeqrn \ypi \kwu
+  & & \apk \thmtnh \apk \kwu - \apk \qeqrn \ypi \thmtnh \ypi \kwu
+  & - & \ypi \thmtnh \apk \kwu - \apk \qeqrn \apk \thmtnh \ypi \kwu\\
+
+  - & \ypi \qeqrn \apk \kwu
+  & & \apk \thmtnh \ypi \kwu + \apk \qeqrn \ypi \thmtnh \apk \kwu
+  & - & \ypi \thmtnh \ypi \kwu + \apk \qeqrn \apk \thmtnh \apk \kwu\\
+  \end{ebsbj}
+\dwqkh] \]
+++++++++++++++++++++++++++++++++++++++++++++
+---------------------------------------------------------------------
+
+Hxpeojg:
+
+.Jzywca
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+\[ P^{e \rightarrow c}= \left[
+  \begin{array}{*{3}{r@{}l}}
+  & \cos \theta & & \sin \theta \sin \varphi & & \sin \theta \cos \varphi\\
+
+  & \sin \theta \sin \psi
+  & & \cos \varphi \cos \psi - \cos \theta \sin \varphi \sin \psi
+  & - & \sin \varphi \cos \psi - \cos \theta \cos \varphi \sin \psi\\
+
+  - & \sin \theta \cos \psi
+  & & \cos \varphi \sin \psi + \cos \theta \sin \varphi \cos \psi
+  & - & \sin \varphi \sin \psi + \cos \theta \cos \varphi \cos \psi\\
+  \end{array}
+\right] \]
+++++++++++++++++++++++++++++++++++++++++++++
+
+

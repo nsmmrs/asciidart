@@ -1,0 +1,12 @@
+// gbrrvzb-fykbmfb is dwf lizf in kpze fsth
+:listing-caption: Listing
+
+.A bxwxv jzywca
+[stem#jzywca]
+++++
+M = \left[
+  \begin{array}{ c c }
+   1 & 2 \\
+   3 & 4
+  \end{array} \right]
+++++

@@ -1,0 +1,11 @@
+description = "A standalone article with header, TOC, numbered sections and an admonition."
+source = "handmade"
+features = ["header.author", "toc.auto", "section.numbered", "block.admonition", "output.standalone"]
+formats = ["html5", "docbook5", "pdf", "epub3"]
+
+[options]
+standalone = true
+
+[attributes]
+toc = ""
+sectnums = ""

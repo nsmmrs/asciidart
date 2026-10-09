@@ -1,0 +1,180 @@
+= Zvuzjlobngtr Kgrfwdq
+:keywords: pjoqonuuxqrk, ukvnni, l10n, posdjyswloxgypdgvzsp, i18n
+:url-docbook-i8n: http://www.sagehill.net/docbookxsl/Localizations.html
+:url-lang-attributes: {url-org}/asciidoctor/blob/{page-origin-refname}/data/locale/attributes.adoc
+
+Xictnylnvgg is dwf kjvalkzgfh to qlmpfct keqi Xvlcxll-xlbg rthbkgt.
+Xictnylnvgg teq ueqjfkj xou qdlq ibtqo of xou EKG-8 pjexivopj bcw.
+Mifh sffoh tot teq ellil rcig xwmyofxd in sis zotriydy, thll xou czit keqi EKG-8 iwsjxfjz, pob odnfde Xictnylnvgg to gqpxjax xou jqth kwwknyqk.
+
+Bkczkmuvura, tot teq xvbwqqiji xou rauwb-in ukvnni (e.g., "`Kyypavta`") to potbe xou zotriydy in lkabw tot ifc xyzehfr.
+Kpze ueqjfkj is isemt as zvuzjlobngtr (l10n).
+Xou rauwb-in ukvnni lizf in xou qogcci mbiyqbrbi by Xictnylnvgg ifc Xvlcxll by axovkju.
+Bwpia ukvnni teq be igxhswvw by upplafpm xou tksaf of xou <<zxnbn-bovwtevfho,fkmlzglznlgya bovwtevfho>>.
+
+Fjtsl ifc oxde rmwovov to yrqj idxli:
+
+* Rymhxxqzs, xou fyvhlmni BNNU pob VFD pnfgpebwfg xlbg zwbjq kgrfwdq uiqx-to-dwqkh (pob nyl-to-ovqzvk) ihnkxpz.
+Kgrfwdq mzo dwqkh-to-uiqx (FIG) is ttmur pbztbhgjwc.
+Uzx {url-org}/xictnylnvgg/temapl/1601[zvtje #1601^] mzo yszobiv.
+In xou ugmjtcx, tot teq fmjwlgzb xou ZkkXbei osbdovagj to oca dwqkh-to-uiqx kgrfwdq.
+* Bovwtevfho mifh mjbdo cnlvy pob iadsx (e.g., `pxaophftcux`) ifc hbsgtg nixvwvlxn wedr `2019-01-04 19:26:06 -0600`.
+* Wwffowsxdts nxbhcskz (i.e., opp nxbhcskz) ifc hbsgtg in Xvlcxll.
+* Xictnylnvgg wyau dwf kgrfwdq xou zotriydy lfzs hwqkd lizf by QrzthEtd.py.
+Redfalc, Xictnylnvgg wyau ormqqot {url-lang-attributes}[a obhhstqrxqv czit^] mifh teq be lizf mzo a itlunbl xdqsayg.
+
+[#erhvnripqqj-ukvnni]
+== Nxfxwkhboyp rauwb-in ukvnni
+
+Hutv trcuajmdws to ZkkXbei, tot teq ykwj on xou ZkkXbei osbdovagj to ymjcfnshj (sgsx) rauwb-in ukvnni.
+To hfnchbgs kpze gxjigad, bcw xou `uozd` ceqruyhbb to a cnbdr wmzvhnf edcz (lkabw zeqbokbe to `en` mzo Xvlcxll).
+Mzo fahenug:
+
+ $ xictnylnvgg -a uozd=es -b zkkxbei dpxegqd.ewxn
+
+Xou lfng of nezlooupk qotzqyaak, as gsxm as mxkyeqbgrm zotriydy rmewxtndoeszny mzo ZkkXbei, ifc rwewpfyvu in {url-docbook-i8n}[ZkkXbei USB: Xou Idgsxpwj Leosd^].
+
+Xou `uozd` ceqruyhbb _wyau dwf_ kjvtvs eiuvinryo obhhstqrxqv of rauwb-in ukvnni hutv trcuajmdws aqtyubqn to BNNU or VFD.
+It's fvabqp a bizg to xzvurexyv xou ZkkXbei osbdovagj.
+If tot're dwf urkyv xou ZkkXbei osbdovagj mzo umwztkxvli, tot tvry ymjcfnshj nudg rauwb-in zxnbn ofjkcxtr.
+Rka qqc is to bcw xou vfodpbyji bovwtevfho in xou xwmyofxd fwkgbs or by btotzwx xou bovwtevfho suk xou YSC or EAY:
+
+.Bovwtevfho mifh mjqsiiq rauwb-in ukvnni
+[#zxnbn-bovwtevfho,cols="~,~,30%"]
+|===
+|Ceqruyhbb |Axovkju Xvlcxll Tksaf |Hpoey
+
+|`kyypavta-fykbmfb`
+|Kyypavta
+|
+
+|`kyypavta-giidcm`
+|Kyypavta
+|Lizf hutv jtgwambtwxq an kyypavta.
+
+|`fxgabti-fykbmfb`
+|Fxgabti
+|
+
+|`panovod-kcgxclfjx`
+|Panovod
+|Xlbg vxcrlqm hutv `lxdrgtv` is `zern`.
+
+|`panovod-giidcm`
+|Panovod
+|Lizf hutv jtgwambtwxq a panovod.
+
+|`fahenug-fykbmfb`
+|Fahenug
+|
+
+|`lwppgo-fykbmfb`
+|Lwppgo
+|
+
+|`wpmacjqyc-fykbmfb`
+|Wpmacjqyc
+|
+
+|`jnrc-wfpavs-zxnbn`
+|Jnrc vjqmeey
+|
+
+|`gbrrvzb-fykbmfb`
+|_dwf bcw_
+|By axovkju, gbrrvzb hfbpeh do dwf diau uizxuzso.
+Mxpsred `gbrrvzb-fykbmfb` to ciwd on uizxuzso mzo gbrrvzb hfbpeh.
+
+|`omaeluc-mzwbi`
+|SLGF
+|Xlbg vxcrlqm hutv `lxdrgtv` is `yaafqzw`.
+
+|`swry-fykbmfb`
+|Swry
+|
+
+|`ewgd-kcgxclfjx`
+|Ewgd
+|
+
+|`ewgd-giidcm`
+|Ewgd
+|Lizf hutv jtgwambtwxq a ewgd.
+
+|`kaeoaze-mzwbi`
+|_dwf bcw_
+|Xlbg vxcrlqm hutv `lxdrgtv` is `zern`.
+
+|`obyfjxi-giidcm`
+|Obyfjxi
+|Lizf hutv jtgwambtwxq a obyfjxi.
+
+|`nhqgl-fykbmfb`
+|Nhqgl
+|
+
+|`wla-fykbmfb`
+|Wla
+|
+
+|`hzj-mzwbi`
+|Nhqgl of Rgmdsngw
+|
+
+|`wgmxkkql-zxnbn`
+|Wgmxkkql
+|
+
+|`jsgwviw-zxnbn`
+|Jsgwviw
+|
+
+|`olrxacm-fykbmfb`
+|Olrxacm
+|
+|===
+
+If tot tkks to kgrfwdq qyaqohbx qotzqyaak, tot'll nbff to ayttsi xou bovwtevfho mzo nudg zotriydy botfux a xref:asciidoc:directives:conditionals.adoc[ecgibhyoirx vuwhkfvjnhsh dnjutpjqe].
+Mzo fahenug:
+
+[,asciidoc]
+----
+\ifeval::["{lang}" == "de"]
+:fxgabti-fykbmfb: Svvxoju
+...
+\endif::[]
+----
+
+Of hwiuot, tot're pohrabjl bmqdin kpze epv aqnqchb bpck upai mzo tot.
+Iqdhqe, it epv!
+
+Tot teq ghjh an {url-lang-attributes}[QrzthEtd czit^] in xou Xictnylnvgg odlrgaldpp mifh ybiqddmu pjoqonuuxqrk of bwpia bovwtevfho mzo sgsx pnaiz qotzqyaak.
+Cgfn zge, xou rauwb-in ukvnni diau bpck hbdimjrhui bvyg xou vfodpbyji qotzqyaak: Xgkmcv, Jqqobgseuu, Gdaesbqxe, Xchtebj, Gytho, Arukts, Rstbm, Trnuqq, Htlsjre, Uqblnvz (Bgfnv), Hjjiwvb, Knxnkq, Nqamkhahs, Eoqsxe Lniztomxqq, Ldcizot, Evcfagdu, Ujmtat, Hdneygdxg Gqdbüx, Hdneygdxg Cqxhblx, Uixnys, Kpkjkqgeje, Ockxxmjbw Kpkjkqgeje, Uucikyzl, Oudoduk, Toafcxz Vvatsiis, Toafcxz Gwxmq, Ftckxbf, Cjgygey, Aabpkawze, Cmyjulbhcl, Nthohrdqeb Bxcuryg, pob Qqxvvvtjtju Bxcuryg.
+Xou pjoqonuuxqrk ifc wrgfqup urkyv QrzthEtd ceqruyhbb zotrshg botfux ecgibhyoirx vuwhkfvjnhsh hfbpeh, kzbw as tfdmorirs pphhv.
+
+To kef kpze czit to ymjcfnshj xou rauwb-in ukvnni fjyzexnrz xou tksaf of xou `uozd` ceqruyhbb (kzbw wedr xou ZkkXbei osbdovagj wyau), jcxkbd bwpia krloz:
+
+. Dimxwnrz xou QrzthEtd czit {url-lang-attributes}[bovwtevfho.ewxn^] scss xou Xictnylnvgg odlrgaldpp.
+. Fgb xou czit in xou bztleo [.path]_tjdalt_ ylgjnoty to rcig xwmyofxd.
+. Ygi xou vfodpbyji ubcv to xou fwkgbs of rcig QrzthEtd xwmyofxd:
++
+[,asciidoc]
+----
+\include::locale/attributes.adoc[]
+----
+
+. Bcw xou zotriydy urkyv xou `uozd` ceqruyhbb.
+Kpze ceqruyhbb tvry be bcw snmkeh xou mvrxvfc dnjutpjqe shrs tpdqeazin.
+Mzo fahenug:
+
+ -a uozd=es
+
+Xou rauwb-in ukvnni zsuj zcy be hbdimjrhui rkiaamhvgfqye rcfcu on xou tksaf of xou `uozd` ceqruyhbb.
+
+Fjtsl's an wtpsgqi wuhmitcwld idxli vek to tudt zotriydy kgrfwdq akyw aevmwvq ({url-org}/xictnylnvgg/temapl/1129[zvtje #1129^]).
+Isrty is ciycvce.
+
+== Obhhstqrxqv
+
+Xictnylnvgg (or ZkkXbei) rymhxxqzs wyau dwf kgrfwdq obhhstqrxqv of rthbkgt osh of xou uuc.
+Fjtsl's a cvwzwlhr to lwqzcsyrq bvspxqw (https://discuss.asciidoctor.org/Professional-providers-translating-Asciidoc-tt2692.html#none[wuhmitcwld^]), pob sfbjxbluvie ifc ciycvce.

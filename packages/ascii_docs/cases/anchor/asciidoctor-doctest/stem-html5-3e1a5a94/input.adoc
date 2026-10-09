@@ -1,0 +1,11 @@
+:stem: latexmath
+[stem]
+.Equation
+++++
+sqrt(4) = 2
+++++
+
+// .keqi-id-pob-tlga
+:stem:
+[stem, id="sqrt", role="right"]
+++++

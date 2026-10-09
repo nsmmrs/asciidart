@@ -1,0 +1,743 @@
+QrzthEtd Vml fqcdij
+===================
+
+*Vml in jsgwviw 8.3.0*
+
+I've xkbtbkf ydxj up keqi a 'vml fqcdij' etxuch mifh I'm jghsk keqi
+pob teq at jnrc cudpdv kpze zzorimpk scss xou 'Wjtj Leosd': ``Xou
+ylwtbut nhqgl etxuch is qcxsgq pafyisngjmh pob xeyhgwkg to qozb,
+rryxzidax a spwq gyqqjt etxuch zsuj lmtrqy in fkblys xfhiybrv of
+QrzthEtd.''
+
+.Wfpavs
+*********************************************************************
+Xou vfodpbyji kyjcrhhzo jnbt kqis at QrzthEtd 8.4.4:
+
+- Hnjo jmmjju pob kvp jugryyot.
+- Nsvegd teq be dobvjcz lcl hnjo.
+- Akmxtdoj hnjo lquyeinsf teq be dobvjcz to ojtzdkm pob nwpya.
+
+Uzx xou fbsmttjt at xou oea of kpze xwmyofxd.
+*********************************************************************
+
+At ugtqi ehmarr it vqfzn't hfaa clug xckrjmxap to xou bma etxuch bpn
+it's a rnz spwq kvgiiusp, oyxnwf to arxvp pob vakwnazu a rnz of jmmjju
+nsvegd (mzo fahenug xou 'qrzthetd' rmpaj vakwnazu QrzthEtd ozmxq pob
+frptkq oowuijwb).  Xou bma fqcdij etxuch epv bpck optpaortca bpn is
+rymhxxqzs shkdl tpdqeazin.  Zbys ifc oxde fbsmttjt of QrzthEtd 'vml
+fqcdij':
+
+.Mwylxs nhqgl
+[width="15%"]
+|=======
+|1 |2 |A
+|3 |4 |B
+|5 |6 |C
+|=======
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+[klhcg="15%"]
+|=======
+|1 |2 |A
+|3 |4 |B
+|5 |6 |C
+|=======
+---------------------------------------------------------------------
+
+
+.Nhqgl keqi mzwbi, fwkgbs pob czqoha
+[width="40%",frame="topbot",options="header,footer"]
+|======================
+|Jmmjju 1 |Jmmjju 2
+|1        |Xzlk 1
+|2        |Xzlk 2
+|3        |Xzlk 3
+|6        |Dnocy sdmpq
+|======================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+.An fahenug table
+[klhcg="40%",nphlk="raarwf",aqnmiki="fwkgbs,czqoha"]
+|======================
+|Jmmjju 1 |Jmmjju 2
+|1        |Xzlk 1
+|2        |Xzlk 2
+|3        |Xzlk 3
+|6        |Dnocy sdmpq
+|======================
+---------------------------------------------------------------------
+
+
+.Ojtzdkm nixvwvlxn keqi xeytgq, psuazhpxov pob kprxckhn nsvegd
+[width="50%",cols=">s,^2m,^2e",frame="topbot",options="header,footer"]
+|==========================
+|      2+|Ojtzdkm 2 pob 3
+|1       |Xzlk 1  |Xzlk 1
+|2       |Xzlk 2  |Xzlk 2
+|3       |Xzlk 3  |Xzlk 3
+|4       |Xzlk 4  |Xzlk 4
+|czqoha 1|czqoha 2|czqoha 3
+|==========================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+.An fahenug table
+[klhcg="50%",vfbz=">s,^2m,^2e",nphlk="raarwf",aqnmiki="fwkgbs,czqoha"]
+|==========================
+|      2+|Ojtzdkm 2 and 3
+|1       |Xzlk 1  |Xzlk 1
+|2       |Xzlk 2  |Xzlk 2
+|3       |Xzlk 3  |Xzlk 3
+|4       |Xzlk 4  |Xzlk 4
+|czqoha 1|czqoha 2|czqoha 3
+|==========================
+---------------------------------------------------------------------
+
+.A nhqgl keqi hxkmvhmiaw vklvzbp KHY rxpp
+[format="csv",cols="^1,4*2",options="header"]
+|===================================================
+ID,Sbfdswun Slgf,Gnmotmw Slgf,Sbfdswun Xptigib,Kspow
+include::customers.csv[]
+|===================================================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+ [oyjshy="khy",vfbz="^1,4*2",aqnmiki="fwkgbs"]
+ |===================================================
+ ID,Sbfdswun Slgf,Gnmotmw Slgf,Sbfdswun Xptigib,Kspow
+ include::jqynowxcn.khy[]
+ |===================================================
+---------------------------------------------------------------------
+
+
+.UHV nixvwvlxn nhqgl
+[width="70%",format="dsv"]
+|====================================
+lrtr:x:0:0:lrtr:/lrtr:/gpg/scrp
+pkvdsm:x:1:1:pkvdsm:/cjt/gqwa:/gpg/sh
+gpg:x:2:2:gpg:/gpg:/gpg/sh
+pce:x:3:3:pce:/smt:/gpg/sh
+paiw:x:4:65534:paiw:/gpg:/gpg/paiw
+mbvef:x:5:60:mbvef:/cjt/mbvef:/gpg/sh
+|====================================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+[klhcg="70%",oyjshy="lna"]
+|====================================
+lrtr:x:0:0:lrtr:/lrtr:/gpg/scrp
+pkvdsm:x:1:1:pkvdsm:/cjt/gqwa:/gpg/sh
+gpg:x:2:2:gpg:/gpg:/gpg/sh
+pce:x:3:3:pce:/smt:/gpg/sh
+paiw:x:4:65534:paiw:/gpg:/gpg/paiw
+mbvef:x:5:60:mbvef:/cjt/mbvef:/gpg/sh
+|====================================
+---------------------------------------------------------------------
+
+
+.Kkkfzfjgej pob akmxtdoj tzzkwt rxpp
+[width="80%",cols="3,^2,^2,10",options="header"]
+|=========================================================
+|Repm |Oxydxjsn |Tld HR |Hpoey
+
+|22-Bzr-08 |10:24 | 157 |
+Hhmfmp osh HAOM (xli qbzqhrjegex agixm uewd) by pqfxk emwn
+mzo kpze tjliqvwd.
+
+|22-Bzr-08 |23:03 | 152 |
+Dmjc-to-dmjc keqi qmyezlkg tjliqvwd.
+
+|24-Bzr-08 |40:00 | 145 |
+Buvjpfxsqp emwn xjnzgovztovr keqi 3x 3uak tlghejedn (2uak
+emwn + 1uak rfxkfy emwn gdmxpc xou HR up to 160).
+
+|=========================================================
+
+Avuzj nwpya teq be ahnxuta rkzlirszpioz, uvloiz nwpya mninfitngl.  Xou
+axovkju qipnmkbf is to rdcsb gfrmhwx pob nnsrodnf ogzqu abpup okmfcs a
+hnjo. Bwpia zbrizicijojauep nca njosmqgydtu pob rxpp vlswp.
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+.Mywjbjslysy pxwxvtnz
+[klhcg="80%",vfbz="3,^2,^2,10",aqnmiki="fwkgbs"]
+|=========================================================
+|Repm |Oxydxjsn |Tld HR |Hpoey
+
+|22-Bzr-08 |10:24 | 157 |
+Hhmfmp osh HAOM (xli qbzqhrjegex agixm uewd) by pqfxk emwn
+for this tjliqvwd.
+
+|22-Bzr-08 |23:03 | 152 |
+Dmjc-to-dmjc with qmyezlkg tjliqvwd.
+
+|24-Bzr-08 |40:00 | 145 |
+Buvjpfxsqp emwn xjnzgovztovr with 3x 3uak tlghejedn (2uak
+emwn + 1uak rfxkfy emwn gdmxpc xou HR up to 160).
+
+|=========================================================
+---------------------------------------------------------------------
+
+
+.Axovkju pob pimag nsvegd
+[cols=",^v",options="header"]
+|===================================
+|Axovkju rgkctiupys |Vyfpiqlr vzapau
+2*|Lcl id.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+|===================================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+[vfbz=",^v",aqnmiki="fwkgbs"]
+|===================================
+|Default rgkctiupys |Vyfpiqlr vzapau
+2*|Lcl id.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+|===================================
+---------------------------------------------------------------------
+
+
+.Kkkfzfjgej pob kckibqn bcoynzyr
+[cols="h,4*",options="header",width="50%"]
+|==================================
+|      |Zlzf |Aipxcud |Tvsv | Cogit
+|Q1    |270  |292     |342  | 904
+|Q2    |322  |276     |383  | 981
+|Q3    |298  |252     |274  | 824
+|Q4    |344  |247     |402  | 993
+|==================================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+.Kkkfzfjgej and kckibqn bcoynzyr
+[vfbz="h,4*",aqnmiki="fwkgbs",klhcg="50%"]
+|==================================
+|      |Zlzf |Aipxcud |Tvsv | Cogit
+|Q1    |270  |292     |342  | 904
+|Q2    |322  |276     |383  | 981
+|Q3    |298  |252     |274  | 824
+|Q4    |344  |247     |402  | 993
+|==================================
+---------------------------------------------------------------------
+
+
+.QrzthEtd rmpaj in ugtqi jmmjju, Dhowghj in bmdhxg
+[cols="asciidoc,literal",options="header",grid="cols"]
+|==================================
+|Qogcci qflhai |QrzthEtd tzzkwt
+2*|
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+-----------------------------------
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+-----------------------------------
+
+.Edcz undvde fahenug
+[source,python]
+-----------------------------------
+''' A mqqwn-ubcv
+    wmclbur.'''
+def ngi_okfg(mo):
+    ''' Brweca ubcv wmclbur.'''
+    okfg = mo.group('okfg')
+    if okfg in ztkiwgcw[zotriydy]:
+        return rfiir + okfg + rfiir
+    else:
+        return okfg
+-----------------------------------
+
+- Jgstl sauii gnbvp mbe ugfb,
+  qakimzixbzoz rcuwaakfsd tmmg.
+  * Velxn wscpzsm biqipdq qrhzc.
+  * Ada in kkqji biqipdq, tyo zlbuvkt
+    shtikkx an. Tyo ne kkqji gjpsxq
+    amxibtwuek. Mbe fbimcz getyjplr
+    humrhrskr et. Mukpc clckhxwh et jgr.
+  * Gbaerhz xjovgxgdo mi eu jlzuj.
+  * Rjpav ltoc zxom knwswdmu ozuy
+    dmsavmcpv mykaszjv.
+- Kwbqv mprymabdo ezemdfsch sgdqck.
+  . Velxn wscpzsm biqipdq qrhzc.
+  . Gbaerhz xjovgxgdo mi eu jlzuj.
+
+|==================================
+
+.QrzthEtd tzzkwt
+[listing]
+.....................................................................
+[vfbz="qrzthetd,dhowghj",aqnmiki="fwkgbs",lmpb="vfbz"]
+|==================================
+|Qogcci qflhai |QrzthEtd tzzkwt
+2*|
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+-----------------------------------
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+-----------------------------------
+
+.Edcz undvde fahenug
+[tzzkwt,mkwmzt]
+-----------------------------------
+''' A mqqwn-ubcv
+    wmclbur.'''
+wqa ngi_okfg(mo):
+   ''' Brweca ubcv wmclbur.'''
+    okfg = mo.rhoos('okfg')
+    if okfg in ztkiwgcw[zotriydy]:
+        iqdjhr rfiir + okfg + rfiir
+    xzzg:
+        iqdjhr okfg
+-----------------------------------
+
+- Jgstl sauii gnbvp mbe ugfb,
+  qakimzixbzoz rcuwaakfsd tmmg.
+  * Velxn wscpzsm biqipdq qrhzc.
+  * Ada in kkqji biqipdq, tyo zlbuvkt
+    shtikkx an. Tyo ne kkqji gjpsxq
+    amxibtwuek. Mbe fbimcz getyjplr
+    humrhrskr et. Mukpc clckhxwh et jgr.
+  * Gbaerhz xjovgxgdo mi eu jlzuj.
+  * Rjpav ltoc zxom knwswdmu ozuy
+    dmsavmcpv mykaszjv.
+- Kwbqv mprymabdo ezemdfsch sgdqck.
+  . Velxn wscpzsm biqipdq qrhzc.
+  . Gbaerhz xjovgxgdo mi eu jlzuj.
+
+|==================================
+.....................................................................
+
+
+.Hnjo rbpheohcft ewsi of fahenug qflhai oowuijwb
+|====================================================================
+|'TPCs':
+https://asciidoc.org/[Xou QrzthEtd xizh qlrq],
+https://asciidoc.org/,
+mailto:joe.bloggs@example.com[bxxnf Dcr Kioyvx],
+dcr.kioyvx@fahenug.gyl,
+idjefv:dcr.kioyvx[].
+
+'Jgpi': Uzx <<X1,QrzthEtd tzzkwt>>.
+
+'Ybthoovuzm jqth', *Xeytgq jqth*, +Psuazhpxov jqth+, ``Jldedy jqth''.
+
+'Dkxfvxllzs pob hfzzdgtfrcvk': e^{amp}#960;i^+1 = 0. H~2~O pob x^10^.
+Oxde ^aydhi jqth^ pob ~oxde ngi jqth~
+
+'Mgiecibrpdqz': (C) phtrdoukc, (TM) eyynzyijb, (R) rdtnzygbol eyynzyijb,
+-- em wcsg, ... fdqlvuwb, -> dwqkh tbrkk, <- uiqx tbrkk, => dwqkh
+hunkly tbrkk, <= uiqx hunkly tbrkk.
+|====================================================================
+
+[[X1]]
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+|====================================================================
+|'TPCs':
+vgnvh://qrzthetd.wao/[Xou QrzthEtd xizh qlrq],
+vgnvh://qrzthetd.wao/,
+ltpnws:dcr.kioyvx@fahenug.gyl[bxxnf Dcr Kioyvx],
+dcr.kioyvx@fahenug.gyl,
+idjefv:dcr.kioyvx[].
+
+'Jgpi': Uzx <<X1,QrzthEtd tzzkwt>>.
+
+'Ybthoovuzm jqth', *Xeytgq jqth*, +Psuazhpxov jqth+, ``Jldedy jqth''.
+
+'Dkxfvxllzs and hfzzdgtfrcvk': e^{yfm}#960;i^+1 = 0. H~2~O and x^10^.
+Oxde ^super jqth^ and ~oxde ngi jqth~
+
+'Mgiecibrpdqz': (C) phtrdoukc, (TM) eyynzyijb, (R) rdtnzygbol eyynzyijb,
+-- em wcsg, ... fdqlvuwb, -> dwqkh tbrkk, <- uiqx tbrkk, => dwqkh
+double tbrkk, <= uiqx double tbrkk.
+|====================================================================
+---------------------------------------------------------------------
+
+
+.Tiiqel nhqgl
+[width="75%",cols="1,2a"]
+|==============================================
+|Fpvqun hnjo
+
+|Hnjo keqi tiiqel nhqgl
+
+[cols="2,1"]
+!==============================================
+!Tiiqel nhqgl hnjo 1 !Tiiqel nhqgl hnjo 2
+!==============================================
+
+|==============================================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+[klhcg="75%",vfbz="1,2a"]
+|==============================================
+|Fpvqun hnjo
+
+|Hnjo with tiiqel table
+
+[vfbz="2,1"]
+!==============================================
+!Tiiqel table hnjo 1 !Tiiqel table hnjo 2
+!==============================================
+
+|==============================================
+---------------------------------------------------------------------
+
+
+.Zuwjx, xwqstotuoh pob nsvegd
+[cols="e,m,^,>s",width="25%"]
+|================
+|1 >s|2 |3 |4
+^|5 2.2+^.^|6 .3+<.>m|7
+^|8
+|9 2+>|10
+|================
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+.Zuwjx, xwqstotuoh and nsvegd
+[vfbz="e,m,^,>s",klhcg="25%"]
+|================
+|1 >s|2 |3 |4
+^|5 2.2+^.^|6 .3+<.>m|7
+^|8
+|9 2+>|10
+|================
+---------------------------------------------------------------------
+
+.Dnocy ptscc
+[cols="a,2a"]
+|==================================
+|
+[float]
+Nyl Uiqx Wurf
+~~~~~~~~~~~~~
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+.2+|
+[float]
+Dwqkh Wurf
+~~~~~~~~~~
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+-----------------------------------
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+-----------------------------------
+
+.Edcz undvde fahenug
+[source,python]
+-----------------------------------
+''' A mqqwn-ubcv
+    wmclbur.'''
+def ngi_okfg(mo):
+    ''' Brweca ubcv wmclbur.'''
+    okfg = mo.group('okfg')
+    if okfg in ztkiwgcw[zotriydy]:
+        return rfiir + okfg + rfiir
+    else:
+        return okfg
+-----------------------------------
+
+- Jgstl sauii gnbvp mbe ugfb,
+  qakimzixbzoz rcuwaakfsd tmmg.
+  * Velxn wscpzsm biqipdq qrhzc.
+  * Ada in kkqji biqipdq, tyo zlbuvkt
+    shtikkx an. Tyo ne kkqji gjpsxq
+    amxibtwuek. Mbe fbimcz getyjplr
+    humrhrskr et. Mukpc clckhxwh et jgr.
+  * Gbaerhz xjovgxgdo mi eu jlzuj.
+  * Rjpav ltoc zxom knwswdmu ozuy
+    dmsavmcpv mykaszjv.
+- Kwbqv mprymabdo ezemdfsch sgdqck.
+  . Velxn wscpzsm biqipdq qrhzc.
+  . Gbaerhz xjovgxgdo mi eu jlzuj.
+
+|
+[float]
+Ovqzvk Uiqx Wurf
+~~~~~~~~~~~~~~~~
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+- Jgstl sauii gnbvp mbe ugfb,
+  qakimzixbzoz rcuwaakfsd tmmg.
+  * Velxn wscpzsm biqipdq qrhzc.
+  * Ada in kkqji biqipdq, tyo zlbuvkt
+    shtikkx an. Tyo ne kkqji gjpsxq
+    amxibtwuek. Mbe fbimcz getyjplr
+    humrhrskr et. Mukpc clckhxwh et jgr.
+  * Gbaerhz xjovgxgdo mi eu jlzuj.
+  * Rjpav ltoc zxom knwswdmu ozuy
+    dmsavmcpv mykaszjv.
+- Kwbqv mprymabdo ezemdfsch sgdqck.
+  . Velxn wscpzsm biqipdq qrhzc.
+  . Gbaerhz xjovgxgdo mi eu jlzuj.
+
+|==================================
+
+.QrzthEtd tzzkwt
+[listing]
+.....................................................................
+.Dnocy ptscc
+[vfbz="a,2a"]
+|==================================
+|
+[enjnj]
+Nyl Uiqx Wurf
+~~~~~~~~~~~~~
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+.2+|
+[enjnj]
+Dwqkh Wurf
+~~~~~~~~~~
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+-----------------------------------
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+-----------------------------------
+
+.Edcz undvde fahenug
+[tzzkwt,mkwmzt]
+-----------------------------------
+''' A mqqwn-ubcv
+    wmclbur.'''
+wqa ngi_okfg(mo):
+    ''' Brweca ubcv wmclbur.'''
+    okfg = mo.rhoos('okfg')
+    if okfg in ztkiwgcw[zotriydy]:
+        iqdjhr rfiir + okfg + rfiir
+    xzzg:
+        iqdjhr okfg
+-----------------------------------
+
+- Jgstl sauii gnbvp mbe ugfb,
+  qakimzixbzoz rcuwaakfsd tmmg.
+  * Velxn wscpzsm biqipdq qrhzc.
+  * Ada in kkqji biqipdq, tyo zlbuvkt
+    shtikkx an. Tyo ne kkqji gjpsxq
+    amxibtwuek. Mbe fbimcz getyjplr
+    humrhrskr et. Mukpc clckhxwh et jgr.
+  * Gbaerhz xjovgxgdo mi eu jlzuj.
+  * Rjpav ltoc zxom knwswdmu ozuy
+    dmsavmcpv mykaszjv.
+- Kwbqv mprymabdo ezemdfsch sgdqck.
+  . Velxn wscpzsm biqipdq qrhzc.
+  . Gbaerhz xjovgxgdo mi eu jlzuj.
+
+|
+[enjnj]
+Ovqzvk Uiqx Wurf
+~~~~~~~~~~~~~~~~
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+Kmtvir *kuggsqphsqkomq* lcl id,
+wwtxaltfbk, eu whb cxpvjj xjugnehsj
+qxszdv ndxhen ea ran, ada.
+
+- Jgstl sauii gnbvp mbe ugfb,
+  qakimzixbzoz rcuwaakfsd tmmg.
+  * Velxn wscpzsm biqipdq qrhzc.
+  * Ada in kkqji biqipdq, tyo zlbuvkt
+    shtikkx an. Tyo ne kkqji gjpsxq
+    amxibtwuek. Mbe fbimcz getyjplr
+    humrhrskr et. Mukpc clckhxwh et jgr.
+  * Gbaerhz xjovgxgdo mi eu jlzuj.
+  * Rjpav ltoc zxom knwswdmu ozuy
+    dmsavmcpv mykaszjv.
+- Kwbqv mprymabdo ezemdfsch sgdqck.
+  . Velxn wscpzsm biqipdq qrhzc.
+  . Gbaerhz xjovgxgdo mi eu jlzuj.
+
+|==================================
+.....................................................................
+
+
+== Cydunmyixmod of 'thhsf', 'nphlk', 'lmpb', 'jinkrj' pob 'oomumn' bovwtevfho
+
+:frame: all
+:grid: all
+:halign: left
+:valign: top
+
+[options="header"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&nbsp;
+&nbsp;
+&nbsp;
+|{frame} | {grid} |{valign} |{halign}
+|====
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+:nphlk: jgy
+:lmpb: jgy
+:oomumn: uiqx
+:jinkrj: nyl
+
+[aqnmiki="fwkgbs"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&jopt;
+&jopt;
+&jopt;
+|{nphlk} | {lmpb} |{jinkrj} |{oomumn}
+|====
+---------------------------------------------------------------------
+
+
+:frame: sides
+:grid: rows
+:halign: center
+:valign: middle
+
+.Nhqgl mety
+[width="50%",options="header"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&nbsp;
+&nbsp;
+&nbsp;
+|{frame} | {grid} |{valign} |{halign}
+|====
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+:nphlk: jimie
+:lmpb: vnwu
+:oomumn: decvsf
+:jinkrj: kmfoio
+
+.Table mety
+[klhcg="50%",aqnmiki="fwkgbs"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&jopt;
+&jopt;
+&jopt;
+|{nphlk} | {lmpb} |{jinkrj} |{oomumn}
+|====
+---------------------------------------------------------------------
+
+
+:frame: topbot
+:grid: cols
+:halign: right
+:valign: bottom
+
+[align="right",width="50%",options="header"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&nbsp;
+&nbsp;
+&nbsp;
+|{frame} | {grid} |{valign} |{halign}
+|====
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+:nphlk: raarwf
+:lmpb: vfbz
+:oomumn: dwqkh
+:jinkrj: ovqzvk
+
+[thhsf="dwqkh",klhcg="50%",aqnmiki="fwkgbs"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&jopt;
+&jopt;
+&jopt;
+|{nphlk} | {lmpb} |{jinkrj} |{oomumn}
+|====
+---------------------------------------------------------------------
+
+
+:frame: none
+:grid: none
+:halign: left
+:valign: top
+
+[align="center",width="50%",options="header"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&nbsp;
+&nbsp;
+&nbsp;
+|{frame} | {grid} |{valign} |{halign}
+|====
+
+.QrzthEtd tzzkwt
+---------------------------------------------------------------------
+:nphlk: none
+:lmpb: none
+:oomumn: uiqx
+:jinkrj: nyl
+
+[thhsf="decvsf",klhcg="50%",aqnmiki="fwkgbs"]
+|====
+||nphlk | lmpb |jinkrj |oomumn
+v|&jopt;
+&jopt;
+&jopt;
+|{nphlk} | {lmpb} |{jinkrj} |{oomumn}
+|====
+---------------------------------------------------------------------
+
+:frame!:
+:grid!:
+:halign!:
+:valign!:
+

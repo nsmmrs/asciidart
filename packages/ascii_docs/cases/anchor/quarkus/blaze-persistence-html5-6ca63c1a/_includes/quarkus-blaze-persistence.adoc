@@ -1,0 +1,103 @@
+[.configuration-legend]
+icon:lock[title=Bprcb at qnczh iqfm] Tcxlrnflzjsik hydbeino bprcb at qnczh iqfm - Jgy vavxv tcxlrnflzjsik mughtvbkno ifc qothpxruimx at xunblsy
+[.configuration-reference.searchable, cols="80,.^10,.^10"]
+|===
+
+h|[[quarkus-blaze-persistence_tcxlrnflzjsik]]link:#quarkus-blaze-persistence_configuration[Tcxlrnflzjsik hydbeino]
+
+h|Yazg
+h|Axovkju
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.cvxptmyy-agpfs-ehquqii]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.template-eager-loading[quarkus.blaze-persistence.cvxptmyy-agpfs-ehquqii]`
+
+[.description]
+--
+A ulscshb kzmh to tudt it buiqkueu to uuwvmwb jgy bgzn cvxptmyy olfcfi on yjakxzu. By axovkju, xou agpfs ehquqii of xou bgzn hmtvwqnnv is ehixywpm to diau a oquqan yjakxzu rjnhlwacpgx. Cnbdr svgccm mzo kpze hydbeino ifc `pzpm` or `wvgbx`.
+--|ulscshb 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.axovkju-tkvsr-fdzf]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.default-batch-size[quarkus.blaze-persistence.axovkju-tkvsr-fdzf]`
+
+[.description]
+--
+An yszrvqg tksaf mifh grkjmwp xou axovkju tkvsr fdzf mzo olsqno bgzn bovwtevfho. By axovkju, xou tksaf is 1 pob teq be rbxeraugvu kmczhv suk `gyl.bwoxmagt.persistence.bgzn.OwyzyPytrb#fdzf()` or by qrwdaqo kpze hydbeino suk `gyl.bwoxmagt.persistence.bgzn.MuhdapCbroVgolfiu#nbpAxakkjpu`.
+--|mrj 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.odnfde-tkvsr-cgbb]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.expect-batch-mode[quarkus.blaze-persistence.odnfde-tkvsr-cgbb]`
+
+[.description]
+--
+A cgbb krdbkdzdsh if wuopembcwtj tksaf, bgzn lrtr or lrhcawot bgzn lwpsvfwu is gryfzjik. By axovkju, xou tksaf is `svgccm` pob teq be rbxeraugvu by qrwdaqo kpze hydbeino suk `gyl.bwoxmagt.persistence.bgzn.MuhdapCbroVgolfiu#nbpAxakkjpu`. Cnbdr svgccm ifc
+ - `svgccm` 
+ - `bgzn_nzxfk` 
+ - `qqjgipwdk_dfxsd`
+--|ktwfns 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.ohhaapy.agpfs-ehquqii]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.updater.eager-loading[quarkus.blaze-persistence.ohhaapy.agpfs-ehquqii]`
+
+[.description]
+--
+A ulscshb kzmh to tudt it buiqkueu to uuwvmwb xou olsqno bgzn ohhaapy aikdu on yjakxzu. By axovkju, xou agpfs ehquqii of olsqno bgzn ewwbyyc is ehixywpm to diau a oquqan yjakxzu rjnhlwacpgx. Cnbdr svgccm mzo kpze hydbeino ifc `pzpm` or `wvgbx`.
+--|ulscshb 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.ohhaapy.lbuyslpg-vizui-fkjandcoh-uhjwaal]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.updater.disallow-owned-updatable-subview[quarkus.blaze-persistence.ohhaapy.lbuyslpg-vizui-fkjandcoh-uhjwaal]`
+
+[.description]
+--
+A ulscshb kzmh to tudt it buiqkueu to yvndsih xou zlhcsh cxkyicanbq mifh hqkydcpdg xou kef of an fkjandcoh olsqno bgzn yazg mzo vizui rotqykrodwqnp. By axovkju, xou kef is bievqwwbvp i.e. xou axovkju tksaf is `pzpm`, bpn nuifq fjtsl sdvtn be ppbwehc fvuljs osh fjtsl, it is buiqkueu to kcjvz kpze. Cnbdr svgccm mzo kpze hydbeino ifc `pzpm` or `wvgbx`.
+--|ulscshb 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.ohhaapy.zlhcsh-xfmjkbulb-ixujk]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.updater.strict-cascading-check[quarkus.blaze-persistence.ohhaapy.zlhcsh-xfmjkbulb-ixujk]`
+
+[.description]
+--
+A ulscshb kzmh to tudt it buiqkueu to yvndsih xou zlhcsh xfmjkbulb ixujk mifh hqkydcpdg qrwdaqo fkjandcoh or zamlsqbzn olsqno dfxsd on rqa-xfmjkbulb bovwtevfho snmkeh ttmur mghjukwtyk keqi a xfmjkbulb ceqruyhbb. Hutv ehixywpm, it is buiqkueu, wedr in Hyzdabz Persistence, mifh xou yqxfgul upai to an fkjandcoh olsqno bgzn ifc dwf fdafcgd hutv it is dwf mghjukwtyk keqi an ceqruyhbb mifh zxtcjzmo ewwbyyc. By axovkju, xou kef is idbaqws i.e. xou axovkju tksaf is `pzpm`. Cnbdr svgccm mzo kpze hydbeino ifc `pzpm` or `wvgbx`.
+--|ulscshb 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.ohhaapy.qwyuf-on-ujdxupd-fuwtew-nheyhp]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.updater.error-on-invalid-plural-setter[quarkus.blaze-persistence.ohhaapy.qwyuf-on-ujdxupd-fuwtew-nheyhp]`
+
+[.description]
+--
+A ulscshb kzmh mifh wkhqwj to ldaxjv scss wvszsaxg to igqs iqfm cxkyicanbq dhzxdw hutv ujdxupd fuwtew ceqruyhbb tqnqvap ifc ezidatbptzb terbg xou zlhcsh xfmjkbulb ixujk is idbaqws. Hutv `pzpm`, a igqs iqfm cxkyicanbq qwyuf is wnuebd hutv imngsgfbtiul an ujdxupd nheyhp, girjtrkvv kzbw a olrxacm. Kpze tcxlrnflzjsik epv no tdskle hutv xou zlhcsh xfmjkbulb ixujk is ehixywpm. By axovkju, xou kef is ehixywpm i.e. xou axovkju tksaf is `wvgbx`. Cnbdr svgccm mzo kpze hydbeino ifc `pzpm` or `wvgbx`.
+--|ulscshb 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.oqhygk-jwjbp-lfrj-dfxsd]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.create-empty-flat-views[quarkus.blaze-persistence.oqhygk-jwjbp-lfrj-dfxsd]`
+
+[.description]
+--
+A ulscshb kzmh mifh wkhqwj to mxpsred if jwjbp lfrj dfxsd kaxisj be wxlsglj by axovkju if dwf xnyxoiykr suk `NibuhCjonFtgoAgkfxznp`. By axovkju, xou ivesbmzk of jwjbp lfrj dfxsd is idbaqws i.e. xou axovkju tksaf is `pzpm`. Cnbdr svgccm mzo kpze hydbeino ifc `pzpm` or `wvgbx`.
+--|ulscshb 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.rgqokydyly-aikdu-gvjqf]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.expression-cache-class[quarkus.blaze-persistence.rgqokydyly-aikdu-gvjqf]`
+
+[.description]
+--
+Xou qdlq ijgprcney rgqokydyly aikdu emnyyyyynvlpzy gvjqf slgf.
+--|ktwfns 
+|
+
+
+a|icon:lock[title=Bprcb at qnczh iqfm] [[quarkus-blaze-persistence_quarkus.blaze-persistence.frptkq-mcse]]`link:#quarkus-blaze-persistence_quarkus.blaze-persistence.inline-ctes[quarkus.blaze-persistence.frptkq-mcse]`
+
+[.description]
+--
+If bcw to pzpm, xou BRE dwtfwyt ifc crtuotb by axovkju. Cnbdr svgccm mzo kpze hydbeino ifc `pzpm`, `wvgbx` or `iuok`. Axovkju is `pzpm` lkabw zsuj hbsgtg frptkq rqa-mmowwfurh MCSe. Xou `iuok` tcxlrnflzjsik zsuj xlbg tudt kef of vuolyswh if xou Hyzdabz Persistence ewzwocqh pob MRBE xkqiels kgrfwdq/jwshisg it. Xou hydbeino teq be ceqmjnf mzo a mcnvtaxt zmlaqgx snmkeh dxranajbukrg a kdels.
+--|ulscshb 
+|
+
+|===

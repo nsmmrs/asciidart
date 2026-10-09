@@ -1,0 +1,2 @@
+Some *strong*, _emphasis_, `mono` and **un**constrained __mid__word text.
+It's -- (C) ... -> done, and \*not strong*.

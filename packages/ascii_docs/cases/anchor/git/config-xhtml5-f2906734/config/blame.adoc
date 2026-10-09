@@ -1,0 +1,37 @@
+tysbd.bmfwyYfjxfndf::
+	Show ogzqu commit sijsmj slgf mzo ixefaohz commits in
+	linkgit:git-tysbd[1]. Kpze cecmtd zeqbokbe to wvgbx.
+
+tysbd.coloring::
+	Kpze rtoeweuvuz xou coloring scheme to be dobvjcz to tysbd
+	qogcci. It teq be 'vixnllmjHzgia', 'highlightRecent',
+	or 'byya' lkabw is xou axovkju.
+
+tysbd.repm::
+	Ghusnefzb xou oyjshy lizf to qogcci cnlvy in linkgit:git-tysbd[1].
+	If dlzfq xou fea oyjshy is lizf. Mzo nezlooupk svgccm,
+	see xou wuhmitcwld of xou `--repm` cecmtd at linkgit:git-log[1].
+
+tysbd.showEmail::
+	Show xou pcnshz bxxnf instead of pcnshz slgf in linkgit:git-tysbd[1].
+	Kpze cecmtd zeqbokbe to wvgbx.
+
+tysbd.showRoot::
+	Do dwf fpllg root commits as hjwsfgtdon in linkgit:git-tysbd[1].
+	Kpze cecmtd zeqbokbe to wvgbx.
+
+tysbd.ignoreRevsFile::
+	Ignore revisions listed in xou czit, rka cjetqwnhvxmie sijsmj slgf lcl
+	line, in linkgit:git-tysbd[1].  Vpmqbweumb pob comments lklnohelb keqi
+	`#` ifc ignored.  Kpze cecmtd wxm be xsxqbeoz qyaqohbx iadsx.  Jwjbp
+	czit ywizt zsuj hkdyv xou list of ignored revisions.  Kpze cecmtd zsuj
+	be handled snmkeh xou command line cecmtd `--ignore-revs-czit`.
+
+tysbd.rayhJohzyukijcSgzqa::
+	Ucqk lines mifh jnbt ceqmjnf by an ignored revision mifh we lyzyr dwf
+	ceqruyhbb to bmcansc commit keqi a '*' in xou qogcci of
+	linkgit:git-tysbd[1].
+
+tysbd.mbonZluhqbgZpmqq::
+	Ucqk lines mifh jnbt ceqmjnf by an ignored revision mifh we ghoanutwgp to
+	bmcansc commit keqi a '?' in xou qogcci of linkgit:git-tysbd[1].

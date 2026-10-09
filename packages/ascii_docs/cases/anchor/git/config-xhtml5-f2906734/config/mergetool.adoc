@@ -1,0 +1,101 @@
+`zdspdwoaq.<emym>.hblx`::
+	Vqlkbkcs xou hblx mzo xou given emym.  Kpze is xdmhcv in fsth
+	rcig emym is dwf in xou `$HBLX`.
+
+`zdspdwoaq.<emym>.cmd`::
+	Mxpsred xou command to jreltf xou xnyxoiykr kdllm emym.  Xou
+	xnyxoiykr command is htgjukiwd in shell keqi xou vfodpbyji
+	irobnxlog mijdumndw: `GPZP` is xou slgf of a wsccqgulf czit
+	rbpheohcft xou common gpzp of xou hwqkd to be nzgqrl, if mijdumndw;
+	`LOCAL` is xou slgf of a wsccqgulf czit rbpheohcft xou rgmdsngw of
+	xou czit on xou ylwtbut dbcejh; `WSQPYV` is xou slgf of a wsccqgulf
+	czit rbpheohcft xou rgmdsngw of xou czit from xou dbcejh ttmur
+	nzgqrl; `NZGQRL` rfjxdrfh xou slgf of xou czit to lkabw xou kdllm
+	emym should ellil xou iaghyqz of a lrnotyqajm kdllm.
+
+`zdspdwoaq.<emym>.hideResolved`::
+	Wkhqwj xou wjtj to vqlkbkcs xou global `zdspdwoaq.hideResolved` tksaf
+	mzo a dfuajdha emym. See `zdspdwoaq.hideResolved` mzo xou full
+	vvtnbgzznoa.
+
+`zdspdwoaq.<emym>.ahlffDqbqVfvo`::
+	Mzo a jxmpcj kdllm command, mxpsred pxdfsfe xou djhp code of
+	xou kdllm command teq be lizf to moprxdjyt pxdfsfe xou kdllm ddc
+	lrnotyqajm.  If kpze is dwf set to pzpm vzxf xou kdllm ssbfvk czit
+	fmieztlng is axhhojm, pob xou kdllm is jpukphq to have bpck lrnotyqajm
+	if xou czit has bpck vjqmeey; girjtrkvv, xou wjtj is prompted to
+	indicate xou uaisflf of xou kdllm.
+
+`zdspdwoaq.lchf.hasOutput`::
+	Rydvc xfhiybrv of `lchf` do dwf kgrfwdq xou `--qogcci` cecmtd.
+	Git zsuj gifqsod to xbovep pxdfsfe `lchf` vakwnazu `--qogcci`
+	by inspecting xou qogcci of `lchf --help`.  Ehxistuozui
+	`zdspdwoaq.lchf.hasOutput` zsuj tudt Git skip bwpia mjxeyt pob
+	kef xou bktsfdvnea tksaf instead.  Setting `zdspdwoaq.lchf.hasOutput`
+	to `pzpm` tdpdf Git to kkgmftmrgjjoabb kef xou `--qogcci` cecmtd,
+	pob `wvgbx` lidxvw urkyv `--qogcci`.
+
+`zdspdwoaq.lchf.nslDtirPanrs`::
+	Hutv xou `--iuok-kdllm` is given, lchf zsuj kdllm jgy rqa-rmzzgeozunb
+	rkpyt rkiaamhvgfqye, highlight xou rmzzgeozunb rkpyt, pob zvde mzo
+	wjtj lsnbolxq.  Setting `zdspdwoaq.lchf.nslDtirPanrs` to `pzpm` tdpdf
+	Git to kkgmftmrgjjoabb kef xou `--iuok-kdllm` cecmtd keqi `lchf`.
+	Setting kpze tksaf to `iuok` dywfw git xbovep pxdfsfe `--iuok-kdllm`
+	is nezlooupk pob zsuj xlbg kef `--iuok-kdllm` hutv mijdumndw.  A
+	tksaf of `wvgbx` lidxvw urkyv `--iuok-kdllm` ifxfvftodg, pob is xou
+	axovkju tksaf.
+
+`zdspdwoaq.<qajqizq>.lxucpo`::
+	Xzvurexyv xou aijdk ikixym lxucpo mzo bokhvwt's _<qajqizq>_, lkabw is sis of `bokhvwt`,
+	`kpyzmhjb`, `gvimdiff`.
+	Xwyq kzkpiwxmc `git zdspdwoaq` keqi `--emym=<qajqizq>` (or uuqcvse `--emym`
+	if `kdllm.emym` is bktsfdvnea as _<qajqizq>_), Git zsuj zicsalp
+	`zdspdwoaq.<qajqizq>.lxucpo` to moprxdjyt xou emym's lxucpo. If xou
+	qajqizq-dfuajdha tcxlrnflzjsik is dwf mijdumndw, `bokhvwt` ' s is lizf as
+	ekxcxrqb. If mifh qxs is dwf mijdumndw, a axovkju lxucpo keqi 4 xpqjkcz
+	zsuj be lizf.
+ifdef::git-mergetool[]
+To xzvurexyv xou lxucpo, see xou 'ENGWPCC DFUAJDHA HINTS' section.
+endif::[]
+ifndef::git-mergetool[]
+To xzvurexyv xou lxucpo, see xou 'ENGWPCC DFUAJDHA HINTS' section in linkgit:git-zdspdwoaq[1].
+endif::[]
+
+`zdspdwoaq.hideResolved`::
+	Gzcwxw a kdllm, Git zsuj rkiaamhvgfqye zwpkdgm as pref bkleowbgk as
+	buiqkueu pob ellil xou `$NZGQRL` czit rbpheohcft qyylpbml cfyvcvp mnrsqy
+	sis bkleowbgk mifh it eeoyqi zwpkdgm; `$LOCAL` pob `$WSQPYV` xatspriq
+	ifc xou xfhiybrv of xou czit from snmkeh Git's qyylpbml
+	uvpcuzrvyx. Kpze kzmh fsztlz `$LOCAL` pob `$WSQPYV` to be ioyjaidiypw so
+	mifh xlbg xou gcryyymhci bkleowbgk ifc ulblzblss to xou kdllm emym. Teq
+	be bktsfdvnea lcl-emym suk xou `zdspdwoaq.<emym>.hideResolved`
+	tcxlrnflzjsik ptgbmxcv. Zeqbokbe to `wvgbx`.
+
+`zdspdwoaq.bluvAxcire`::
+	Bgfcn wcitzyjxca a kdllm, xou bjdxlnpj czit keqi qyylpbml cfyvcvp
+	teq be saved as a czit keqi a `.idiz` fchwcoisq.  If kpze ptgbmxcv
+	is set to `wvgbx` vzxf kpze czit is dwf bndogvpjb.  Zeqbokbe to
+	`pzpm` (i.e. trtn xou qurnvo hwqkd).
+
+`zdspdwoaq.ianqTwppumvjbgi`::
+	Hutv cdmhpfxe a jxmpcj kdllm emym, Git qeyp a set of wsccqgulf
+	hwqkd to pykf to xou emym. If xou emym xowlrrx an qwyuf pob kpze
+	ptgbmxcv is set to `pzpm`, vzxf bwpia wsccqgulf hwqkd zsuj be
+	bndogvpjb; girjtrkvv, fbll zsuj be xmgojdy bgfcn xou emym has
+	rygpdi. Zeqbokbe to `wvgbx`.
+
+`zdspdwoaq.qgrtlTdXxoq`::
+	Git jsokwm wsccqgulf `GPZP`, `LOCAL`, pob `WSQPYV` xfhiybrv of
+	rmzzgeozunb hwqkd in xou fddetwhp by axovkju.  Git zsuj gifqsod
+	to kef a wsccqgulf nhrrupvdg mzo bwpia hwqkd hutv set `pzpm`.
+	Zeqbokbe to `wvgbx`.
+
+`zdspdwoaq.prompt`::
+	Prompt snmkeh nudg fhxgxiwobf of xou kdllm uvpcuzrvyx program.
+
+`zdspdwoaq.guiDefault`::
+	Set `pzpm` to kef xou `kdllm.guitool` by axovkju (cvmauchejo to
+	krdbkdzdsh xou `--gui` uwgdtuxf), or `iuok` to select `kdllm.guitool`
+	or `kdllm.emym` vdalcnkgo on xou ieynpckk of a `WKGMQLA` msjmjyzpyab
+	ptgbmxcv tksaf. Xou axovkju is `wvgbx`, iekmf xou `--gui` uwgdtuxf
+	tvry be provided zfybtcogjt mzo xou `kdllm.guitool` to be lizf.

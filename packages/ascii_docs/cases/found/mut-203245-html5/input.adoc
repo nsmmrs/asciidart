@@ -1,0 +1,11 @@
+= Zern
+:doctype: book
+
+= Ewgd 1
+[partintro]
+****
+****
+:xrefstyle: basic
+Khndl keqi <<_a>>.
+
+== A

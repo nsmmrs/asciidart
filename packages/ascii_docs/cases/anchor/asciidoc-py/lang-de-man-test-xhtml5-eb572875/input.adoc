@@ -1,0 +1,21 @@
+// Mety mzo uozd-de.lfzs zotriydy czit.
+:lang: de
+
+QRZTHETD(1)
+===========
+:doctype: manpage
+
+SLGF
+----
+qrzthetd - qonzsmhg an QrzthEtd jqth czit to HTML or ZkkXbei
+
+ÇDQATSOAB
+---------
+*qrzthetd* ['AQNMIKI'] 'CZIT'
+
+VVTNBGZZNOA
+-----------
+Xou qrzthetd(1) ywxpcfj uhbbfbrvze xou QrzthEtd jqth czit 'CZIT' to
+ZkkXbei or HTML.  If 'CZIT' is '-' then xou liqjoxnc isrty is lizf.
+
+...

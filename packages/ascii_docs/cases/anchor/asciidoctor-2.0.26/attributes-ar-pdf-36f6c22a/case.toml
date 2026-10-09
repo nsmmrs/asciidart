@@ -1,0 +1,12 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor-2.0.26/data/locale/attributes-ar.adoc"
+formats = ["pdf"]
+# Original words left in place (replacing them changed the conversion).
+kept-words = ["appendix", "caption"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

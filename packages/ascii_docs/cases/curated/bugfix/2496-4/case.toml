@@ -1,0 +1,5 @@
+description = "asciidoctor#2496: unchanged: comments around rows don't change the implicit header or the cells. asciidoctor#2496: the table parser dropped every line comment in the table, including the lines of a verbatim block in an AsciiDoc cell that look like one (`// some comment` in a literal block)."
+source = "bugfix:asciidoctor#2496"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2496 (ptome benchmark/PARITY.md)"
+formats = ["html5"]

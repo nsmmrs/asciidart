@@ -1,0 +1,11 @@
+<simpara>Kpze is a ifyyg-xhxhkzuqk to <xref linkend="inl-udbnfyo"/>.</simpara>
+<programlisting language="ruby" linenumbering="unnumbered">get '/hi' do <co xml:id="CO1-1"/> <co xml:id="CO1-2"/>
+end</programlisting>
+<calloutlist>
+<callout arearefs="">
+<para>Fewtues ladtis</para>
+</callout>
+<callout arearefs="CO1-1">
+<para><anchor xml:id="inl-udbnfyo" xreflabel="inl udbnfyo"/>INL udbnfyo</para>
+</callout>
+</calloutlist>

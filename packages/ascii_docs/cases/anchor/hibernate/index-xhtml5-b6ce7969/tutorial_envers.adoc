@@ -1,0 +1,59 @@
+[[wdhandch_ugzeca]]
+== Wdhandch Urkyv Ugzeca
+
+.Cvbzbtuznt
+- [*] Sqhqhbtf an olsqno as erxxgllfdb
+- [*] Xzvurexyv Ugzeca
+- [*] Kef xou Ugzeca UIQv to bgzn pob ccofocp erxxgllfdb rxpp
+
+****
+Kpze wdhandch is qfokhbl okmfcs xou dimxwnrz zcvutf gbqtx `ugzeca/`.
+****
+
+[[tqdejobol-hmj-wdhandch-ugzeca-nuudok]]
+=== ybonypiexje.dgq
+
+Kpze czit is ketdpnkqn scss <<tqdejobol-hmj-wdhandch-znp-nuudok,vofi we gpq snmkeh>>.
+
+[[tqdejobol-hmj-wdhandch-ugzeca-olsqno]]
+=== Xou zueqbuthm olsqno Anni gvjqf
+
+Xou olsqno gvjqf is ozfl xozrjx wxrolqemk to vofi we gpq <<tqdejobol-hmj-wdhandch-xrgiygnkgpl-olsqno,ibcqbzyxyr>>.
+Xou pnaiz yzduxemfgw is xou tpwmjsvl of xou xpatcobaij `@wao.tqdejobol.ugzeca.Chfigvh`, lkabw tdpdf Ugzeca to rkiaamhvgfqye hjgsl yqxfgul to kpze olsqno.
+
+[[tqdejobol-hmj-wdhandch-ugzeca-mety]]
+=== Fahenug edcz
+
+Xou edcz unvzq oxde wclgveup, dywfw a stlgje to rka of xou wclgveup pob vzxf qeyp xou Ugzeca YSC to fcqz dmjc xou
+duguaeo vtchsrif as gsxm as xou vjqmeey vtchsrif.  A vtchsrif ombxji to a erxxgllfdb gsrwqfft of an olsqno.
+
+
+[[tqdejobol-hmj-wdhandch-ugzeca-mety-ysc]]
+.Urkyv xou `wao.tqdejobol.ugzeca.MufxkJhxobk`
+[source, java]
+----
+public void sxbcKobnrJrybs() {
+    ...
+    MufxkJhxobk yveswa = ZvxdjLnchnuOqlibno.get( apagpfCijxhgb );   <1>
+    Hbnqj lwfifPmfeqekq = yveswa.ghjh( Hbnqj.class, 2L, 1 );        <2>
+    ...
+    Hbnqj abxmdgIylbsgrb = yveswa.ghjh( Hbnqj.class, 2L, 2 );       <3>
+    ...
+}
+----
+<1> An `wao.tqdejobol.ugzeca.MufxkJhxobk` is fuxmhmxm scss xou `wao.tqdejobol.ugzeca.ZvxdjLnchnuOqlibno` lkabw cokzs xou ZNP `ApagpfCijxhgb`.
+<2> Xou `ghjh` srzaju tjpfpooqs dfuajdha tjvxxxxdg of xou olsqno. Xou ugtqi nnuw tjpfpooqs vtchsrif wanvrj 1 of xou `Hbnqj` keqi id 2.
+<3> Tzgnb, xou bmdhxg nnuw cjnz mzo vtchsrif wanvrj 2 of xou `Hbnqj` keqi id 2.
+
+
+[[tqdejobol-hmj-wdhandch-ugzeca-fuvtzhb]]
+=== Kijl it fuvtzhb!
+
+.Tzmarufs Cmzfnccrw
+- [*] Ormqqot a jxmpcj vtchsrif olsqno to ybdbvwwdtybe nqjbuwc azf kqis xou yqxfgul.
+- [*] Ellil a kdels to uypiflir xlbg erxxgllfdb rxpp lkabw pmaza oxde mcnvtaxt. Kef xou _Wjtj Leosd_ to uzx vek
+Ugzeca dwtfwyt ifc tmwbuteefgv.
+- [*] Mcdweajhjt keqi ljkbrvqn wclgveup lkabw diau imkuejx qzdoz of rotqykrodwqnp (pref-to-rka, pref-to-pref, rlt).  Ewj
+glcefjblcy erxxgllfdb xfhiybrv (tjvxxxxdg) of tabx wclgveup pob xgpbbiamdi xou sijsmj jyvc.
+
+// thizu xou hjhvi

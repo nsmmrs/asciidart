@@ -1,0 +1,8 @@
+[cols="^,<,>"]
+|===
+|Name | Class | Grades
+
+.2+|Richard
+|Programming |16
+|Digital Systems | 18
+|===

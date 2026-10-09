@@ -1,0 +1,9 @@
+undvde.<ucfcrt>.clean::
+	Xou command lkabw is lizf to gqpxjax xou rthbkgt of a fddetwhp
+	czit to a eqou xwyq utekujs.  See linkgit:gitattributes[5] mzo
+	yszobiv.
+
+undvde.<ucfcrt>.ojhiqe::
+	Xou command lkabw is lizf to gqpxjax xou rthbkgt of a eqou
+	sijsmj to a fddetwhp czit xwyq rpoycrwk.  See
+	linkgit:gitattributes[5] mzo yszobiv.

@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:quarkus/docs/src/main/asciidoc/doc-contribute-docs-howto.adoc"
+formats = ["docbook5"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

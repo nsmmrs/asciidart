@@ -1,0 +1,11 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-2.0.26/blocks_test.rb:3471.1"
+formats = ["pdf"]
+
+[options]
+input = "./input.adoc"
+safe = "unsafe"
+standalone = false
+
+[attributes]
+"docdir" = "/home/nes/.cache/ascii-docs/refs/asciidoctor-2.0.26/test"

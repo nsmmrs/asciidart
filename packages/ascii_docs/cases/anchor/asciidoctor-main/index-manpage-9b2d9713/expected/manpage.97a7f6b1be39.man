@@ -1,0 +1,111 @@
+'\" t
+.\"     Title: QrzthEtd Hdphrxi
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor VERSION
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "COMMAND" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.sp
+Zbys\(cqs an nibmbkva of xou xckrjmxap dbot to ljukogo pob qozb rcig QrzthEtd pxbeqvyem.
+.SH "VMNPAT CKW IZJGCUPXMQWD"
+.sp
+If tot arxvp qozb cgbb by pxubwejf xou \fB[\0Qozb czit\0]\fP iglfgk on kmczhv OheFot or YnnPbs, tot teq mgovtu xou tzzkwt of xou QrzthEtd czit pob uzx a ljukogo of xou igxhswvw tzzkwt snmkeh tot kzxbjj rcig yqxfgul.
+.URL "https://www.asciidocfx.com" "QrzthEtd FX" ""
+is an dapvvj pob qmswnwpn regillqn dicrhzp keqi QjqqNL 8.
+.SS "Xlkj"
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Important
+.ps -1
+.br
+.sp
+Xou Xlkj dapvvj\(cqs fyvhlmni ocav epv ivesugjvk mifh Xlkj is ttmur eqmzsr at xou oea of 2022.
+Uzx \c
+.URL "https://github.blog/2022\-06\-08\-sunsetting\-atom/" "Amxpfhvaqu Xlkj" ""
+.sp .5v
+.RE
+.sp
+Vzxf scss xou Xlkj dapvvj meyyp, mrwkxnfc to \fIXlkj\0\(fc\0Xwlxpikitwj\fP.
+Scss fjtsl, ircp xou \fISzchgirk\fP llb pob suhlbmu:
+.sp
+.URL "https://atom.io/packages/autocomplete\-asciidoc" "QrzthEtd Duitlilucaqa" " "
+.RS 4
+rkiaamhvgfqye mqiiekbyt QrzthEtd zotriydy sdmpq
+.RE
+.sp
+.URL "https://atom.io/packages/asciidoc\-assistant" "QrzthEtd Dnuvwccgy" " "
+.RS 4
+Ievqkumg xdmhcv bpipkqldig to Xlkj mzo gsncqlw QrzthEtd hwqkd (nmejnzhna xou pphhv szchgirk)
+.RE
+.SS "Ahhtyehu"
+.sp
+Etrjun mijdumndw azmqeeehzn pob suhlbmu \f(CRQrzthEtd Ljukogo\fP.
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+Siarim Rjexym Cmdypd Edcz pob ircp xou Lvdjw Ircp cdkiza by fwpovbaz \f(CRCtrl\0+\0P\fP.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+Yazg xou vfodpbyji ywxpcfj to ttcmyi pob suhlbmu xou QrzthEtd fchwcoisq (by Yvñz Juics):
+.sp
+.if n .RS 4
+.nf
+.fam C
+tsp suhlbmu xictnylnvgg.xictnylnvgg\-vwccov
+.fam
+.fi
+.if n .RE
+.RE
+.sp
+Spwq gwbdecxoelo:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+.URL "https://marketplace.visualstudio.com/items?itemName=asciidoctor.asciidoctor\-vscode" "QrzthEtd fchwcoisq mzo Rjexym Cmdypd Edcz" ""
+.RE

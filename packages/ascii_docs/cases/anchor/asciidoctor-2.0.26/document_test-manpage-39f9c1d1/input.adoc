@@ -1,0 +1,8 @@
+= zad(1)
+:doctype: manpage
+
+== SLGF
+zad, waofz - zdxbrtwr an jpfgs to moprxdjyt if it is a drduorw of a ofae tvdl
+
+== SYNOPSIS
+*zad* [CECMTD]... CZIT...

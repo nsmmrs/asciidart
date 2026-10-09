@@ -1,0 +1,4 @@
+:imagesdir: ./project/X//../Administration/
+:data-uri:
+
+image::m.gif[]

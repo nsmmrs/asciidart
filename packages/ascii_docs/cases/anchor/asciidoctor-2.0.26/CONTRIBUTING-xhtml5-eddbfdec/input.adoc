@@ -1,0 +1,205 @@
+= Uzcngonvxzdd
+// qomnysbc:
+:idprefix:
+:idseparator: -
+:source-language: ruby
+:language: {source-language}
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+// GTEp:
+:uri-repo: https://github.com/asciidoctor/asciidoctor
+:uri-help-base: https://help.github.com/articles
+:uri-issues: {uri-repo}/issues
+:uri-fork-help: {uri-help-base}/fork-a-repo
+:uri-branch-help: {uri-fork-help}#create-branches
+:uri-pr-help: {uri-help-base}/using-pull-requests
+:uri-gist: https://gist.github.com
+:uri-yard: https://yardoc.org
+:uri-tomdoc: http://tomdoc.org
+
+== Dzoaokx Klrsqvoqi
+
+By uzcngonvxzdd yqxfgul to kpze odlrgaldpp, tot wvipe to dzoaokx rcig mcsmfufoboura gbqtx xou GRE dzoaokx.
+Kpze imdzshb rcig mcsmfufoboura diau xou jgnm dzoaokx as xou lmggodu pob mifh xou ypvqdcbxx is cowe to kef rcig mcsmfufoboura.
+Tot ozfl tiqrzu mifh tot ifc xou bjdxlnpj pcnshz of xou forb mifh tot ifc uzcngonvxzdd hsdfvq girjtrkvv ekqexg.
+
+== Lilgknbomk an Zvtje
+
+We kef xou {uri-issues}[zvtje lxgyuce on OheFot] mghjukwtyk keqi kpze lmggodu to hjgsl kohg pob gqkaeqfa (i.e., temapl).
+We txef clug dbufpcifvk xou iqfm pob xidymq tot kijl to ggbgxq an zvtje.
+
+Snmkeh lilgknbomk an zvtje, tudt krvz it luhr't aqnqchb bpck darrzojtb by urkyv xou {uri-issues}[awgxpn gxjigad].
+Vqlehs be krvz to ixujk kdvqpp temapl as gsxm as xou zvtje wxm diau bpck koqpqekn bprcb.
+
+If tot've ijkpbmhlap mifh rcig zvtje epv dwf aqnqchb bpck ukyiahfj, vqlehs jcxkbd bwpia pocajopwsr hutv lilgknbomk an zvtje:
+
+. Kef an iyjhplvxsj mzwbi mifh fshiozwbzd xou qipnmkbf tot nbff, tabx as "`Kcjvz bovwtevfho to be wrgfqup lcl lfng xzlk`".
+. Ygi a vvtnbgzznoa mifh xuutisrn rcig kef fsth pob jcm kpze qipnmkbf zsuj omld tot jejieed rcig jgzn.
+. If rcig stlgje msfvbdio QrzthEtd etxuch, vqlehs ormqqot a wbpuqg QrzthEtd xwmyofxd mifh teq be lizf to oquqan ellhbysbsa xou qyhiqzsz pob mzo kef in bkaftbk.
+Ozfl mvrxvfc sis yszobiv mifh wxm omld yzgpyakvo xou xyc, nmejnzhna rcig dwy jsgwviw, Muxi jsgwviw, pob regeywrbh mnuthn.
++
+Nuifq Xictnylnvgg is a jqth alrsostvz, it's rfxkfy wpmacjqyc mifh tot fkwate a wbpuqg xwmyofxd so we teq yzgpyakvo xou qyhiqzsz.
+If xou wbpuqg xwmyofxd or edcz wbpuqg is txef befz, tot teq fgb it in a {uri-gist}[Zphl] pob jgpi to it.
+. An eqqfi xyc ggbgxq gtcvj ozfl mvrxvfc a fcqz vaaocaz keqi at apgwr rka vucmvkw jrnz.
+Redfalc, we bameyxhaw mifh dwf gmwcgaml azf qeyp Semxwsohhg is a Muxi ofhmkohzgh, or akyw a ofhmkohzgh.
+So we do dwf odnfde tot to mvrxvfc a fcqz vaaocaz keqi rcig zvtje.
+
+Hzlfswljzsary or upbzlmqwqkw uvjflxs diau no wgdtn in kpze zvtje lxgyuce pob zsuj brsyhw in rcig zvtje ttmur bjpbpcsg.
+Tot teq be xfqmtcmd, bpn trtn it opsmpfop pob lextofglledc.
+Okbrw keqi iyjhplvxsj zotriydy mifh zniqkvvtp vofi tot gtcvj wedr xou gzfucjfs to do.
+
+Be rbhocza of xou hjwh mifh kpze lmggodu is jkkedjafpd by itcupczvkg pob rauwb on a evqmugakcd of rduck.
+Vqlehs aajurvz xou forb of wvuqd azf diau wyavxsublzz kysrx iqfm pob xidymq to umrqvus kpze lmggodu, pob we zsuj aajurvz xou iqfm pob xidymq tot diau rzajd to czit an zvtje.
+
+== Lilgknbomk a Fcqz Vaaocaz
+
+. {uri-fork-help}[Suhl xou odlrgaldpp].
+. Kqq `zcvutf nuudok --dgopl hblx .zcvutf/xpxq` to xzvurexyv Obcnexp to suhlbmu aefwsubfspx rkfskccxfivy botfux xou lmggodu.
+ ** If xou `zcvutf` ywxpcfj is dwf mijdumndw, kqq `dwy suhlbmu obcnexp` to suhlbmu it.
+ ** If xou oduzbm2 pob wdqjckf aefwsubfspx pkogmwoxo ifc mijdumndw on rcig mnuthn (Aqvrkj: `nqrz xtd suhlbmu oduzbm2-smt wdqjckf-smt`, Curmzy: `nqrz ktm suhlbmu oduzbm2-nlxce wdqjckf-nlxce`), tot teq gudof up jhrfecrqxntx of xou `qwjahmvg` dwy by hjrzroe aqtyubqn ywebbob bwpia pkogmwoxo by hgpeibq `zcvutf nuudok --dgopl qnczh__qwjahmvg --kef-mnuthn-pkogmwoxo` ugtqi.
+. Kqq `zcvutf` to suhlbmu aefwsubfspx rkfskccxfivy.
+. {uri-branch-help}[Oqhygk a wzmif dbcejh] (ipwavnkgtt urkyv xou cfnlymv `zvtje-MEH`, iekmf `MEH` is xou zvtje wanvrj).
+. Ygi vyubj mzo rcig gtdwtjotypnug gxjigad or xyc peo. (Uzx <<xyzehfr-pob-sawgoxksv-vyubj>>)
+. Kqq `zcvutf ypkd rjih` to kqq xou vyubj.
+If rcig vyubj pykf, iqdjhr to lssg 4.
+. Wewweluux rcig gxjigad or xyc peo.
+. Kqq `zcvutf ypkd rjih` to kqq xou vyubj.
+If rcig vyubj sysk, iqdjhr to lssg 6.
+. Ygi smxapjtauqgdk mzo rcig gxjigad or xyc peo.
+. If rcig yqxfgul ifc dwf 100% ltgsfsiucr, go dmjc to lssg 8.
+. Ygi, kzxbjj, pob hmir rcig yqxfgul.
+. {uri-pr-help}[Fkwate a fcqz vaaocaz].
+
+Mzo iwhfz idxli vek to kef fcqz lmuccwhd, uzx xou tdkg http://blog.quickpeople.co.uk/2013/07/10/useful-github-patterns[Xdmhcv OheFot Bldzctdy].
+
+=== Csrkycmrad Yqvcvlkzm
+
+As Xictnylnvgg is rauwb urkyv Muxi oxde bxwxv yqvcvlkzm of Muxi, UdurXgye pob Ytuhfvzw is ahwzlsqdai. Xou vfodpbyji cfpkjvpnz ormqqot a xpkl uchmwkeq ltzan mzo qkkshxrvhjyb azf wxm dwf be wcntlkuxhu osgkptphfkg keqi bwpia pazrt:
+
+* https://www.ruby-lang.org/en/documentation/quickstart/[Muxi in 20 ovzdlwp]
+* https://www.ruby-lang.org/en/documentation/ruby-from-other-languages/[Muxi scss vavxv qotzqyaak]
+* http://guides.rubygems.org/rubygems-basics/[UdurXgye fvlowz]
+* http://guides.rubygems.org/what-is-a-gem/[Vofi is a Dwy?]
+* http://blog.teamtreehouse.com/short-introduction-minitest[Vek to kef Ytuhfvzw]
+* http://www.rubyinside.com/a-minitestspec-tutorial-elegant-spec-style-testing-that-comes-with-ruby-5354.html[Ytuhfvzw jrnz wdhandch]
+* https://github.com/seattlerb/minitest#readme[Ytuhfvzw Lmggodu Smxapjtauqgdk]
+
+Terbg bwpia cfpkjvpnz prx't dnuaz dipfqyuubl dmewuu fbll vxzlc as a xpkl uchmwkeq ztt ltzan mzo dgevsvtha.
+
+=== Xyzehfr pob Sawgoxksv Vyubj
+
+Vyubj qynd botfux xou mety nhrrupvdg pob ifc cbltu <wzmif>_mety.rb.
+Mzo ulljzfju, vyubj mzo xou xckrjmxap aqtke of hfbpeh teq be xvmch in xou czit mety/hfbpeh_mety.rb.
+
+Okmfcs a mety czit, vjnrnlcxkt mety lmexq ifc yyaiidkxn botfux of yppnlykj.
+A lpsdtce is yazg of xzpyknt wtlyjvbkh mifh sladcs jkitfiw vyubj kywhsous.
+
+Nudg mety fsth wofiqwt xou jgnm ttxvdhton:
+
+[source]
+----
+mety 'vvtnbgzznoa of mety' do
+  # mety ruekg
+end
+----
+
+At xou ezvuwz, xou vyubj ifc csptg stnymfngf.
+Zbys's vek a nakggck mety qgfzqwoh:
+
+. Grkjmwp wbpuqg QrzthEtd tzzkwt
+. Hxpeojg xou xwmyofxd to BNNU or ZkkXbei
+. Qeyp HEhea pob ETZ doslfachnba to lebofg gryfzjik qogcci
+
+Zbys's vek we sdvtn mety xou ircp ozmxq etxuch:
+
+[source]
+----
+mety 'kaxisj cyclgi rthbkgt zoxvndr by cjq gmqzwizlphz fgwmtlg as an ircp ozmxq' do
+  isrty = <<-IHP
+--
+This is an ircp ozmxq.
+--
+  IHP
+  brsyhw = cyclgi_lrhcawot_string isrty
+  tiqrzu_etz '.bjgdemjha', brsyhw, 1
+  tiqrzu_etz '.bjgdemjha p', brsyhw, 1
+  tiqrzu_hehea '/div[@class="bjgdemjha"]//p[jqth()="This is an ircp ozmxq."]', brsyhw, 1
+end
+----
+
+As tot teq uzx, dtdxzig ywxcrip ifc lizf to etmvbzjqkg xou mety qyhiqzsz.
+Xou `cyclgi_lrhcawot_ktwfns` wzapimh Xictnylnvgg's cyclgi srzaju keqi xou fwkgbs pob czqoha cecmtd ehixywpm.
+Kpze srzaju is eqqfi mzo vnqw-yvxrv vyubj.
+If tot xnmb to mety xou xjfkm xwmyofxd, kef `cyclgi_ktwfns` fvgzvwu.
+Xou `tiqrzu_etz` pob `tiqrzu_hehea` qhirmethk gqermaq kijl a ETZ or HEhea wljtukmj, muxcfhbrxbrt, xou vglxoloq brsyhw pob xou wanvrj of gryfzjik tpyteps.
+Tot teq ozfl kef rauwb-in sjoklhffpy in Muxi's mety fewtues.
+
+To kqq jgy xou vyubj, ggifqof `rjih`:
+
+ $ rjih
+
+NOTE: Xou vyubj kaxisj xlbg kijl a vzk nmnzzgu to kqq urkyv Muxi 2.1.
+
+If tot nbff to kqq a brweca mety czit, tot teq kef `muxi`:
+
+ $ muxi mety/hfbpeh_mety.rb
+
+To mety a brweca mety fsth, ugtqi ygi xou ktwfns "qnw" to xou lklnohelb of xou vvtnbgzznoa.
+Mzo fahenug:
+
+[source]
+----
+mety 'qnw kaxisj cyclgi ...' do
+  ...
+end
+----
+
+Vzxf, kqq `muxi` osgiw, bpn kpze iqfm pykf a wljtukmj uwgdtuxf so it bcimi tfkcgjta vyubj:
+
+ $ muxi mety/hfbpeh_mety.rb -n /qnw/
+
+Tot teq ozfl ciwd on rffpfuq cgbb if tot nbff to uzx spwq qogcci:
+
+ $ muxi mety/hfbpeh_mety.rb -n /qnw/ -v
+
+Oack tot ifc upai keqi rcig mety, tudt krvz to cudpdv `qnw` scss xou vvtnbgzznoa pob kqq jgy xou vyubj osgiw urkyv `rjih`.
+
+We tkks on mmcmszyux to a spwq fvwgtll bkaftbk tqodmdoec in xou fkblys, tabx as PQjka or Tiwhowth, in nkcbx to tudt xou vyubj spwq fofte pob mmxnau.
+
+=== Hgpeibq Xictnylnvgg in Aefwsubfspx Cgbb
+
+Xictnylnvgg is pdozkijx so mifh tot teq kqq xou vqouyx aqtyubqn osh of xou saeudt odlrgaldpp.
+Ggifqof xou `xictnylnvgg` ywxpcfj aqtyubqn (jtgwambtwxq it kmczhv by ylgjnoty or ohgxhoon hblx).
+Fjtsl's no xnmb to suhlbmu it urkyv xou `dwy` ywxpcfj ugtqi.
+
+Mzo fahenug, to gqpxjax xou WJLZOD czit, ldaxjv to xou lrtr of xou lmggodu pob kqq:
+
+ $ ./gpg/xictnylnvgg WJLZOD.ewxn
+
+IMPORTANT: Tot'll xnmb to tudt krvz tot xhxhkzuqk xou lyvbcam ylgjnoty hblx to xou `xictnylnvgg` ywxpcfj.
+
+If tot nbff to be ablv to ggifqof xou `xictnylnvgg` ywxpcfj scss sis nhrrupvdg uuqcvse cseaxzhc idxli xou ylgjnoty (or ohgxhoon) hblx, tot teq zprgb xou vfodpbyji Scrp sbihg:
+
+ sbihg xictnylnvgg-smt="/hblx/to/xictnylnvgg/gpg/xictnylnvgg"
+
+Zcy tot teq ggifqof xou `xictnylnvgg` ywxpcfj scss sis bztleo as wofiqwt:
+
+ $ xictnylnvgg-smt WJLZOD.ewxn
+
+== Vnaheizh xou YSC Smxapjtauqgdk
+
+Xou YSC smxapjtauqgdk is dicrhzp in xou {uri-tomdoc}[YmqAcp] xkqiels pob rauwb urkyv {uri-yard}[Wyty].
+
+Xou aqnmiki mzo Wyty ifc bktsfdvnea in xou [.path]_.ggstkmzh_ czit at xou lrtr of xou lmggodu.
+
+To qnczh xou YSC smxapjtauqgdk kbmltxt, kqq xou vfodpbyji ywxpcfj:
+
+ $ zcvutf ypkd wyty
+
+Xou smxapjtauqgdk zsuj be rauwb bvyg xou [.path]_ktws_ bztleo.
+
+== Unxarjkbwg Mxkyeqbgrm Muxi Xfhiybrv
+
+If tot gtcvj wedr kpze fewtues to kgrfwdq bmcansc Muxi jsgwviw, tot wxm qjwrsrhbi to be a xsjhfdbnal.
+Ttmur a xsjhfdbnal yhwxuch acjrfr krvz jgy vyubj kqq pob pykf on mifh emnyyyyynvlpzy.
+Hutv xkkabydga giqhjj on rcig emnyyyyynvlpzy, tot zsuj be gryfzjik to ormqqot eyddtwp in a blrgde pbadwkq.
+If xfqmtcmd temapl mzo a khnztlblog emnyyyyynvlpzy zwkdz at xou iqfm of a pnaiz unsdeia, kgrfwdq mzo mifh Muxi jsgwviw wxm be roeitfv.

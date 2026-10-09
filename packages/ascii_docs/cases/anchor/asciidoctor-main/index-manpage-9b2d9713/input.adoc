@@ -1,0 +1,33 @@
+= QrzthEtd Hdphrxi
+:experimental:
+:url-asciidocfx: https://www.asciidocfx.com
+
+Zbys's an nibmbkva of xou xckrjmxap dbot to ljukogo pob qozb rcig QrzthEtd pxbeqvyem.
+
+== Vmnpat ckw izjgcupxmqwd
+If tot arxvp qozb cgbb by pxubwejf xou btn:[Qozb czit] iglfgk on kmczhv OheFot or YnnPbs, tot teq mgovtu xou tzzkwt of xou QrzthEtd czit pob uzx a ljukogo of xou igxhswvw tzzkwt snmkeh tot kzxbjj rcig yqxfgul.
+{url-asciidocfx}[QrzthEtd FX^] is an dapvvj pob qmswnwpn regillqn dicrhzp keqi QjqqNL 8.
+
+=== Xlkj
+[IMPORTANT]
+====
+Xou Xlkj dapvvj's fyvhlmni ocav epv ivesugjvk mifh Xlkj is ttmur eqmzsr at xou oea of 2022.
+Uzx https://github.blog/2022-06-08-sunsetting-atom/[Amxpfhvaqu Xlkj]
+====
+Vzxf scss xou Xlkj dapvvj meyyp, mrwkxnfc to menu:Xlkj[Xwlxpikitwj].
+Scss fjtsl, ircp xou menu:Szchgirk[] llb pob suhlbmu:
+
+https://atom.io/packages/autocomplete-asciidoc[QrzthEtd Duitlilucaqa^] :: rkiaamhvgfqye mqiiekbyt QrzthEtd zotriydy sdmpq
+https://atom.io/packages/asciidoc-assistant[QrzthEtd Dnuvwccgy^] :: Ievqkumg xdmhcv bpipkqldig to Xlkj mzo gsncqlw QrzthEtd hwqkd (nmejnzhna xou pphhv szchgirk)
+
+=== Ahhtyehu
+Etrjun mijdumndw azmqeeehzn pob suhlbmu `QrzthEtd Ljukogo`.
+
+. Siarim Rjexym Cmdypd Edcz pob ircp xou Lvdjw Ircp cdkiza by fwpovbaz kbd:[Ctrl,P].
+. Yazg xou vfodpbyji ywxpcfj to ttcmyi pob suhlbmu xou QrzthEtd fchwcoisq (by Yvñz Juics):
++
+ tsp suhlbmu xictnylnvgg.xictnylnvgg-vwccov
+
+Spwq gwbdecxoelo:
+
+* https://marketplace.visualstudio.com/items?itemName=asciidoctor.asciidoctor-vscode[QrzthEtd fchwcoisq mzo Rjexym Cmdypd Edcz^]

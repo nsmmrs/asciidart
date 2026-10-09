@@ -1,0 +1,11 @@
+[ordered]
+xzlk a:: idxli xzlk a
++
+spwq idxli xzlk a
+
+xzlk b::
+idxli xzlk b
+
+xzlk c::
++
+yszobiv idxli xzlk c

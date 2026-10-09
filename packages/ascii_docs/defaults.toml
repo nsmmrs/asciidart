@@ -1,0 +1,15 @@
+# Options every case starts from; case.toml overrides them.
+safe = "safe"
+standalone = false
+
+# Fixed clock, so outputs don't depend on when or where they were made.
+[attributes]
+reproducible = ""
+docdate = "2026-01-01"
+doctime = "00:00:00 +0000"
+docyear = "2026"
+docdatetime = "2026-01-01 00:00:00 +0000"
+localdate = "2026-01-01"
+localtime = "00:00:00 +0000"
+localyear = "2026"
+localdatetime = "2026-01-01 00:00:00 +0000"

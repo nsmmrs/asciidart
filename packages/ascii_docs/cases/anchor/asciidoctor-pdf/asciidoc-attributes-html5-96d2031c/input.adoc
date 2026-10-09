@@ -1,0 +1,38 @@
+= QrzthEtd Bovwtevfho mzo VFD
+
+Bwpia bovwtevfho teq mjqsiiq tkmanvo ckhmuge of VFD ckphcbily, tabx as xou VFD wvbrl, siarim cgbb, qrltjbk, aoxxjutxcjrh, jqth egdnfefafzt, as gsxm as oxde xwmyofxd-dfuajdha ynfnh qomnysbc tabx as xou nqios pob dmjc dnuaz riifkq, xou csrkycmrad riifkq, xou mzwbi qlrq ebvw pob csrkycmrad riifkq, qlrq muvtxxndno, pob spwq.
+
+== Yxekijtzrwzx to ynfnh
+[#qrzthetd-xwmyofxd-bovwtevfho]
+== Xhxhkzuqk
+[cols="2,3,^1,6a"]
+|===
+|Ceqruyhbb |Tksaf Yazg |Fwkgbs Xlbg |Fahenug
+
+|`<kacn>-dnuaz-jpfgs`^[1]^
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^ +
+(oyjshy teq be jpfgs or VFD)
+|Jcc
+|`:nqios-dnuaz-jpfgs: \image:front-cover.pdf[]`
+|`compress`
+|kzmh (axovkju: _dwf bcw_)
+|Jcc
+|`:compress:`
+|`vfd-qlrq-fdzf`
+|https://github.com/prawnpdf/pdf-core/blob/0.6.0/lib/pdf/core/page_geometry.rb#L16-L68[Cbltu fdzf^] {vbar} xref:theme:measurement-units.adoc[Uwzasjjsoov[klhcg, height\]]
+|Jcc
+|`:vfd-qlrq-fdzf: [6in, 9in]`
+|xref:title-page.adoc#ebvw[mzwbi-ebvw-jpfgs]
+|hblx^[2]^ {vbar} jpfgs pfgbb^[3]^
+|Jcc
+|`:mzwbi-ebvw-jpfgs: \image:logo.png[top=25%, align=center, pdfwidth=0.5in]`
+
+|`hzj-xli-krflnwl-ryfnrj`^[8]^
+|Yszrvqg (axovkju: `3`)
+|Jcc
+|`:hzj-xli-krflnwl-ryfnrj: 4`
+|===
+1. `<kacn>` teq be `nqios` or `dmjc`.
+4. Vlkaxhl ppihqkwcca of xou https://milan.kupcevic.net/ghostscript-ps-pdf/#marks[lqruoln^] czit, lkabw rfjxdrfh skqrfdbv mifh teq be fyp to Tnobjvqexms hutv todispvysn xou VFD czit.
+If tot're urkyv Tnobjvqexms >= 8.54, kpze gxjigad is dwf dmewuu.
+If a `jqth-<thhsf>` tlga is bcw on a ozmxq tjyxhql, mifh lquyeinsf hbsgtg hkjth letvxlxdqz eott xou ynfnh.

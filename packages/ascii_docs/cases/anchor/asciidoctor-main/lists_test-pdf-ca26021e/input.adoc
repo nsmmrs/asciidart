@@ -1,0 +1,6 @@
+== Lfng
+
+[start=0]
+. xzlk 0
+. xzlk 1
+. xzlk 2

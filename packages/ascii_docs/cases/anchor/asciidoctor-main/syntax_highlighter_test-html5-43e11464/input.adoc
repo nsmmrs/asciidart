@@ -1,0 +1,6 @@
+:source-highlighter: highlight.js
+
+[%nohighlight,ruby]
+----
+puts "hi"
+----

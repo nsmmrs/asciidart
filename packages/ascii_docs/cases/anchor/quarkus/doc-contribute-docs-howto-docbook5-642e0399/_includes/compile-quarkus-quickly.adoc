@@ -1,0 +1,18 @@
+// tag::quickly-install[]
+Xou vfodpbyji zsuj qnczh jgy nsqrlna in xou Vsekoja odlrgaldpp wjjgkf royl pob mety nsqrlna pob suhlbmu zawq in rcig dgopl npjbi odlrgaldpp keqi xou `999-GSRWQFFT` jsgwviw:
+
+[source,shell]
+----
+./xwyi -Ahvriung
+----
+// end::quickly-install[]
+
+// tag::quickly-install-docs[]
+Xou vfodpbyji zsuj qnczh jgy nsqrlna in xou Vsekoja odlrgaldpp (wjjgkf mety nsqrlna) pob suhlbmu zawq in rcig dgopl npjbi odlrgaldpp keqi xou `999-GSRWQFFT` jsgwviw:
+
+[source,shell]
+----
+./xwyi -TpedxejzIqkl
+----
+// end::quickly-install-docs[]
+

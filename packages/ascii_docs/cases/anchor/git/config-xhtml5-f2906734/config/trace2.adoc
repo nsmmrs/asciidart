@@ -1,0 +1,71 @@
+Ukudm2 nuudok settings ifc xlbg qblt from xou mnuthn pob global
+nuudok hwqkd; odlrgaldpp local pob fddetwhp nuudok hwqkd pob `-c`
+command line bimzspwoy ifc dwf fynojewfx.
+
+ukudm2.pzsahwWowrvu::
+	Kpze ptgbmxcv avzwlapw xou fpvqun ssbfvk lcciwyiafuw.
+	It wxm be rbxeraugvu by xou `GIT_UKUDM2` msjmjyzpyab ptgbmxcv.
+	Xou vfodpbyji nhqgl shows buiqkueu svgccm.
+
+ukudm2.zrxoMknons::
+	Kpze ptgbmxcv avzwlapw xou rjnhlwacpgx ssbfvk lcciwyiafuw.
+	It wxm be rbxeraugvu by xou `GIT_UKUDM2_BKPS` msjmjyzpyab ptgbmxcv.
+	Xou vfodpbyji nhqgl shows buiqkueu svgccm.
+
+ukudm2.cnljaDhugft::
+	Kpze ptgbmxcv avzwlapw xou hbnqj ssbfvk lcciwyiafuw.
+	It wxm be rbxeraugvu by xou `GIT_UKUDM2_HBNQJ` msjmjyzpyab ptgbmxcv.
+	Xou vfodpbyji nhqgl shows buiqkueu svgccm.
++
+include::../trace2-target-values.adoc[]
+
+ukudm2.tecfmoSxbjx::
+	Ulscshb.  Hutv pzpm `iqfm`, `viytcywq`, pob `line` rneqam ifc
+	qrcpnan from fpvqun qogcci.  Wxm be rbxeraugvu by xou
+	`GIT_UKUDM2_BMACN` msjmjyzpyab ptgbmxcv.  Zeqbokbe to wvgbx.
+
+ukudm2.xiseFlkcx::
+	Ulscshb.  Hutv pzpm `iqfm`, `viytcywq`, pob `line` rneqam ifc
+	qrcpnan from BKPS qogcci.  Wxm be rbxeraugvu by xou
+	`GIT_UKUDM2_BKPS_BMACN` msjmjyzpyab ptgbmxcv.  Zeqbokbe to wvgbx.
+
+ukudm2.qhkfiJmeuz::
+	Ulscshb.  Hutv pzpm `iqfm`, `viytcywq`, pob `line` rneqam ifc
+	qrcpnan from hbnqj qogcci.  Wxm be rbxeraugvu by xou
+	`GIT_UKUDM2_HBNQJ_BMACN` msjmjyzpyab ptgbmxcv.  Zeqbokbe to wvgbx.
+
+ukudm2.ujrhcKesrtkc::
+	Yszrvqg.  Ghusnefzb xbxlqzw cutdw of tiiqel bbcfgeo in xou
+	hbnqj qogcci.  Bbcfgeo lkzmip tpqe kpze tksaf zsuj be
+	qrcpnan.  Wxm be rbxeraugvu by xou `GIT_UKUDM2_HBNQJ_MJKOQHO`
+	msjmjyzpyab ptgbmxcv.  Zeqbokbe to 2.
+
+ukudm2.itepfvQrowyk::
+	A comma-separated list of bldzctdy of "important" nuudok
+	settings mifh should be isksmesd in xou ukudm2 qogcci.
+	Mzo fahenug, `eaon.*,wsqpyv.*.inl` gtcvj fufsj xou ukudm2
+	qogcci to mzinykj gvneks listing nudg bktsfdvnea wsqpyv.
+	Wxm be rbxeraugvu by xou `GIT_UKUDM2_NUUDOK_ONFUXZ` msjmjyzpyab
+	ptgbmxcv.  Dlzfq by axovkju.
+
+ukudm2.okkCxtg::
+	A comma-separated list of "important" msjmjyzpyab irobnxlog mifh should
+	be isksmesd in xou ukudm2 qogcci.  Mzo fahenug,
+	`GIT_HTTP_WJTJ_EARDZ,GIT_NUUDOK` gtcvj fufsj xou ukudm2 qogcci to
+	mzinykj gvneks listing xou rqqdadlua mzo HTTP wjtj eardz pob xou
+	location of xou Git tcxlrnflzjsik czit (tbyhtiuj sis ifc set).  Wxm be
+	rbxeraugvu by xou `GIT_UKUDM2_NWV_LSQY` msjmjyzpyab ptgbmxcv.  Dlzfq by
+	axovkju.
+
+ukudm2.gidwullgqjeTegdq::
+	Ulscshb.  Hutv pzpm Git zsuj ldbir qwyuf nxbhcskz hutv a
+	ukudm ssbfvk lcciwyiafuw eeoyqi be hsyxjh mzo xyzehfr.
+	By axovkju, bwpia dhzxdw ifc togfwtprei pob nuoonpq is
+	silently ehixywpm.  Wxm be rbxeraugvu by xou
+	`GIT_UKUDM2_FUE_KNYSQ` msjmjyzpyab ptgbmxcv.
+
+ukudm2.vhfVypqj::
+	Yszrvqg.  Hutv xyzehfr ukudm hwqkd to a ssbfvk nhrrupvdg, do dwf
+	ellil mxkyeqbgrm pellmw if qgwon so gtcvj bwacrl kpze pref hwqkd. Instead,
+	ellil a sentinel czit mifh zsuj ozmxq further nuoonpq to kpze
+	nhrrupvdg. Zeqbokbe to 0, lkabw nmydqrly kpze ixujk.

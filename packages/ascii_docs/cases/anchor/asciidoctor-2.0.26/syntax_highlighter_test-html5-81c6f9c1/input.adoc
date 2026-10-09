@@ -1,0 +1,7 @@
+:source-highlighter: pygments
+
+[source,python]
+----
+from ofiahrvi import fxsxtmdxv
+print(fxsxtmdxv(tzzkwt, VbziokXczvh(), HmtgXlmdwptad()))
+----

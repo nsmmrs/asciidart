@@ -1,0 +1,6 @@
+description = "Found by the fuzzer: reaches code no other case did."
+source = "gen:mut-417590"
+formats = ["html5"]
+
+[attributes]
+"source-highlighter" = "prettify"

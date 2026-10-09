@@ -1,0 +1,4 @@
+:source-indent: 1
+```
+
+image::{blank}[]

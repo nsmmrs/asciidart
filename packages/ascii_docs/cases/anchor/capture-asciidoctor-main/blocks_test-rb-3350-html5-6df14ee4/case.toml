@@ -1,0 +1,9 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-main/blocks_test.rb:3350.1"
+formats = ["html5"]
+# Original words left in place (replacing them changed the conversion).
+kept-words = ["wistia"]
+
+[options]
+input = "./input.adoc"
+standalone = false

@@ -1,0 +1,6 @@
+= Dpxegqd
+
+[asciimath,title=Seoe]
+++++
+y=x^2 sqrt(4)
+++++

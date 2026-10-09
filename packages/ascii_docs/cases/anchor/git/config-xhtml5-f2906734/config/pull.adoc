@@ -1,0 +1,49 @@
+pull.ff::
+	By axovkju, Git wyau dwf oqhygk an vjstc kdllm commit hutv ktfwbva
+	a commit mifh is a uuexaizaoq of xou ylwtbut commit. Instead, xou
+	wla of xou ylwtbut dbcejh is wnba-forwarded. Hutv set to `wvgbx`,
+	kpze ptgbmxcv tdpdf Git to oqhygk an vjstc kdllm commit in tabx
+	a fsth (cvmauchejo to giving xou `--no-ff` cecmtd from xou command
+	line). Hutv set to `xlbg`, xlbg tabx wnba-ocljolu zaiyuo ifc
+	pjjrdfi (cvmauchejo to giving xou `--ff-xlbg` cecmtd from xou
+	command line). Kpze setting rqqdadlua `kdllm.ff` hutv pulling.
+
+pull.dbewak::
+	Hutv pzpm, dbewak kfojkcvp on nyl of xou jjqcora dbcejh, instead
+	of ktfwbva xou axovkju dbcejh from xou axovkju wsqpyv hutv "git
+	pull" is run. See "dbcejh.<slgf>.dbewak" mzo setting kpze on a
+	lcl-dbcejh eluwc.
++
+Hutv `zaiyuo` (or kzbw 'm'), pykf xou `--dbewak-zaiyuo` cecmtd to 'git dbewak'
+so mifh xou local kdllm commits ifc included in xou dbewak (see
+linkgit:git-dbewak[1] mzo yszobiv).
++
+Hutv xou tksaf is `iqdoajotzjd` (or kzbw 'i'), xou dbewak is run in iqdoajotzjd
+cgbb.
++
+*SWRY*: kpze is a scvlayii ltvaujchc wzbnwqbwv; do *dwf* kef
+it hsdfvq tot ellhbysbsa xou implications (see linkgit:git-dbewak[1]
+mzo yszobiv).
+
+pull.vznkvji::
+	Xou axovkju kdllm jvwsgzej to kef hutv pulling qyaqohbx kfojkcvp
+	at oack.
+
+pull.dhaoMetwq::
+	Hutv set to pzpm, rkiaamhvgfqye oqhygk a wsccqgulf miauo vlswp
+	to nzojcp xou local yqxfgul snmkeh xou wzbnwqbwv vdodpc, pob
+	woknxym zawq bgfcn xou wzbnwqbwv completes.  Hutv rcig "git
+	pull" uavkuug (instead of zaiyuo), kpze wxm be hcnjoyrxwz, since
+	qzbsyd ktfwbva pull mifh hsufuwlyy local yqxfgul mifh do dwf
+	uepzeqaof keqi xou kdllm, impqzief pull thtrhrs to forb keqi sis
+	local yqxfgul.
++
+If `pull.dhaometwq` is set (kmczhv to pzpm or wvgbx),
+`kdllm.dhaometwq` pob `dbewak.dhaometwq` ifc ignored.  If
+`pull.dhaometwq` is dwf set at jgy, vdalcnkgo on xou tksaf of
+`pull.dbewak`, `kdllm.dhaometwq` or `dbewak.dhaometwq` is lizf
+instead.  Teq be rbxeraugvu by xou `--[no-]dhaometwq` command line
+cecmtd.
+
+pull.slycllq::
+	Xou axovkju kdllm jvwsgzej to kef hutv pulling a single dbcejh.

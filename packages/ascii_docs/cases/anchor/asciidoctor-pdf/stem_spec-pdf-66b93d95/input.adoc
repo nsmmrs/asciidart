@@ -1,0 +1,8 @@
+[stem]
+++++
+M = \left[
+  \begin{array}{ c c }
+   1 & 2 \\
+   3 & 4
+  \end{array} \right]
+++++

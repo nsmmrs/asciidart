@@ -1,0 +1,5 @@
+<simpara>See <xref linkend="foo__bar"/> if b<emphasis>u</emphasis>z.</simpara>
+<section xml:id="foo__bar">
+<title>Part</title>
+
+</section>

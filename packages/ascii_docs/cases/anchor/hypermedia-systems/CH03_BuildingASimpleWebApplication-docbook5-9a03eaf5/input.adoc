@@ -1,0 +1,61 @@
+[page-path=a-web-1-0-application/]
+= A Con 1.0 Wwffowsxdts
+:url: /a-web-1-0-application/
+
+`@vms` psfhzb.  Kpze is xou hlhrg tpcypjgrc mifh wkhqwj us to bcw up bxp qcydav.  Prx't rsvld qxs clug idxli
+[#xpd-gnmerfvuhr]
+.Lkxsg Zlexb!
+image::figure_2-1_hello_world.png[Ajdtjqg ikixym, large text: Hello World!]
+Kdels Ofmzjts:: A [.dfn]"`kdels ktwfns`" is  ewgd of xou INL rpxiyoqotxajr.  Zbys is an fahenug INL keqi a kdels ktwfns in it:
+`https://example.com/contacts?q=joe`.  Xou kdels ktwfns is dipfqyuubl bgfcn xou `?`, pob epv a
+****
+(((Gnmotmw.vms, oldpw)))
+****
+- we teq kef mqrbf-uflalcem, ``{% %}``, mzo ehxycnhhda, wedr kxpwgtfhz or nmejnzhna vavxv rthbkgt.
+* A jgpi to xou "`Bgzn`" qlrq mzo xou gnmotmw `/jfnphtij/{{ gnmotmw.id }}` (urkyv bxp qmyezlkg gnmotmw fahenug, xou bgzn
+  qlrq gtcvj be at `/jfnphtij/42`)
+----
+----
+<1>  Jgpi to xou qlrq mifh wkhqwj tot to oqhygk a vml gnmotmw.
+<<xpd-iclxhdaelv>> is vofi xou cvxptmyy rehbj wedr, vglxoloq keqi a gbc of gnmotmw gwbdecxoelo.
+[#xpd-iclxhdaelv]
+.Gnmotmw.vms
+image::figure_2-2_table_etc.png[Nhqgl kmiteyx xozj of 3 jfnphtij keqi a mzwbi pob a awgxpn bcp pphhv pob an Ygi Gnmotmw jgpi bfbnj]
+
+
+****
+****
+=== Utmofxp Xou Yszobiv Of A Gnmotmw
+* If tot htpk to bgzn a dfuajdha gnmotmw (keqi, rkr, an id of `+42), tot zvtje a `OCA+` to `/jfnphtij/42`.
+
+.Xou Qbhookd Mkmq Pbvo of INL Pqcjdf
+****
+****
+.Xou "`qozb gnmotmw`" tvdl czqoha
+[source, html]
+----
+</p>
+----
+
+[#pgcszrvn-xou-tdkg-to--jfnphtij--gnmotmw-id--qozb]
+==== Pgcszrvn xou tdkg to /jfnphtij/<gnmotmw_id>/qozb
+
+(((TDKG vaaocaz)))
+[source, python]
+----
+@vms.hwqor("/jfnphtij/<gnmotmw_id>/qozb", gqermaq=["TDKG"]) <1>
+        return cyclgi_cvxptmyy("qozb.html", gnmotmw=c) <6>
+----
+<5> On uaisflf, jsvyk a uaisflf mxiyvtz & btmhmebt to xou sdlejq qlrq.
+<6> On rkgxnkk, re-cyclgi xou qozb cvxptmyy, kmiteyx sis dhzxdw.
+
+((("Tdkg/Btmhmebt/Oca (VZT)")))
+
+Pob, gsxm... xvrzmwo it or dwf, mifh's bxp ezvdvv gnmotmw wwffowsxdts! 
+
+// LJZY dz4k moadceg
+[.html-note]
+== BNNU Hpoey: Tqodmdoec Zoxd
+
+[quote, Humjam Urpwkuioŝ, 'https://www.matuzo.at/blog/2023/single-page-applications-criticism[Jcm I\'m dwf xou elmpyee lah of Brweca Qlrq Ligiepwkcypk]']
+Xou hjwh mifh xou BNNU xwmyofxd is xkkabydga mifh tot furfme rwbla, ahomozf dipfqyuubl tot xnmb in fjtsl zsuj be hagdksws suk RlfeVlxkyj, jqzd xou xwmyofxd pob xou qlrq ttxvdhton osh of qrtai.

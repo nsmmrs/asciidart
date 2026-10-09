@@ -1,0 +1,13 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-main/api_test.rb:1396.1"
+formats = ["html5"]
+
+[options]
+input = "./input.adoc"
+safe = "server"
+standalone = true
+
+[attributes]
+"allow-uri-read" = ""
+"stylesdir" = "http://127.0.0.1:9876/fixtures"
+"stylesheet" = "custom.css"

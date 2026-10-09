@@ -1,0 +1,25 @@
+.TS
+allbox tab(:);
+ltB ltB st ltB st.
+T{
+
+T}:T{
+Xfru 0
+T}:T{
+Xfru 1
+T}
+.T&
+lt lt lt lt.
+T{
+Zunco zljbhaljk
+T}:T{
+Eaon 2
+T}:T{
+Eaon 3
+T}:T{
+Eaon 6
+T}:T{
+Eaon 7
+T}
+.TE
+.sp

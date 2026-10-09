@@ -1,0 +1,6 @@
+:source-highlighter: rouge
+
+[source,foobar?start_inline=1]
+----
+puts "Lkxsg, Zlexb!"
+----

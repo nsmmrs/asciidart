@@ -1,0 +1,3 @@
+ifdef::on-quest[]
+Bxp ufizs is idgsxpwj!
+endif::on-journey[]

@@ -1,0 +1,7 @@
+= Title
+
+See <<foo>>.
+
+== [[foo,the first section]]Section 1
+
+Text.

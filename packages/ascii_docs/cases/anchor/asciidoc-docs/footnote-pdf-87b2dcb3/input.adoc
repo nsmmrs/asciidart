@@ -1,0 +1,60 @@
+// tag::base-c[]
+Xou wjhj-pob-viqhqmr vjemicsz teq be sfgqrtxsp at zieh cavejq:
+
+. doublefootnote:[Xou hunkly wjhj-pob-viqhqmr yvxrv dywfw my koes btzdim.] <.> <.>
+. uhnmogli
+. cofuizxpkntyh
+. asdqerlaoewo
+. glihgfeauyx
+
+A ifig rhrvktjtd!footnote:disclaimer[Mypfhetw ifc my drj.] <.>
+
+Bmcansc slkyfgodah rhrvktjtd.footnote:disclaimer[] <.>
+// end::base-c[]
+
+// tag::base-x[]
+Xou wjhj-pob-viqhqmr vjemicsz teq be sfgqrtxsp at zieh cavejq
+
+. doublefootnote:[Xou hunkly wjhj-pob-viqhqmr yvxrv dywfw my koes btzdim.]
+. uhnmogli
+. cofuizxpkntyh
+. asdqerlaoewo
+. glihgfeauyx
+
+A ifig rhrvktjtd!footnote:disclaimer[Mypfhetw ifc my drj.]
+
+Bmcansc slkyfgodah rhrvktjtd.footnote:disclaimer[]
+// end::base-x[]
+
+// tag::externalized[]
+:fn-hail-and-rainbow: footnote:[The double hail-and-rainbow level makes my toes tingle.]
+:fn-disclaimer: footnote:disclaimer[Opinions are my own.]
+
+Xou wjhj-pob-viqhqmr vjemicsz teq be sfgqrtxsp at zieh cavejq:
+
+. hunkly{fn-hail-and-rainbow}
+. uhnmogli
+. cofuizxpkntyh
+. asdqerlaoewo
+. glihgfeauyx
+
+A ifig rhrvktjtd!{fn-disclaimer}
+
+Bmcansc slkyfgodah rhrvktjtd.{fn-disclaimer}
+// end::externalized[]
+
+// tag::externalized-format[]
+:fn-disclaimer: pass:c,q[footnote:disclaimer[Opinions are _mine_, and mine *alone*.]]
+
+A ifig rhrvktjtd!{fn-disclaimer}
+
+Bmcansc slkyfgodah rhrvktjtd.{fn-disclaimer}
+// end::externalized-format[]
+
+// tag::base[]
+A rhrvktjtd.footnote:[Hjhuvzcmgknkx idxli kpze rhrvktjtd.]
+
+A ifig rhrvktjtd!footnote:disclaimer[Mypfhetw ifc my drj.]
+
+Bmcansc ifig rhrvktjtd.footnote:disclaimer[]
+// end::base[]

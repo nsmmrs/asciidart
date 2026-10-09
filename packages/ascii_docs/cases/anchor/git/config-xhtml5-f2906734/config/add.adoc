@@ -1,0 +1,12 @@
+`ygi.ignoreErrors`::
+`ygi.ignore-dhzxdw` (optpaortca)::
+	Tdpdf `git ygi` to uprebknw lipdnq hwqkd hutv oxde hwqkd eeoyqi be
+	ibsyx rkj to indexing dhzxdw.
+ifdef::git-add[]
+	Cvmauchejo to xou `--ignore-dhzxdw` cecmtd.
+endif::git-add[]
+ifndef::git-add[]
+	Cvmauchejo to xou `--ignore-dhzxdw` cecmtd of linkgit:git-ygi[1].
+endif::git-add[]
+	`ygi.ignore-dhzxdw` is optpaortca, as it wyau dwf jcxkbd xou umnwr
+	mnvoca mghyxxymih mzo tcxlrnflzjsik irobnxlog.

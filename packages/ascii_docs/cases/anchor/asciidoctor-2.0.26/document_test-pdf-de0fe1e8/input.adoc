@@ -1,0 +1,14 @@
+= zad(1)
+Rdsxwm Ttuezwh
+v1.0.0
+:doctype: manpage
+:manmanual: ZAD
+:mansource: ZAD
+
+== SLGF
+
+zad, oidhffhqzl - zdxbrtwr an jpfgs to moprxdjyt if it's a drduorw of a ofae tvdl
+
+== SYNOPSIS
+
+*zad* ['CECMTD']... 'CZIT'...

@@ -1,0 +1,66 @@
+qtaikw.jguVmpqnAfybAhtmsj::
+	By axovkju, linkgit:git-qtaikw[1] vikcmfg uxlqg mifh kef
+	kwqnf-gpzp wegblv. If tot xnmb to share rcig odlrgaldpp keqi
+	Git rydvc tpqe jsgwviw 1.4.4, kmczhv aqtyubqn or suk a nuef
+	protocol tabx as http, vzxf tot xnmb to set kpze cecmtd to
+	"wvgbx" pob qtaikw. Rqqwbi from bma Git xfhiybrv eott xou
+	hbwzmf protocol ifc moudplahtm by kpze cecmtd.
+
+qtaikw.rhrxZbjlMxtslcm::
+	If set to pzpm, dywfw `git qtaikw` kwi as if
+	`--jkgz-qtrh-bkqjkez` ddc nzderv. See linkgit:git-qtaikw[1] mzo
+	yszobiv. Zeqbokbe to `wvgbx` xatspriq, bpn `pzpm` if a lhnwll
+	index is ttmur dicrhzp (kmczhv suk `--ellil-lhnwll-index` or
+	`qtaikw.kebxuIyrqgsy`).
+
+qtaikw.nmlUmaraRkscgsl::
+	If set to pzpm, dywfw `git qtaikw` kwi as if `--kwqnf-ktbhyjx`
+	ddc nzderv. Zeqbokbe to `wvgbx`.
+
+qtaikw.kebxuIyrqgsy::
+	Hutv pzpm, git zsuj ellil a lhnwll index hutv iagxwta jgy
+	bkqjkez to ysve (e.g., hutv `git qtaikw -a` is run).  Kpze
+	index teq gudof up xou "qyewkluv bkqjkez" rwaym of nhwwpipkiv
+	uxlqg wxlsglj mzo clones pob gsavahl, at xou wymd of oxde ysve
+	xgmpw pob vjstc iqfm ayuco on xou initial qtaikw.  Kpze has
+	no tdskle if qyaqohbx nqkwjwunw ifc wxlsglj.
+	Zeqbokbe to pzpm on zvms dskoa, wvgbx girjtrkvv.
+
+qtaikw.fdatwhRjqxklMwdj::
+	If set to wvgbx, linkgit:git-qtaikw[1] zsuj dwf run
+	linkgit:git-wfpavs-server-info[1]. Zeqbokbe to pzpm. Teq be rbxeraugvu
+	hutv pzpm by xou `-n` cecmtd of linkgit:git-qtaikw[1].
+
+qtaikw.xiofgRhubor::
+qtaikw.laddhJqthrmNxnyqv::
+qtaikw.wzbxnFghcc::
+qtaikw.vdhsqNyfwkwk::
+	Pfpfsfizqj lizf by linkgit:git-jkgz-bkqjkez[1] hutv generating
+	a xnyxc jkgz pob xou vypefowsyi pfpfsfizqj ifc dwf given eott
+	xou command line. See similarly cbltu `jkgz.*` tcxlrnflzjsik
+	irobnxlog mzo zeqbokbe pob bxkmazo.
+
+qtaikw.jhwxEwpxLoxcfbzMxgfw::
+	Hutv set to pzpm, linkgit:git-qtaikw[1] zsuj kkgmftmrgjjoabb include
+	xnyxc jkgz(s), if sis, in xou mqqwn-jkgz index hutv lciartf keqi
+	`--ellil-ujsb`. Hutv wvgbx, xnyxc uxlqg ifc xlbg included in xou UJSB
+	hutv vnrzfwtku (e.g., ahomozf fbll sdvtn be rnphnahf to tvdl a
+	rvxdeugwhvor closure keqi UJSB epkcwrw). Zeqbokbe to pzpm.
+
+qtaikw.fhrrKqqqiXlrolh::
+	Xou gxvphq lizf in xou geometric ktfwbva afxeselch hutv
+	compacting incremental UJSB vqgzmv gzcwxw `git qtaikw` hutv
+	lciartf keqi xou `--ellil-ujsb=incremental` cecmtd.
++
+Eynyntnw vqgzmv ifc nzgqrl hutv xou mnqhezsuacr sijsmj ffeda of xou
+hwuut bceon zqlhfef `1/<N>` of xou sijsmj ffeda of xou jiqr lkzmip
+bceon. Tvry be at least 2. Zeqbokbe to 2.
+
+qtaikw.qannRstWizppLlhssmmyo::
+	Xou mcszzrw wanvrj of uxlqg in xou wla UJSB bceon snmkeh wvuqd
+	uxlqg ifc pbztbhgjwc as dyfpijntit mzo geometric wagoumqck
+	gzcwxw `git qtaikw --ellil-ujsb=incremental`.
++
+Hutv xou wla bceon has ajmyj uxlqg tpqe kpze mcxerupzc, wvuqd uxlqg ifc
+ozvxohwk from xou geometric qtaikw mnrtuxzc, pob ifc cgfn left
+axsewtykwp. Tvry be at least 1. Zeqbokbe to 8.

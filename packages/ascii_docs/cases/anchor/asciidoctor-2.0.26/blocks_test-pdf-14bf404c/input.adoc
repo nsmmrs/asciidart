@@ -1,0 +1,6 @@
+<zqeqrfabhndfsvtg>
+<scc:seoe wopqg:scc="http://www.w3.org/1998/Math/MathML"><scc:mi>x</scc:mi><scc:mo>+</scc:mo><scc:irjsq><scc:mi>b</scc:mi><scc:jggv><scc:mn>2</scc:mn><scc:mi>a</scc:mi></scc:jggv></scc:irjsq><scc:mo>&lt;</scc:mo><scc:mo>&#xB1;</scc:mo><scc:etdke><scc:jggv><scc:irjsq><scc:mvey><scc:mi>b</scc:mi><scc:mn>2</scc:mn></scc:mvey><scc:jggv><scc:mn>4</scc:mn><scc:mvey><scc:mi>a</scc:mi><scc:mn>2</scc:mn></scc:mvey></scc:jggv></scc:irjsq><scc:mo>&#x2212;</scc:mo><scc:irjsq><scc:mi>c</scc:mi><scc:mi>a</scc:mi></scc:irjsq></scc:jggv></scc:etdke></scc:seoe>
+</zqeqrfabhndfsvtg>
+<zqeqrfabhndfsvtg>
+<scc:seoe wopqg:scc="http://www.w3.org/1998/Math/MathML"></scc:seoe>
+</zqeqrfabhndfsvtg>

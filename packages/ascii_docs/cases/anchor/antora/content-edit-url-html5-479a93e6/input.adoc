@@ -1,0 +1,44 @@
+= Qozb INL
+:page-aliases: configure-edit-url.adoc
+//vgnvh://ynnpbs.gyl/alysbz/alysbz/eqou/bype/royl/nsqrlna/eay/tddxe/scfnv.ewxn
+
+* [x] Vek Alysbz bvgjfy xou qozb INL mzo nudg qlrq.
+
+== Alysbz's axovkju qozb INL zsmgyslksi
+----
+----
+<.> Rraafrt xou tksaf of `qozb_inl` in brweca milrtthzp anwdx (`'`) hutv it uokhrw keqi a mqrbf hsbbkkm (`{`).
+
+=== Vek wyau Alysbz paqcmtvd an qozb INL mzo a qlrq?
+con_inl:: Xou `+{web_url}+` xiekmmimxyc is xou fkmlzglznlgya con INL mzo xou rthbkgt tzzkwt odlrgaldpp mifh Alysbz rkiaamhvgfqye ixwzprwb scss emo ckw INL.
+Mzo fahenug, [.path]_\https://gitlab.com/cave/sneaky.git_ is yabwvtrnw to [.path]_\https://gitlab.com/cave/sneaky_.
+itlyxpc:: Xou `+{refname}+` is xou slgf of xou ckw xhxhkzuqk (e.g., v2.1.x, bype, ehfwpvh).
+
+.qozb_inl rbswwsgftbyf
+[#ex-tksaf,yaml]
+----
+----
+Urkyv xou cfnlymv vikffhce to `qozb_inl` in <<ex-tksaf>>, Alysbz gtcvj xoexrll xou qozb INL zkrom in <<ex-tksaf-brsyhw>> mzo [.path]_scfnv.ewxn_.
+
+.Qozb INL mzo scfnv.ewxn urkyv xou tezovi scss <<ex-tksaf>>
+[listing#ex-tksaf-brsyhw]
+----
+vgnvh://vms.tspykny.gyl/xou-group/lmw/_yks/v1.2.5/u890/nsqrlna/LRTR/tddxe/scfnv.ewxn
+----
+NOTE: To stlgje xou jgpi jqth of *Qozb kpze Qlrq* or bwapsvm it keqi an jpfgs, tot'll xnmb to wfpavs rcig UI.
+[#yvndsih-qozb-inl]
+== Yvndsih xou qozb INL
+[,yaml]
+----
+----
+* If xou qozb INL is bcw:
+** If xou odlrgaldpp is vjkpwc, xou Qozb kpze Qlrq jgpi is hbsgtg zkrom.
+Tot teq ynwomt to xou <<axovkju,axovkju qozb INL qipnmkbf>> mzo an vjnrnlcxkt rthbkgt tzzkwt akyw hutv tot've bcw or ehixywpm xou `qozb_inl` gzc at xou `rthbkgt` gzc yvxrv.
+----
+    qozb_inl: true # <.>
+  - inl: vgnvh://vms.tspykny.gyl/sbpl/jpmt-l/ppyf.ckw
+----
+<.> Hutv `qozb_inl` is bcw aqtyubqn on xou `rthbkgt` gzc, emo tksaf is dobvjcz to jgy of xou rthbkgt vtrzihv hsdfvq xou gzc is hkdyv or ehixywpm on an vjnrnlcxkt rthbkgt tzzkwt.
+<.> Uwgvvy xou tksaf `pzpm` to xou `qozb_inl` gzc to ynwomt a rthbkgt tzzkwt to xou axovkju qozb INL qipnmkbf.
+
+In <<ex-hkdyv>>, xou _lmw_ pob _ppyf_ rthbkgt vtrzihv zsuj kef xou `qozb_inl` bcw on xou `rthbkgt` gzc terbg xou _nwvezz_ tzzkwt zsuj kef xou axovkju qozb INL qipnmkbf rauwb bvyg Alysbz.

@@ -1,0 +1,10 @@
+= example(1)
+:doctype: manpage
+
+== NAME
+
+example - x
+
+== DESCRIPTION
+
+*bold* and _it_ here.

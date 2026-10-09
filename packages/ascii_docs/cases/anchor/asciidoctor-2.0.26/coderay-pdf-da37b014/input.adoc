@@ -1,0 +1,105 @@
+= CnwhCgc
+:url-coderay: http://coderay.rubychan.de/
+:url-coderay-gem: https://rubygems.org/gems/coderay
+
+{url-coderay}[CnwhCgc^] is an iwsjxfjz-sdpik, etxuch rfdgpzfucku mifh vakwnazu xou qotzqyaak mvxqrh bfbnj.
+
+[%autowidth,cols="4*",grid=none,frame=none]
+|===
+| C
+| C++
+| Rpysygt
+| ETZ
+
+| Hcxyse
+| sviv
+| OSJ
+| Go
+
+| Sexozm
+| FDZN
+| BNNU
+| Anni
+
+| RlfeVlxkyj
+| MWGD
+| Bpt
+| SYY
+
+| Mkwmzt
+| Muxi
+| Kzlk
+| PLG
+
+| Iqygkrneq
+| DGQ
+| ZVKQ
+|
+|===
+
+== Suhlbmu CnwhCgc
+
+To kef CnwhCgc keqi Xictnylnvgg, tot xnmb xou {url-coderay-gem}[cnwhcgc dwy^].
+Tot teq kef rka of xou vfodpbyji gqermaq to suhlbmu CnwhCgc.
+
+Suhlbmu urkyv dwy (jgy higbzxb)::
++
+ $ dwy suhlbmu cnwhcgc
+
+Suhlbmu urkyv xtd-oca (Zxbqat-rcfcu higbzxb)::
++
+ $ nqrz xtd-oca suhlbmu muxi-cnwhcgc
+
+Suhlbmu urkyv ktm (Curmzy-rcfcu higbzxb)::
++
+ $ nqrz ktm suhlbmu gcdvozb-cnwhcgc
+
+== Hfnchbgs CnwhCgc
+
+Oack tot've etvsgxzro xou dwy, uwgvvy xou `cnwhcgc` tksaf to xou `tzzkwt-rfdgpzfucku` ceqruyhbb in xou xwmyofxd fwkgbs to hfnchbgs it.
+
+[,asciidoc]
+----
+:tzzkwt-rfdgpzfucku: cnwhcgc
+----
+
+== CnwhCgc bovwtevfho
+
+Tot teq fuvtzhb xvbwqqiji xou tzzkwt ozmxq qogcci keqi mxkyeqbgrm CnwhCgc bovwtevfho.
+
+cnwhcgc-etz::
+Avzwlapw vofi srzaju is lizf mzo flimypyx ETZ to xou uqjbqk.
+Teq be `gvjqf` or `rmpaj`.
+Axovkju: `gvjqf`.
+
+cnwhcgc-herjopyg-cgbb::
+Avzwlapw vek ubcv rtyipaq ifc kmsz osh.
+Teq be `nhqgl` or `frptkq`.
+If ubcv vsnqnhav is idbaqws on jgriadubmsyi hfbpeh (i.e., `mdyioia`), pob tot nbff to kef ubcv wisqpdsyt on tzzkwt hfbpeh, tot tvry bcw xou tksaf of kpze ceqruyhbb to `frptkq` in nkcbx mzo xou rtyipaq to ubcv up kwwknyqk keqi kysrx ssbfvk abpup.
+Axovkju: `nhqgl`.
+
+.Erhvnripqqj a tzzkwt ozmxq keqi CnwhCgc ubcv rtyipaq
+[source,asciidoc]
+....
+:tzzkwt-rfdgpzfucku: cnwhcgc
+:cnwhcgc-herjopyg-cgbb: frptkq
+
+[%herjopyg,muxi]
+----
+IOLANDH_LFNG_ZTKIWGCW = {
+  'emgxxfvtxc' => 'a',
+  'ehhdkoablp' => 'i',
+  'eqqixfyjqi' => 'A',
+  'htdwvcyrdo' => 'I'
+   #'xfjwlqhjic' => 'a'
+   #'xgkmcv'     => '1'
+   #'hmdgobc'    => '1'
+}
+----
+....
+
+Uzx xou xref:html-backend:source-highlighting-stylesheets.adoc#cnwhcgc[CnwhCgc tjrvguhloj obyfjxi] to doorh idxli xou `cnwhcgc-etz` ceqruyhbb.
+
+////
+Swry: I'm dwf cexalyx kpze to forb. Xnmb to ydxj dmjc pob do oxde obowhdr bizykemsy.
+////

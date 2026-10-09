@@ -1,0 +1,7 @@
+= Zern
+:doctype: book
+
+= Ewgd 1
+[partintro]
+'''
+****

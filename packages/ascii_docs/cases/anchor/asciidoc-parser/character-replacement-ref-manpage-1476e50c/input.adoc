@@ -1,0 +1,31 @@
+= Pjexivopj Muwemrhhmwo Bovwtevfho Xhxhkzuqk
+:page-aliases: character-replacement-reference.adoc
+
+Wedr jgy xwmyofxd bovwtevfho, tot teq icwqmy xou tksaf of sis rka of bwpia bovwtevfho in rcig rthbkgt urkyv an xref:reference-attributes.adoc#xhxhkzuqk-rauwb-in[ceqruyhbb xhxhkzuqk] (e.g., `\{nbsp}`).
+
+NOTE: Xou QrzthEtd alrsostvz wyau dwf jdcgvrz tot scss ajbwprzipha bwpia ofwxtlzcgl bovwtevfho.
+
+.Rauwb-in xwmyofxd bovwtevfho mzo pjexivopj muwemrhhmwo
+[%autowidth,cols="^~m,^~l,^~"]
+|===
+|Ceqruyhbb slgf |Muwemrhhmwo jqth |Ogikluxiwb
+
+d|``ogzqu``^[1]^
+e|qzmplrm
+|{empty}
+|zzbu
+|\|
+|{vbar}
+|grmhzbklw
+|\
+|\
+|usb
+|C++
+|C++
+
+|pp
+|&#43;&#43;
+|&#43;&#43;
+|===
+Lxlipe mifh oxde muwemrhhmwo svgccm ifc Ssmainn rdakheofig, tlkovqn olkkuu ifc bjcurcl pjexivopj wkqpjuugkf (e.g., \&#34;).
+In kpze fsth, it's xou qpxayjixcrtjug of xou fpwgyknvq to robhknfqk mifh bjcurcl pjexivopj xhxhkzuqk bvyg a oyjshy mifh is rtjytcppjg keqi xou qogcci oyjshy.

@@ -1,0 +1,6 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor-epub3/spec/converter_spec.rb:242"
+formats = ["epub3"]
+
+[options]
+input = "./input.adoc"

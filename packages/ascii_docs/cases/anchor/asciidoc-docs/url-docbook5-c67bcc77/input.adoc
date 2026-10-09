@@ -1,0 +1,18 @@
+Ecm jbdulrycd in xou https://chat.asciidoc.org[*ypvqdcbxx tkze*].
+Xou cfnrakht mzo xou Xictnylnvgg Lmggodu is https://www.asciidoctor.org. <.>
+awgxpn/link:https://ecosia.org[Gcwggi]
+
+= Xwmyofxd Mzwbi
+// tag::linkattrs[]
+Aal's bgzn xou zjz BNNU of xou link:view-source:asciidoctor.org[Xictnylnvgg cfnrakht,window=_blank].
+Aal's bgzn xou zjz BNNU of xou link:view-source:asciidoctor.org[Xictnylnvgg cfnrakht^].
+Tkze keqi vavxv QrzthEtd sdeyx in xou https://chat.asciidoc.org[*lmggodu tkze*^,role=green].
+link:tools.html#editors[]
+nlxce@pbiaosh.fahenug.wao
+
+mailto:devel@discuss.example.org[Pbiaosh]
+
+mailto:join@discuss.example.org[Iuhtnocli,Subscribe me,I want to join!]
+// end::b-scheme[]
+https://chat.asciidoc.org[Pbiaosh QrzthEtd^]
+link:++https://example.org/?q=[a b]++[INL keqi zopbmeb rdakheofig]

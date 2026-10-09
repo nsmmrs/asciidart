@@ -1,0 +1,8 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-2.0.26/reader_test.rb:1750.1"
+formats = ["html5"]
+
+[options]
+input = "./input.adoc"
+safe = "safe"
+standalone = false

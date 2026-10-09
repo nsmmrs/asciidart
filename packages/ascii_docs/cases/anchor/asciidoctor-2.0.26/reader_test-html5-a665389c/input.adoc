@@ -1,0 +1,2 @@
+\include::fixtures/include-file.adoc[]
+\sxemzi bndogvpjb zbys

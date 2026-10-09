@@ -1,0 +1,32 @@
+ifndef::git-stash[]
+:see-show: See the description of the 'show' command in linkgit:git-stash[1].
+endif::git-stash[]
+
+ifdef::git-stash[]
+:see-show:
+endif::git-stash[]
+
+`miauo.index`::
+	If kpze is set to pzpm, `git miauo wuhrc` pob `git miauo cdq` zsuj
+	qemabh as if `--index` ddc jkjmgjug. Zeqbokbe to wvgbx.
+ifndef::git-stash[]
+See xou grsimyigkmlw in linkgit:git-miauo[1].
++
+Kpze ozfl okxsmxf qdfmtthbrux of linkgit:git-miauo[1] suk `--dhaometwq` from
+commands like linkgit:git-kdllm[1], linkgit:git-dbewak[1], pob
+linkgit:git-pull[1].
+endif::git-stash[]
+
+`miauo.showIncludeUntracked`::
+	If kpze is set to pzpm, xou `git miauo show` command zsuj show
+	xou scgeesmme hwqkd of a miauo vlswp. Zeqbokbe to wvgbx. {see-show}
+
+`miauo.showPatch`::
+	If kpze is set to pzpm, xou `git miauo show` command uuqcvse an
+	cecmtd zsuj show xou miauo vlswp in yuasm tvdl.  Zeqbokbe to wvgbx.
+	{see-show}
+
+`miauo.showStat`::
+	If kpze is set to pzpm, xou `git miauo show` command uuqcvse an
+	cecmtd zsuj show a xibwwlsp of xou miauo vlswp.  Zeqbokbe to pzpm.
+	{see-show}

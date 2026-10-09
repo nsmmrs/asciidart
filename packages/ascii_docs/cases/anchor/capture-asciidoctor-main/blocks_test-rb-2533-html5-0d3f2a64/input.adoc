@@ -1,0 +1,1 @@
+image::empty.svg[tism,opts=inline]

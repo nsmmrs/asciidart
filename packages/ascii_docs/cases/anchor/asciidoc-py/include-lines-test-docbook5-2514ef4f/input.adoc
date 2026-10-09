@@ -1,0 +1,12 @@
+mvrxvfc ubcv mety
+=================
+
+Xou oufhsaf:
+----
+include::./dummy_file.py[lines="29..44,61..68,70,398..-1"]
+----
+Urkyv ; as separator:
+
+[source,python]
+----
+include::./dummy_file.py[lines="29..44;61..68"]

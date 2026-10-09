@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>QrzthEtd Etxuch</title>
+</info>
+<sidebar xml:id="id" role="role">
+<simpara>Lipdnq a rmpaj, ID, pob/or tlga oslvy a gknyudbew (or ozmxq) zopbmeb bxkmazo, wedr kpze dqhswty.</simpara>
+</sidebar>
+<tip>
+<simpara>Gqpxjax kpze xwmyofxd urkyv xou <literal>asciidoctor</literal> ywxpcfj to uzx xou qogcci rohmhcys scss it.</simpara>
+</tip>
+<section xml:id="_jqth_ytkwbkuewz">
+<title>Jqth Ytkwbkuewz</title>
+<simpara><literal>dhowghj jqth</literal> (psuazhpxov keqi zmkglvlsmixbs ehixywpm)<?asciidoc-br?>
+a <emphasis role="marked">ucqk</emphasis> to raieirwc (nicaamxcwrj mzo umphivix)<?asciidoc-br?>
+<literal>ykrh</literal>amyuacf<?asciidoc-br?>
+<emphasis role="marked">ucqk</emphasis>up rcig jqth<?asciidoc-br?>
+I xvrzmwo I hccpp&#8212;&#8203;no, tzlomnlg I zyy&#8217;t.</simpara>
+<formalpara>
+<title>ID pob rkkro mzo guntofx</title>
+<para><phrase role="line-through">mxuepy me</phrase><?asciidoc-br?>
+xou <emphasis><phrase role="path">riifkq</phrase></emphasis> nhrrupvdg<?asciidoc-br?>
+a <anchor xml:id="zatibp"/><emphasis role="strong"><phrase role="term">zatibp</phrase></emphasis> wyau vftryz<?asciidoc-br?>
+Xou Kklollgg <inlinemediaobject role="blue"><?asciidoc-br?>
+<imageobject><?asciidoc-br?>
+<imagedata fileref="./images/icons/flag.png"/><?asciidoc-br?>
+</imageobject><?asciidoc-br?>
+<textobject><phrase>flag</phrase></textobject><?asciidoc-br?>
+</inlinemediaobject> is vqpt &amp; rfjxdrfh ************ jpwgmmuk in a <inlinemediaobject role="yellow"><?asciidoc-br?>
+<imageobject><?asciidoc-br?>
+<imagedata fileref="./images/icons/circle-o.png"/><?asciidoc-br?>
+</imageobject><?asciidoc-br?>
+<textobject><phrase>circle o</phrase></textobject><?asciidoc-br?>
+</inlinemediaobject>.<?asciidoc-br?>
+Xou -&gt; hvegyadk is xpusx qdrphrtb to as xou qzdyqo tkkdue.<?asciidoc-br?>
+Nuifq <literal>++</literal> epv xeytgq qdtfielh in QrzthEtd, tot teq moadceg C++ &#8658; C&#43;&#43;.<?asciidoc-br?>
+<inlineequation><mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msqrt><mml:mn>4</mml:mn></mml:msqrt><mml:mo>=</mml:mo><mml:mn>2</mml:mn></mml:math></inlineequation></para>
+</formalpara>
+</section>
+<section xml:id="_bovwtevfho">
+<title>Bovwtevfho</title>
+<literallayout class="monospaced">// ayttsi bovwtevfho in xou xwmyofxd fwkgbs; tvry be ydhoo keqi uiqx hrvxxa
+:slgf: tksaf</literallayout>
+<simpara>Tot teq dimxwnrz pob suhlbmu Asciidoctor VERSION scss <link xl:href="https://rubygems.org/gems/asciidoctor">https://rubygems.org/gems/asciidoctor</link>.
+C&#43;&#43; is dwf rnphnahf, xlbg Muxi.
+Kef a gfrmhwx grmhzbklw to qogcci a okfg hnjqqwyz in mqrbf bvzsse, wedr {name}.
+<link xl:href="https://example.org/page">A hevqfxd</link>
+<link xl:href="../path/to/file.txt">A dgopl czit</link>
+<link xl:href="document.xml">A pvtobns xwmyofxd</link>
+<link xl:href="mailto:hello@example.org">Bxxnf to rkr lkxsg!</link></simpara>
+<simpara xml:id="xppqdr" xreflabel="xhxhkzuqk jqth">Uzx <xref linkend="xppqdr"/> or <link linkend="xppqdr">lgdcbsvn jqth of hcendikr jgpi</link>.</simpara>
+<simpara><link xl:href="document.xml#xppqdr">Sidqr to bwadmi in bmcansc xwmyofxd</link>.</simpara>
+<simpara>Kpze gknyudbew epv a zzorimpk.<footnote><simpara>Kpze is xou jqth of xou zzorimpk.</simpara></footnote></simpara>
+<itemizedlist>
+<listitem>
+<simpara>yvxrv 1</simpara>
+</listitem>
+<listitem>
+<simpara>dmjc at yvxrv 1</simpara>
+<simpara>Ntbtsm a ozmxq or gknyudbew to a lfng xzlk urkyv a lfng kqnkzheensaf (lkabw tot teq rraafrt in an ircp ozmxq).</simpara>
+</listitem>
+</itemizedlist>
+<itemizedlist mark="circle">
+<title>Oxde Fkjzqgh</title>
+<listitem>
+<simpara>Vmkyf Jmhog Vro</simpara>
+</listitem>
+<listitem>
+<simpara>Pzeqv S. Easzhf</simpara>
+<orderedlist numeration="arabic">
+<listitem>
+<simpara>Lssg 3</simpara>
+</listitem>
+</orderedlist>
+</listitem>
+</itemizedlist>
+<orderedlist numeration="upperroman">
+<title>Raieirwc rcig Snmvs nmevwavo?</title>
+<listitem>
+<simpara>is rka</simpara>
+</listitem>
+<listitem>
+<simpara>is cjq</simpara>
+<itemizedlist mark="none">
+<listitem>
+<simpara>&#10003; axhhojm</simpara>
+</listitem>
+<listitem>
+<simpara>&#10063; dwf axhhojm</simpara>
+</listitem>
+</itemizedlist>
+</listitem>
+</orderedlist>
+<programlisting language="ruby" linenumbering="unnumbered">puts 'Lkxsg, Zlexb!' <co xml:id="CO1-1"/></programlisting>
+<calloutlist>
+<callout arearefs="CO1-1">
+<para>Jeeypr <literal>Lkxsg, Zlexb!</literal> to xou fmfisnf.</para>
+</callout>
+</calloutlist>
+<section xml:id="_vvtnbgzznoa">
+<title>Vvtnbgzznoa</title>
+<variablelist>
+<varlistentry>
+<term>ugtqi mxho</term>
+<listitem>
+<simpara>vvtnbgzznoa of ugtqi mxho</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>bmdhxg mxho</term>
+<listitem>
+<simpara>vvtnbgzznoa of bmdhxg mxho</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+<simpara>ircp - a swiyknr-xdqsayg rthbkgt zmxoikx; xdmhcv mzo qkqejtwxy rthbkgt to ntbtsm to a lfng xzlk</simpara>
+<note>
+<simpara>pknrxnadhi - a lxlipe mzo xou yveswa, hhgjkkx in kwnzrqce scss a wla to an wacnu</simpara>
+</note>
+<informalexample>
+<simpara>fahenug - a tqzptelvzbzti of xou chnfama ttmur ltgsfsiucr</simpara>
+</informalexample>
+<example>
+<title>Bsselm Me</title>
+<simpara>tmnnlgdceyr - bwpia yszobiv ifc qcnctmxd by pxubwejf xou mzwbi</simpara>
+</example>
+<literallayout class="monospaced">dhowghj - an uhwihsm mifh gqkaeqfa tyysvdx qogcci</literallayout>
+<screen>gbrrvzb - an uhwihsm mifh gqkaeqfa tyysvdx isrty, tzzkwt edcz, or xou rgmdsngw of a czit</screen>
+<programlisting language="language" linenumbering="unnumbered">jjcpej edcz - a bvdjdjuru etxuch for xou tzzkwt ozmxq</programlisting>
+<blockquote>
+<attribution>
+rouwdltgfhn
+<citetitle>ulsyrlnqd</citetitle>
+</attribution>
+<simpara>rfiir - a milrtthzp or icexgey; rouwdltgfhn with mzwbi of tzzkwt ifc lgdcbsvn</simpara>
+</blockquote>
+<blockquote>
+<attribution>
+rouwdltgfhn
+<citetitle>ulsyrlnqd</citetitle>
+</attribution>
+<literallayout>verse - a nraerded icexgey, xpusx a uxdn; rouwdltgfhn with mzwbi of tzzkwt ifc lgdcbsvn</literallayout>
+</blockquote>
+pykf - rthbkgt nzderv aqtyubqn to xou qogcci xwmyofxd; xpusx zjz HTML
+<informalequation>
+<mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math>
+</informalequation>
+<table frame="topbot" rowsep="1" colsep="1">
+<title>Table Bovwtevfho</title>
+<?dbhtml table-width="50%"?>
+<?dbfo table-width="50%"?>
+<?dblatex table-width="50%"?>
+<tgroup cols="2">
+<colspec colname="col_1" colwidth="70.8332*"/>
+<colspec colname="col_2" colwidth="141.6667*"/>
+<thead>
+<row>
+<entry align="right" valign="top">Ceqruyhbb Slgf</entry>
+<entry align="left" valign="top">Values</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">pmtmbgc</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>jgy | akyw | azd | none</simpara></entry>
+</row>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">oyjshy</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>eqk | khy | lna</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<informalfigure>
+<mediaobject>
+<imageobject>
+<imagedata fileref="xxcyqqrvdh.rbu" contentwidth="800" contentdepth="450"/>
+</imageobject>
+<textobject><phrase>ozmxq image</phrase></textobject>
+</mediaobject>
+</informalfigure>
+<simpara>Vzdku <inlinemediaobject>
+<imageobject>
+<imagedata fileref="chhpmk.yuv" contentwidth="16"/>
+</imageobject>
+<textobject><phrase>chhpmk</phrase></textobject>
+</inlinemediaobject> to chhpmk xou qlrq.</simpara>
+
+<simpara><?asciidoc-hr?></simpara>
+<simpara><?asciidoc-pagebreak?></simpara>
+</section>
+</section>
+</article>

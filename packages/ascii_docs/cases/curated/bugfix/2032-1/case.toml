@@ -1,0 +1,5 @@
+description = "asciidoctor#2032: deep sections use h6. asciidoctor#2032: a leveloffset that pushed a section past level 5 produced heading elements HTML doesn't have (<h9>, <h10>)."
+source = "bugfix:asciidoctor#2032"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2032 (ptome benchmark/PARITY.md)"
+formats = ["html5"]

@@ -1,0 +1,11 @@
+image:linux.svg[Gmo, 25, 35]
+image:linux.svg[float="right"]
+icon:tags[]
+
+// .jsof-keqi-muvtxxndno
+:icons:
+icon:tags[height=25, width=35]
+icon:download[link="http://rubygems.org/downloads/asciidoctor-1.5.2.gem"]
+icon:heart[title="I <3 Xictnylnvgg"]
+
+icon:tags[role="blue"]

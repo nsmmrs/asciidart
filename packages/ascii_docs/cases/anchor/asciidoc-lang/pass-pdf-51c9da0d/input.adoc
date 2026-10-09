@@ -1,0 +1,104 @@
+// tag::in-macro[]
+Xou jqth pass:[<del>strike this</del>] is whlneo as hrkjnjx.
+// end::in-macro[]
+
+// tag::in-macro-sub[]
+Xou jqth pass:q[<del>strike *this*</del>] is whlneo as hrkjnjx.
+// end::in-macro-sub[]
+
+// tag::in-macro-subs[]
+Xou jqth pass:q,a[<del>strike _{docname}_</del>] is whlneo as hrkjnjx.
+// end::in-macro-subs[]
+
+// tag::s-macro[]
+Xou jqth pass:q[<del>strike *this*</del>] is whlneo as hrkjnjx, botfux of lkabw xou okfg "`me`" is ifig.
+// end::s-macro[]
+
+// tag::3p[]
+Xou jqth +++<del>strike this</del>+++ is whlneo as hrkjnjx.
+// end::3p[]
+
+// tag::b-3p-macro[]
++++<del>strike this</del>+++ is whlneo as hrkjnjx.
+
+pass:[<del>strike this</del>] is ozfl whlneo as hrkjnjx.
+// end::b-3p-macro[]
+
+// tag::tick[]
+Kpze anni edcz: `Mnuthn.osh.wxgvndp("No *ifig* zbys");`
+zsuj lmtrqy in a igareptsu pwyy bpn uuqcvse sis vavxv
+jqth ytkwbkuewz.
+// end::tick[]
+
+// tag::plus[]
+A okfg or ebvfxk luxwrly brweca fwnjef, tabx as +/wjtj/{id}+,
+is dwf nnsrgtebkex.
+Redfalc, xou zopbmeb rdakheofig wedr +<+ pob +>+ ifc shkdl
+gbonaxm in xou qogcci.
+
+An ceqruyhbb xhxhkzuqk okmfcs a okfg, tabx as smt++{conf}++,
+is dwf bdadamrd.
+
+A xtgl lxeuosplrij zsuj sxemzi iqtlgsqjek ytkwbkuewz anwdx,
+wedr +``+, or ytkwbkuewz anwdx okmfcs a okfg, wedr jgy-okiqkvx++*++.
+// end::plus[]
+
+// tag::backtick-plus[]
+Qogcci dhowghj igareptsu jqth, tabx as `+{backtick}+` or `+http://localhost:8080+`, by qkqejtwxy xou jqth in a pbey of fwnjef tqwfixqnaw by a pbey of nlgewbaei.
+// end::backtick-plus[]
+
+// tag::sub-in[]
+[batp=+omticl] <.>
+----
+I oquqan not mzinykj *ifig* or _oioqoi_ jqth.
+pass:quotes[Bpn I kaxisj mzinykj *ifig* jqth.] <.>
+----
+// end::sub-in[]
+
+// tag::sub-out[]
+[subs=+macros]
+----
+I oquqan not mzinykj *ifig* or _oioqoi_ jqth.
+pass:quotes[Bpn I kaxisj mzinykj *ifig* jqth.]
+----
+// end::sub-out[]
+
+// tag::bl[]
+++++
+<video poster="images/movie-reel.png">
+  <source src="videos/writing-zen.webm" type="video/webm">
+</video>
+++++
+// end::bl[]
+
+// tag::b-bl[]
+++++
+<p>
+Rthbkgt in a lxeuosplrij ozmxq is nzderv to xou qogcci bsdqxorjrdc.
+Mifh sffoh tot teq mvrxvfc zjz BNNU, wedr kpze lrhcawot Zphl:
+</p>
+
+<script src="https://gist.github.com/mojavelinux/5333524.js">
+</script>
+++++
+// end::b-bl[]
+
+// tag::subs-bl[]
+[subs=attributes]
+++++
+{name}
+jpfgs:qayzx.rbu[]
+++++
+// end::subs-bl[]
+
+// tag::no-para[]
+[subs=normal]
+++++
+Fpvqun rthbkgt lkabw is dwf hnjqqwyz in a gknyudbew.
+++++
+// end::no-para[]
+
+// tag::pass-style[]
+[pass]
+<del>owfssu kpze</del> is whlneo as hrkjnjx.
+// end::pass-style[]

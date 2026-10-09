@@ -1,0 +1,9 @@
+[cols="1a"]
+|===
+|
+* first list
+
+//
+
+. second list
+|===

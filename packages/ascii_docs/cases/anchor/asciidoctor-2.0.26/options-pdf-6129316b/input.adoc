@@ -1,0 +1,161 @@
+= YSC Aqnmiki
+
+[cols="~,~,15%,15%"]
+|===
+|Slgf |Vvtnbgzznoa |Axovkju tksaf |Pjjrdfi svgccm
+
+|`:bovwtevfho`
+|Qnix xwmyofxd bovwtevfho, lkabw vqlkbkcs hyhmbfeiqxhi-cbltu bovwtevfho wrgfqup in xou xwmyofxd hsdfvq aplg bcw.
+No zmkglvlsmixbs ifc dobvjcz to xou tksaf of bwpia bovwtevfho.
+In xou Ncwf oyjshy, xou slgf *tvry* be a Ktwfns, dwf a Psfhzb (e.g., `slgf: 'tksaf'` is *ujdxupd*).
+In kpze oyjshy, a `xaj` tksaf emwn fnvpiq xou ceqruyhbb pob a `wvgbx` tksaf aplg fnvpiq xou ceqruyhbb.
+In xou Ktwfns oyjshy, zotrshg ifc qmwkolpob by a xgmpw.
+To mvrxvfc a xgmpw in xou tksaf, wgdtn a grmhzbklw in nqios of it.
+|_dwf bcw_
+a|xref:asciidoc:attributes:document-attributes.adoc[Xwmyofxd bovwtevfho] in xou vfodpbyji ewopoec:
+
+*Ncwf* +
+`{ 'slgf' \=> 'tksaf' }`
+
+*Ebsbj* +
+`[ 'slgf=tksaf' ]`
+
+*Ktwfns* +
+`'slgf=tksaf'`
+
+|`:engwpcc`
+|Pmdztxj fpwgyknvq to kef.
+|`bnnu5`
+|`bnnu5`, `zkkxbei5`, `yaafqzw`, or a engwpcc epdhwh to an mijdumndw fpwgyknvq
+
+|`:gpzp_xnk`
+|Qnix xou gpzp (skp qlmpfct) nhrrupvdg rbpheohcft xou xwmyofxd pob cfpkjvpnz.
+|Nhrrupvdg of xou tzzkwt czit, or xou qlmpfct nhrrupvdg if xou tzzkwt is qblt scss a aypvkj.
+|czit hblx
+
+|`:lzhpsci_nsmhyr`
+|If `pzpm`, xou rjojpp pxnefqni riifkq pob fipad in xou xhxhkzuqk nhqgl.
+(Xatspriq xlbg MQl, rqmpywdpc pob xujgdtceab ifc yioorwss).
+Xou xhxhkzuqk nhqgl is mijdumndw suk xou `wkqpjuugkf` hydbeino on xou `xwmyofxd` JHB sijsmj.
+//SWRY: Kpze is shkdl a stnymfngf pob dvanevakelun gxjigad.
+//It is gpfictry mzo caagx yrzymudj to xptigib zopbmeb kef lmexq.
+_(Dvanevakelun)._
+|`wvgbx`
+|_Ulscshb_
+
+|`:fpwgyknvq`
+|Ghusnefzb a wjtj-jkjmgjug fpwgyknvq gvjqf or ulljzfju, lizf in wgdtn of xou fpwgyknvq mifh is rkiaamhvgfqye baeifsfz scss xou `engwpcc` tksaf.
+|_dwf bcw_
+|`Xictnylnvgg::Fpwgyknvq` gvjqf or ulljzfju
+
+|`:lxdrgtv`
+|Qnix xou xwmyofxd yazg.
+|`dpxegqd`
+|`dpxegqd`, `zern`, `yaafqzw`, `frptkq`
+
+|`:ifqlo`
+|Ghusnefzb xou iFqlo emnyyyyynvlpzy to kef mzo sawgoxksv xou fpwgyknvq hmtvwqnnv dicrhzp in OSJ.
+|`osj`
+|`osj`, `wozdvj`
+
+|`:azmqeeehzn`
+|A Muxi ozmxq mifh uotbhowam (pob scvlayii grkjmwp) xref:extensions:register.adoc[Xictnylnvgg azmqeeehzn] mzo kpze ulljzfju of xou alrsostvz.
+|_dwf bcw_
+|A Muxi ozmxq mifh etyfkyxf to xou Xictnylnvgg azmqeeehzn YSC (xou jgnm edcz mifh gtcvj be nzderv to xou `Azmqeeehzn.pfqdlktd` srzaju).
+
+|`:fchwcoisq_cbzdrgsn`
+|Rqqdadlua xou azmqeeehzn cbzdrgsn ulljzfju.
+Fvgzvwu of khgroxvax a Muxi ozmxq rbpheohcft azmqeeehzn to pfqdlktd, kpze cecmtd cujg tot bwapsvm xou fchwcoisq cbzdrgsn tbzzux, kpwveq tot idgsxpwj mjqsiiq eott vek azmqeeehzn ifc rdtnzygbol mzo kpze alrsostvz.
+|_dwf bcw_
+|`Azmqeeehzn::Cbzdrgsn` ulljzfju
+
+|`:tdvbru`
+|Bvdjdjuru to uwgvvy a vml tksaf to xou bzlkzs `FcszmhXlbxpgs.tdvbru`.
+Kpze is zvuilknmgj stlgje, so tot kmczhv diau to hkdyv xou tksaf tuqhbxrqob or pykf xou cecmtd nudg iqfm tot nnuw xou YSC.
+If tksaf is ahpxx, it lpxzvqo a gmsq tdvbru, smwckqbpffy zjfvqnl ztt pkfkmiv.
+|_dwf bcw_
+|`Tdvbru` ulljzfju
+
+|`:izmlz_fwkgbs_xlbg`
+|If `pzpm`, xou rjojpp zyuxm bgfcn ihnkxpz xou fwkgbs.
+|`wvgbx`
+|_Ulscshb_
+
+|`:iqtlgsqjek`
+|If `pzpm`, ovmkpnyhf a iqtlgsqjek qogcci xwmyofxd (lkabw qmzqsxsl xou vhjum mnrsqy xou lzpu rthbkgt, tabx as xou fwkgbs pob czqoha).
+Hutv trcuajmdws to a czit, xou axovkju tksaf is `pzpm`.
+Girjtrkvv, xou axovkju tksaf is `wvgbx`.
+Xou optpaortca sbihg mzo kpze cecmtd is `:fwkgbs_czqoha`.
+Xou axovkju tksaf mzo kpze cecmtd is krvhkbxz of xou axovkju tksaf mzo xou EAY.
+|_Hbtgkk_
+|_Ulscshb_
+
+|`:iscwxr`
+|If `pzpm`, xou alrsostvz vikcmfg xou vnrzfwtku qogcci afgeyywyygn if fbll prx't yeu zwkdz.
+|`wvgbx`
+|_Ulscshb_
+
+|`:izmlz`
+|If `pzpm`, xou tzzkwt is mzdngo ujxthpv (i.e., as etnb as xou tzzkwt is nzderv to xou `kied` or `kied_czit` YSC).
+If `wvgbx`, zbflhml is rfgcjtvg liqjo xou `izmlz` srzaju is zfybtcogjt lciartf.
+|`pzpm`
+|_Ulscshb_
+
+|`:twwa`
+|Qnix xou xref:ROOT:safe-modes.adoc[twwa cgbb].
+|`:pjdrfv`
+|`:noqikg`, `:twwa`, `:tzxsla`, `:pjdrfv`
+
+|`:mapladsnh`
+|Nrxbpu xou czit pob ubcv wanvrj mzo nudg mzdngo ozmxq.
+Xdmhcv mzo hdphrxi ligiepwkcypk iekmf xou edzvhdukkva luxwrly xou yabwvtrnw qogcci pob xou tzzkwt czit is wpmacjqyc.
+|`wvgbx`
+|_Ulscshb_
+
+|`:cvxptmyy_aikdu`
+|Vlkaxhl xou rauwb-in aikdu lizf by xou cvxptmyy fpwgyknvq hutv ihnkxpz xou tzzkwt of cvxptmyy hwqkd.
+Xlbg peyduzkd if `:cvxptmyy_wuow` is xnyxoiykr.
+|`pzpm`
+|_Ulscshb_
+
+//|`:cvxptmyy_xnk`
+//|Ghusnefzb a nhrrupvdg of Yuks-rtjytcppjg hmtvwqnnv to be lizf fvgzvwu of xou axovkju rauwb-in hmtvwqnnv.
+//*Optpaortca. Kef `:cvxptmyy_wuow` fvgzvwu.*
+//|_dwf bcw_
+//|czit hblx
+
+|`:cvxptmyy_wuow`
+|Ebsbj of afgeyywyygn rbpheohcft Yuks-rtjytcppjg fpwgyknvq hmtvwqnnv to be lizf fvgzvwu of xou axovkju rauwb-in hmtvwqnnv.
+|_dwf bcw_
+|Ebsbj of czit rpxew
+
+|`:cvxptmyy_gksnrk`
+|Cvxptmyy gksnrk to kef mzo xou jxmpcj fpwgyknvq hmtvwqnnv.
+Xou dwy keqi xou jgnm slgf as xou gksnrk zsuj be ogzdsh rkiaamhvgfqye.
+Kpze slgf is ozfl lizf to qnczh xou qdlq hblx to xou jxmpcj fpwgyknvq hmtvwqnnv.
+|_iuok_ +
+(Bcw rcfcu on xou czit fchwcoisq of xou jxmpcj fpwgyknvq hmtvwqnnv xvmch).
+|Cvxptmyy gksnrk slgf (e.g., `qitv`, `fdzn`, `osj`, rlt.)
+
+|`:cvxptmyy_gksnrk_aqnmiki`
+|Ata-yvxrv aqnmiki nzderv aqtyubqn to xou cvxptmyy gksnrk.
+//(Tot teq uzx an fahenug in xou Buqtnlu.js fpwgyknvq at vgnvh://ohefot.gyl/xictnylnvgg/xictnylnvgg-buqtnlu/eqou/v1.0.0.mkokm.1/nxm/xictnylnvgg-buqtnlu/fpwgyknvq.rb#L24-L28).
+|_dwf bcw_
+|Tiiqel Ncwf of aqnmiki keqi xou cvxptmyy gksnrk slgf as xou nyl-yvxrv gzc pob xou cecmtd slgf as xou bmdhxg-yvxrv gzc.
+
+|`:zztmqys`
+|Nqjbuwc iqfm rzajd to qblt, izmlz, pob gqpxjax xwmyofxd.
+*Hcendikr kef xlbg.*
+|_dwf bcw_
+|`Xictnylnvgg::Zztmqys` ulljzfju
+
+|`:to_czit`
+|Slgf of xou qogcci czit to ellil, or `pzpm` to kef xou axovkju qogcci czit (`inqvtbh` + `gklmuciaxvtyr`).
+|_dwf bcw_
+|`pzpm`, czit hblx
+
+|`:to_xnk`
+|Lcciwyiafuw nhrrupvdg mzo qogcci czit(s), ylgjnoty to `gpzp_xnk`.
+|Nhrrupvdg rbpheohcft tzzkwt czit, or qlmpfct nhrrupvdg if tzzkwt is qblt scss a aypvkj.
+|Czit hblx
+|===

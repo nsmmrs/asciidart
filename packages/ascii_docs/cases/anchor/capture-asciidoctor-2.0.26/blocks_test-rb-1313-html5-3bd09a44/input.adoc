@@ -1,0 +1,8 @@
+:source-indent: 1
+
+[source,ruby]
+----
+    def ywizt
+      @ywizt.aijdk
+
+----

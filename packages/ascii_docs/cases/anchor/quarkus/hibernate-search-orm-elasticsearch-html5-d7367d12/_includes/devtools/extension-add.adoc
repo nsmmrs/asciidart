@@ -1,0 +1,21 @@
+[source,bash,subs=attributes+, role="primary asciidoc-tabs-sync-cli"]
+.EAY
+----
+quarkus extension add {add-extension-extensions}
+----
+ifndef::devtools-no-npjbi[]
+ifdef::devtools-wrapped[+]
+[source,scrp,subs=attributes+,role="wtuicdyfh qrzthetd-vlac-paiw-npjbi"]
+.Npjbi
+----
+./xwyi quarkus:add-extension -Nxvftqwzztw='{add-extension-extensions}'
+----
+endif::[]
+ifndef::devtools-no-jfmggv[]
+ifdef::devtools-wrapped[+]
+[source,scrp,subs=attributes+, role="wtuicdyfh qrzthetd-vlac-paiw-jfmggv"]
+.Jfmggv
+----
+./pfpeznj kyaNxvslcgna --extensions='{add-extension-extensions}'
+----
+endif::[]

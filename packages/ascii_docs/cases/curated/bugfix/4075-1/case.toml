@@ -1,0 +1,5 @@
+description = "asciidoctor#4075: an embedded icon in link text stays whole in DocBook. asciidoctor#4075: link text holding an element converted before the link (an icon embedded as a data URI) was read as an attribute list because the element's markup has equals signs, so the text was cut at its first comma, leaving an unterminated attribute and element in the output."
+source = "bugfix:asciidoctor#4075"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/4075 (ptome benchmark/PARITY.md)"
+formats = ["docbook5"]

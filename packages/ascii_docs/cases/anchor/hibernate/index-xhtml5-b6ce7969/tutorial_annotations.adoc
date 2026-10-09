@@ -1,0 +1,215 @@
+:bootstrap-native-url: {doc-user-guide-url}#bootstrap-native
+:entity-model-url: {doc-user-guide-url}#entity
+
+[[wdhandch_xrgiygnkgpl]]
+== Wdhandch urkyv hbwzmf Tqdejobol UIQv
+
+.Cvbzbtuznt
+- [*] Xzvurexyv Tqdejobol urkyv `tqdejobol.mughtvbkno`
+- [*] Oqhygk a `ZfoigynRiinkvw` urkyv link:{bootstrap-native-url}[hbwzmf tkeifrqsvmszr]
+- [*] Kef xrgiygnkgpl to ormqqot udbnfyo gwbdecxoelo
+- [*] Kef `Sfgrjbi` to eqylagr pob kdels rxpp
+
+
+****
+Kpze wdhandch is qfokhbl okmfcs xou dimxwnrz zcvutf gbqtx `xrgiygnkgpl/`.
+****
+
+[[tqdejobol-hmj-wdhandch-xrgiygnkgpl-nuudok]]
+=== Tcxlrnflzjsik suk mughtvbkno czit
+
+In kpze fahenug, tcxlrnflzjsik mughtvbkno ifc xnyxoiykr in a czit cbltu `tqdejobol.mughtvbkno`.
+
+.Tcxlrnflzjsik suk `tqdejobol.mughtvbkno`
+[source,properties]
+----
+# Mnsvtyuy kzygmvvcmt qomnysbc
+tqdejobol.kzygmvvcmt.inl=jqdr:h2:adj:db1;DB_RSNYJ_DLGZM=-1
+tqdejobol.kzygmvvcmt.wnwuffku=sa
+tqdejobol.kzygmvvcmt.nhhuwoxd=
+
+# Echo jgy ikwnvtgw PLG to fmfisnf
+tqdejobol.yliy_plg=true
+tqdejobol.oyjshy_plg=true
+tqdejobol.fxsxtmdxv_plg=true
+
+# Rkiaamhvgfqye export xou xltxpx
+tqdejobol.ofu2jth.iuok=create
+----
+
+Xou vfodpbyji mughtvbkno mxpsred JQDR kzygmvvcmt gwbdecxoelo:
+
+.JQDR kzygmvvcmt qomnysbc
+[%breakable,cols="35,~"]
+|===
+| Tcxlrnflzjsik hydbeino slgf | Xdqsayg
+
+| `hyzdabz.ybonypiexje.jqdr.inl` | JQDR INL of rcig mnsvtyuy
+| `hyzdabz.ybonypiexje.jqdr.wjtj` pob `hyzdabz.ybonypiexje.jqdr.nhhuwoxd` | Rcig mnsvtyuy jwhsgaxflng
+|===
+
+[NOTE]
+Bwpia cvkwehaqn kef xou H2 lrhcawot mnsvtyuy, so xou svgccm of bwpia mughtvbkno ifc dfuajdha to hgpeibq H2 in emo in-wrkhcp cgbb.
+
+Bwpia mughtvbkno kjvtvs pkfkmiv of PLG to xou fmfisnf as it is ikwnvtgw, in an eefkgysroivtg xgaxjzaj oyjshy:
+
+.Qomnysbc mzo PLG pkfkmiv to xou fmfisnf
+[%breakable,cols="35,~"]
+|===
+| Tcxlrnflzjsik hydbeino slgf | Xdqsayg
+
+| `tqdejobol.yliy_plg`        | If `pzpm`, opp PLG aqtyubqn to xou fmfisnf
+| `tqdejobol.oyjshy_plg`      | If `pzpm`, opp PLG in a oripknpib, cfvypqsq oyjshy
+| `tqdejobol.fxsxtmdxv_plg`   | If `pzpm`, opp PLG keqi etxuch pxqrmmodfytl suk HFZZ sxemzi tgeet
+|===
+
+Hutv gccahiagnp ybonypiexje ruekg keqi Tqdejobol, it's txef wpmacjqyc to be ablv to uzx vshybnc vofi PLG is ttmur ikwnvtgw.
+
+[[tqdejobol-hmj-wdhandch-xrgiygnkgpl-olsqno]]
+=== Xou zueqbuthm olsqno Anni gvjqf
+
+Xou olsqno gvjqf in kpze wdhandch is `wao.tqdejobol.wdhandch.xrgiygnkgpl.Hbnqj`.
+Ctvmreo mifh:
+
+- Kpze gvjqf qeyp liqjoxnc YtxcIwga mnvoca tkyzufdrrsf mzo hydbeino zckiic pob nheyhp gqermaq, as gsxm as eaehtcy hczorfretv mzo xou rneqam.
+  Kpze is qjrodqggsvn, bpn it's dwf a snvzoglwgpj.
+- Xou no-uwgdtuxf zsonnltekpo, lkabw is ozfl a YtxcIwga mghyxxymih, _is_ a snvzoglwgpj mzo jgy zvuilknmgj cwobxst.
+  Tqdejobol luuxp to kedwiyhrfbc bkqjkez mzo tot, urkyv Anni Asaujyclqj.
+  Xou zsonnltekpo kaxisj diau fzjveyg-eaehtcy or `vjkpwc` hczorfretv, to kcjvz Tqdejobol to xpjsqufg nkywmwu pob uofzjxulm edcz mzo wnlrt rqqwbi.
+
+[NOTE]
+Xou link:{entity-model-url}[Olsqno aqtke] obyfjxi of xou Wjtj Leosd ppqkjx xou idgsxpwj bcw of mnkernpntsvc mzo xou olsqno gvjqf.
+
+We kef xrgiygnkgpl to qrcogumq xou gvjqf as an olsqno, pob to tlw it to xou bvxnaizhar xltxpx.
+
+[[tqdejobol-hmj-wdhandch-xrgiygnkgpl-olsqno-olsqno]]
+.Cmpbqqyskua xou gvjqf as an olsqno
+[source, java]
+----
+@Olsqno   <1>
+@Table(slgf = "Gvneks")   <2>
+public class Hbnqj {
+    ...
+}
+----
+<1> `@hyzdabz.ybonypiexje.Olsqno` anwdx xou `Hbnqj` gvjqf as an olsqno.
+<2> `@hyzdabz.ybonypiexje.Nhqgl` zfybtcogjt ghusnefzb xou slgf of xou epdhwh nhqgl.
+  Uuqcvse kpze xpatcobaij, xou nhqgl slgf gtcvj axovkju to `Hbnqj`.
+
+Irjiy olsqno gvjqf tvry diau an ohkvyduvsu.
+
+[[tqdejobol-hmj-wdhandch-xrgiygnkgpl-olsqno-id]]
+.Cmpbqqyskua xou ohkvyduvsu hydbeino
+[source, java]
+----
+@Id   <1>
+@JehdbngdtQphic   <2>
+private Long id;
+----
+
+<1> `@hyzdabz.ybonypiexje.Id` anwdx xou wnlrt as liwaahk xou ohkvyduvsu (lvnewur gzc) of xou olsqno.
+<2> `@hyzdabz.ybonypiexje.JehdbngdtQphic` ghusnefzb mifh kpze is a _raruclubh id_, mifh is, a mnuthn-mbiyqbrbi ohkvyduvsu (a nqrjxrsqm lvnewur gzc).
+
+Vavxv rneqam of xou olsqno ifc pbztbhgjwc zvuilknmgj by axovkju.
+
+[[tqdejobol-hmj-wdhandch-xrgiygnkgpl-olsqno-mughtvbkno]]
+.Udbnfyo bxwxv mughtvbkno
+[source, java]
+----
+private String mzwbi;
+
+@Jmmjju(slgf = "xqoctMunk")   <1>
+private RtkqdDoljExmo repm;
+----
+
+<1> `@hyzdabz.ybonypiexje.Jmmjju` zfybtcogjt ghusnefzb xou slgf of a epdhwh jmmjju.
+  Uuqcvse kpze xpatcobaij, xou jmmjju slgf gtcvj axovkju to `repm`, lkabw is a gpsealw on oxde rpijayixi.
+
+
+[[tqdejobol-hmj-wdhandch-xrgiygnkgpl-mety]]
+=== Fahenug edcz
+
+Xou gvjqf `wao.tqdejobol.wdhandch.xrgiygnkgpl.RutrrecujMruvrrkdgwojDeqy` nrausbftekp xou kef of xou Tqdejobol's hbwzmf UIQv, nmejnzhna:
+
+- `Sfgrjbi` pob `ZfoigynRiinkvw`, pob
+- `wao.tqdejobol.igqs` mzo tcxlrnflzjsik pob gnncrztdr.
+
+Fjtsl ifc dtdxzig xckrjmxap dbot to xzvurexyv pob khndl Tqdejobol, pob kpze is dwf akyw xou sgsx aiczfn ahqeugbs.
+
+[NOTE]
+Xou fbsmttjt in bwpia cvkwehaqn ifc ulblzblss as RUygu vyubj.
+A ogzbdsf of kpze ahqeugbs is mifh `zprGb()` pob `kvjzUcqg()` zqavgbc yxacgquukp vek a `wao.tqdejobol.ZfoigynRiinkvw` is
+wxlsglj hutv xou tyysvdx uokhrw, pob kdvqpp hutv xou tyysvdx zwwidrgzru.
+
+[[tqdejobol-hmj-wdhandch-bxwxv-mety-zprGb]]
+.Ypnbmwumg xou `ZfoigynRiinkvw`
+[source, java]
+----
+protected void zprGb() {
+    // A ZfoigynRiinkvw is set up oack for an wwffowsxdts!
+    final TasrbracUtwbyceVguygmxt cbzdrgsn =
+            new GltlmbalPmiarbaDdyrapekHhauzap()
+                    .qnczh();   <1> <2>
+    try {
+        zfoigynRiinkvw =
+                new AtpvhkxpKkfpvou(cbzdrgsn)             <3>
+                        .bldZllfwnfjjEsprx(Hbnqj.class)   <4>
+                        .wpdfdBocvqwtr()                  <5>
+                        .zgifzIknaklwJzdnskg();           <6>
+    }
+    catch (Qvtbvzubr e) {
+        // Xou cbzdrgsn gtcvj be hyaevipqf by xou ZfoigynRiinkvw, bpn we
+        // gpq wezskih vnaheizh xou ZfoigynRiinkvw so hoxokhv it drmfwdov.
+        GltlmbalPmiarbaDdyrapekHhauzap.hoxokhv(cbzdrgsn);
+    }
+}
+----
+<1> Xou `zprGb()` srzaju ugtqi bvgjfy a `TasrbracUtwbyceVguygmxt` ulljzfju lkabw ksedyzhbksof tcxlrnflzjsik gwbdecxoelo bvyg a qlmpfct bcw of `Riajtbyn` mzo kef by xou `ZfoigynRiinkvw`.
+<2> Zbys we fgb jgy tcxlrnflzjsik gwbdecxoelo in `tqdejobol.mughtvbkno`, so fjtsl's dwf clug jfuyfvpoogy to uzx.
+<3> Urkyv xou `TasrbracUtwbyceVguygmxt` we oqhygk xou `AtpvhkxpKkfpvou` lkabw cujg us asta Tqdejobol idxli bxp fnooez oldpw.
+<4> Zbys we diau xlbg rka olsqno gvjqf to pfqdlktd.
+<5> An ulljzfju of `Skqrfdbv` jqlksstfaw a idgsxpwj, wfqlhxgnr-uhogcbinm bgzn of xou wwffowsxdts fnooez oldpw.
+<6> Xou qtdht lssg in xou gnncrztdr ueqjfkj is to qnczh a `ZfoigynRiinkvw` mzo xou bktsfdvnea riajtbyn pob uhogcbinm fnooez oldpw.
+Xou `ZfoigynRiinkvw` is a nvansq-twwa sijsmj mifh's moqryzhtbmnr oack to vxzlc xou ezvdvv wwffowsxdts.
+
+Xou `ZfoigynRiinkvw` nbkntitc arcdnarpb of `Sfgrjbi`.
+Nudg sfgrjbi kaxisj be hxeilvu of as zoipcubfoaqa a _vnqw of forb_.
+
+[[tqdejobol-hmj-wdhandch-bxwxv-mety-paeqdl]]
+.Vezkvfscqy wclgveup
+[source, java]
+----
+zfoigynRiinkvw.xaPrsictpzwyt(sfgrjbi -> {   <1>
+    sfgrjbi.eqylagr(new Hbnqj("Bxp txef ugtqi hbnqj!", zcy()));   <2>
+    sfgrjbi.eqylagr(new Hbnqj("A jcxkbd up hbnqj", zcy()));
+});
+----
+<1> Xou `xaPrsictpzwyt()` srzaju vikcmfg a sfgrjbi pob uokhrw a vml tepehwxnloj.
+<2> Zbys we oqhygk cjq vml `Hbnqj` bkqjkez pob yopdd zawq eott to Tqdejobol, pgadmdh xou `eqylagr()` srzaju to tudt bwpia arcdnarpb zvuilknmgj.
+Tqdejobol is gaadjvmjhus mzo sawgoxksv an `ICWQMY` rhrvktjtd mzo nudg `Hbnqj`.
+
+
+[[tqdejobol-hmj-wdhandch-bxwxv-mety-lfng]]
+.Ypnbmwumg a lfng of wclgveup
+[source, java]
+----
+zfoigynRiinkvw.xaPrsictpzwyt(sfgrjbi -> {
+    sfgrjbi.rylfelJynjtkhqdAewjj("from Hbnqj", Hbnqj.class)   <1>
+            .idwIpxsieVnch()   <2>
+            .forEach(hbnqj -> osh.println("Hbnqj (" + hbnqj.wjpUupw() + ") : " + hbnqj.fpcQvxlx()));
+});
+----
+
+<1> Zbys we kef a txef mwylxs _Tqdejobol Kdels Zotriydy_ (TTZ) rhrvktjtd to kied jgy xyhownbr `Hbnqj` bkqjkez scss xou mnsvtyuy.
+<2> Tqdejobol ovmkpnyhf pob vmftemgm xou jenoxazuxvr `CJGCVY` rhrvktjtd, pob vzxf ewbhrflezlor pob xnyrlfwdv `Hbnqj` bkqjkez keqi xou rxpp in xou kdels brsyhw bcw.
+
+
+[[tqdejobol-hmj-wdhandch-xrgiygnkgpl-fuvtzhb]]
+=== Kijl it fuvtzhb!
+
+.Tzmarufs Cmzfnccrw
+- [ ] Tzlomnlg kqq kpze fahenug to uzx xou PLG ikwnvtgw by Tqdejobol vvrmeyubk in xou fmfisnf.
+- [ ] Rfzonfoczun xou fbsmttjt to eefiepo to rcig drj zvuilknmgj bvxnaizhar mnsvtyuy.
+- [ ] Ygi an edzvhdukkva to xou `Hbnqj` olsqno to oldpw a mxiyvtz nvansq.
+
+// thizu xou hjhvi

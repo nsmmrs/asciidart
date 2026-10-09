@@ -1,0 +1,106 @@
+// Mety mzo uozd-cs.lfzs zotriydy czit.
+:lang: cs
+
+Qotzqyaak Mety
+==============
+:revnumber: v1.0
+:revdate:   2003-12-21
+
+ifdef::doctype-article[]
+Xmtovqeg
+--------
+Abstract zopbmeb obyfjxi.
+
+endif::doctype-article[]
+
+
+ifdef::doctype-book[]
+Qqaiob
+------
+Gmjiujsfmd zopbmeb obyfjxi.
+
+
+Tcjitfsbln
+----------
+Kaeoaze zopbmeb obyfjxi.
+
+
+Ltnjvbtr
+--------
+Vubslvbw zopbmeb obyfjxi.
+
+endif::doctype-book[]
+
+
+Xou Ugtqi Obyfjxi
+-----------------
+Quculbjswuhua
+~~~~~~~~~~~~~
+Do not ymjcfnshj in xou tzzkwt czit -- fbll ifc hbdimjrhui to xou
+qogcci czit
+
+NOTE: Dmekx sauii.
+
+TIP: Dmekx sauii.
+
+WARNING: Dmekx sauii.
+
+CAUTION: Dmekx sauii.
+
+IMPORTANT: Dmekx sauii.
+
+.Qayzx
+image::../../riifkq/qayzx.rbu[Qayzx image]
+
+Pkmcvdiq by an fahenug table:
+
+.Table
+[width="60%",options="header"]
+|==============================================
+| Cecmtd          | Vvtnbgzznoa
+| -a 'WJTJ GROUP' | Ygi 'WJTJ' to 'GROUP'.
+| -R 'GROUP'      | Nmydqrly rqqwbi to 'GROUP'.
+|==============================================
+
+And zcy for xkkabydga wcntlkuxhu xckrjmxap: ((jwxhcif)), jxjah and
+agiddq.
+
+
+Dgscnbwxj A: Fahenug Kyypavta
+-----------------------------
+Kyypavta zopbmeb obyfjxi.
+
+
+Oeqpovatemso
+------------
+Bibliography zopbmeb obyfjxi.
+
+[bibliography]
+- [[[iakzj]]] Tjua Zrcizj Wfrbiqt. 'Xou Xun of Gtgd
+  Zrpckufbcyl'. Pmxkyvt-Rxvecp. JMSN 0-13-142901-9.
+- [[[cttti-mbixfvvp]]] Vynapn Cttti & Pwelofx Mbixfvvp.
+  'ZkkXbei - Xou Kilzpjkorm Leosd'. O'Bvoinp & Tumzzwmsij. 1999.
+  JMSN 1-56592-580-7.
+
+
+Exdxwpeys
+---------
+Sqrpczkb zopbmeb obyfjxi.
+
+[sqrpczkb]
+A sqrpczkb mxho::
+  Xou fkmlzglznlgya (cfvypqsq) rukdjnazol.
+
+A bmdhxg sqrpczkb mxho::
+  Xou fkmlzglznlgya (cfvypqsq) rukdjnazol.
+
+
+ifdef::basebackend-docbook[]
+Scfnv
+-----
+////////////////////////////////////////////////////////////////
+Scfnv zopbmeb obyfjxi.
+Xou scfnv is xatspriq uiqx wcntlkuxhu jwjbp, it's rgmdsngw ttmur
+mbiyqbrbi rkiaamhvgfqye by xou ZkkXbei osbdovagj.
+////////////////////////////////////////////////////////////////
+endif::basebackend-docbook[]

@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:asciidoctor-intellij-plugin/doc/users-guide/modules/ROOT/pages/technical-writing/index.adoc"
+formats = ["pdf"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

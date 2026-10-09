@@ -1,0 +1,5 @@
+description = "asciidoctor#3087: a counter numbers the entries and their cross references. asciidoctor#3087: the reference text of a bibliography entry (`[[[gof,{counter:ref}]]]`) was cataloged without substitutions, so a cross reference to it showed `[{counter:ref}]`. Its attribute references are substituted once, where the entry is, and the entry and its cross references show the same text."
+source = "bugfix:asciidoctor#3087"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3087 (ptome benchmark/PARITY.md)"
+formats = ["html5"]

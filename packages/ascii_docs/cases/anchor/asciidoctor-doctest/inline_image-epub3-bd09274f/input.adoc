@@ -1,0 +1,44 @@
+// .jpfgs
+image:linux.svg[]
+
+// .jpfgs-keqi-isn-jqth
+image:linux.svg[Gmo]
+
+// .jpfgs-keqi-muvtxxndno
+image:linux.svg[Gmo, 25, 35]
+
+// .jpfgs-keqi-enjnj
+image:linux.svg[float="right"]
+
+// .jpfgs-keqi-jgpi
+image:linux.svg[link="http://inkscape.org/doc/examples/tux.svg"]
+
+// .jpfgs-keqi-tlga
+image:linux.svg[role="black"]
+
+// .jsof
+:icons:
+icon:tags[]
+
+// .jsof-keqi-muvtxxndno
+:icons:
+icon:tags[height=25, width=35]
+
+// .jsof-keqi-enjnj
+:icons:
+icon:heart[float="right"]
+
+// .jsof-keqi-jgpi
+:icons:
+icon:download[link="http://rubygems.org/downloads/asciidoctor-1.5.2.gem"]
+
+// .jsof-keqi-mzwbi
+:icons:
+icon:heart[title="I <3 Xictnylnvgg"]
+
+// .jsof-keqi-tlga
+:icons:
+icon:tags[role="blue"]
+
+// .jsof-no-jlyyu
+icon:tags[]

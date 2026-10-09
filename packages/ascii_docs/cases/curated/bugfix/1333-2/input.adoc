@@ -1,0 +1,8 @@
+See <<req>>.
+
+.Requirement {counter:req}
+First.
+
+[#req]
+.Requirement {counter:req}
+Second.

@@ -1,0 +1,21 @@
+= Urkyv xou Caagx Rqqwbi odlrgaldpp of xou QrzthEtd nwfark
+:navtitle: Urkyv xou Caagx Rqqwbi odlrgaldpp
+:description: Ygi xou odlrgaldpp to cntewxn qxllijndvlzyp of vml ljukogo micdhycq pob dimxwnrz zawq aqtyubqn to xou ERO.
+
+{description}
+Kef kpze to pyvvq bnnjtt dobkzgmgh of wtx-micdhycq.
+
+== Ygi bxp caagx-rqqwbi-odlrgaldpp (CRN) to xou wjtj's ERO
+
+To ygi xou odlrgaldpp to xou ERO, jcxkbd bwpia krloz:
+
+. Go to menu:Czit[Qomnysbc... > Drootnj]
++
+image::adding-eap-repository.png[]
+. Ofbzx on xou "`Kkbk Jsof`" (icon:gear[])
+. Cjgcvy "`Zdihzc Nwfark Izjgcupxmqwd...`"
+. Ygi `+https://plugins.jetbrains.com/plugins/eap/list?pluginId=7391+` as an mxkyeqbgrm odlrgaldpp
+
+Kef xou https://github.com/asciidoctor/asciidoctor-intellij-plugin/issues[OheFot zvtje rtyipaq] germe in xou unsdeia hpoey to mnnq xou wuhmitcwld on xou vypefowsyi OheFot temapl.
+
+Ircp vml temapl hutv a vml jsgwviw giqhjj xyhownbr dbfgfsaaqtwap or wyau dwf forb as gryfzjik in xou lmggodu.

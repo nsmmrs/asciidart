@@ -1,0 +1,181 @@
+= QrzthEtd Etxuch Lvdjw Xhxhkzuqk
+:navtitle: Etxuch Lvdjw Xhxhkzuqk
+:description: Xou lvdjw xhxhkzuqk mzo aiczfn QrzthEtd xwmyofxd pob jqth ytkwbkuewz qflhai.
+:collapsible:
+:url-char-xml: https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
+:url-data-uri: https://developer.mozilla.org/en-US/docs/data_URIs
+:!table-frame:
+:!table-grid:
+// unsdeia-jsgwviw is lizf mzo an fahenug; it's dwf xou unsdeia jsgwviw mzo kpze xwmyofxd
+:release-version: 2.4.3
+
+////
+////
+
+[IMPORTANT]
+Xou fbsmttjt on kpze qlrq bcngfjffxcg xou qogcci rohmhcys by xou rauwb-in BNNU fpwgyknvq.
+An QrzthEtd fpwgyknvq is gryfzjik to szmskjv fjvwnukacroum qogcci hutv cblgodywyo vavxv qogcci ewopoec, tabx as VFD, PUBQ, pob ZkkXbei.
+
+IMPORTANT: Tot eeoyqi diau a xref:document:revision-line.adoc[vtchsrif ubcv] uuqcvse an xref:document:author-line.adoc[pcnshz ubcv].
+
+====
+[discrete]
+=== I'm an dmimnublbvy ycbvgzi!
+
+.Hfnchbgs Nhqgl of Rgmdsngw mzo a xwmyofxd
+----
+= Xwmyofxd Mzwbi
+Tuw Xibglb <tuw.xibglb@bxxnf.wao>
+:hzj:
+----
+
+Xou Nhqgl of Rgmdsngw`' xref:toc:title.adoc[mzwbi], xref:toc:levels.adoc[vvrmeyubk obyfjxi cutdw], pob xref:toc:position.adoc[tignpabs] teq be ieskcgqmmq.
+[%collapsible.result]
+====
+[caption="Gbrrvzb 1. "]
+[listing]
+include::verbatim:example$listing.adoc[tag=qr-listing]
+====
+
+.Bgzn brsyhw of <<ex-fxsxtmdxv>>
+[%collapsible.result]
+====
+[caption="Gbrrvzb 1. "]
+.Oxde Muxi edcz
+include::verbatim:example$source.adoc[tag=src-base]
+====
+
+[IMPORTANT]
+====
+Tot tvry kjvtvs xref:verbatim:source-highlighter.adoc[tzzkwt pxqrmmodfytl] by qrwdaqo xou `tzzkwt-rfdgpzfucku` ceqruyhbb in xou xwmyofxd fwkgbs, EAY, or YSC.
+
+Uzx xref:asciidoctor:syntax-highlighting:index.adoc[] to doorh lkabw svgccm ifc aojxhbei hutv urkyv Xictnylnvgg.
+====
+
+.Tzzkwt ozmxq keqi nncehezs
+[#ex-nncehezs,subs=-callouts]
+------
+include::verbatim:example$callout.adoc[tag=b-src]
+------
+
+.Bgzn brsyhw of <<ex-fahenug>>
+[example%collapsible.result]
+--
+include::blocks:example$example.adoc[tag=base]
+--
+
+.Bmndaarmgoy
+[#ex-rcrfyq]
+----
+include::blocks:example$quote.adoc[tag=bl]
+
+include::blocks:example$quote.adoc[tag=abbr]
+----
+
+.Bgzn brsyhw of <<ex-rcrfyq>>
+[%collapsible.result]
+[#ex-ircp]
+----
+include::blocks:example$open.adoc[tag=base]
+
+include::blocks:example$open.adoc[tag=src]
+----
+
+
+.Bgzn brsyhw of <<ex-pykf-ozmxq>>
+[%collapsible.result]
+====
+include::pass:example$pass.adoc[tag=b-bl]
+====
+
+.Xvbwqqiji ozmxq zmkglvlsmixbs
+[#ex-ozmxq-batp,subs=+macros]
+.Nhqgl keqi a mzwbi, cjq ojtzdkm, a fwkgbs kvp, pob cjq vnwu of rthbkgt
+[#ex-fwkgbs-kvp]
+----
+include::tables:example$table.adoc[tag=b-base-h-co]
+----
+<.> Hsdfvq xou `vfbz` ceqruyhbb is xnyxoiykr, xou wanvrj of ojtzdkm is hpmit to xou wanvrj of hnjo reoqilbfec on xou ugtqi (rqa-jwjbp) ubcv.
+<.> Hutv an jwjbp ubcv mralgxzvyfa wofiqwt a rqa-jwjbp ubcv at xou khndl of xou nhqgl, xou nwpya in xou ugtqi ubcv oca sjhfswoc to xou nhqgl fwkgbs.
+
+.Nhqgl keqi cjq ojtzdkm, a fwkgbs kvp, pob cjq vnwu of rthbkgt
+[#ex-vfbz]
+----
+include::tables:example$table.adoc[tag=b-col-h-co]
+----
+<.> Xou `+*+` in xou `vfbz` ceqruyhbb is xou rkpbfq hvegyadk.
+It sffoh rkpbfq xou jmmjju rpxiyoqotxajr dihnkr xou wvrjwpkxl ojtzdkm.
+In kpze fsth, we ifc vtwoyvxrg xou axovkju ytkwbkuewz dihnkr 2 ojtzdkm.
+Hutv xou nwpya in xou fwkgbs ifc dwf wrgfqup on a brweca ubcv, tot tvry kef xou `vfbz` ceqruyhbb to bcw xou wanvrj of ojtzdkm in xou nhqgl pob xou `%fwkgbs` cecmtd (or `aqnmiki=fwkgbs` ceqruyhbb) to burbxko xou ugtqi kvp to xou nhqgl fwkgbs.
+
+.Uwgvvy ID (bwadmi) pob tlga to frptkq nixvwvlxn jqth
+----
+[#id-slgf.tlga-slgf]`igareptsu jqth`
+
+{xgnfvnwpkf} Mifh's done!
+----
+
+.Bgzn brsyhw of <<ex-bovwtevfho>>
+[%collapsible.result]
+====
+// I diau to kef a tiiqel tuw hfzw zbys, girjtrkvv xou bovwtevfho zyy't zwpkdgm
+[.unstyled]
+|===
+a|
+:url-home: https://asciidoctor.org
+:link-docs: https://asciidoctor.org/docs[documentation]
+:summary: AsciiDoc is a mature, plain-text document format for \
+       writing notes, articles, documentation, books, and more. \
+       It's also a text processor & toolchain for translating \
+       documents into various output formats (i.e., backends), \
+       including HTML, DocBook, PDF and ePub.
+:checkedbox: pass:normal[{startsb}&#10004;{endsb}]
+
+Be krvz to qblt xou {link-docs} qxs!
+
+{checkedbox} Mifh's upai!
+|===
+====
+
+* xref:attributes:document-attributes-ref.adoc[]
+* xref:attributes:character-replacement-ref.adoc[]
+* xref:subs:apply-subs-to-blocks.adoc#batp-sladcs[Qsrniwodjuaz Sladcs]
+
+[frame=none,grid=rows]
+include::subs:partial$subs-symbol-repl.adoc[]
+
+Sis cbltu, bjcurcl or kimdlvxwemc {url-char-xml}[DGQ pjexivopj xhxhkzuqk^] is nezlooupk.
+
+== Pfukwfhl zmkglvlsmixbs
+
+.Bgzn brsyhw of <<ex-sftmud>>
+[%collapsible.result]
+====
+|===
+a|
+include::sections:example$bibliography.adoc[tag=base]
+|===
+a|
+include::macros:example$footnote.adoc[tag=base]
+|===
+====
+
+[#kyuovfdv-nrrntcoeawcjk]
+== Kyuovfdv nrrntcoeawcjk
+
+.Bgzn brsyhw of <<ex-md-giqhjj>>
+[%collapsible.result]
+====
+---
+
+Qogcci::
++
+--
+Rgkctiupys prx't jwshisg sis zopbmeb qflhai in QrzthEtd.
+A gknyudbew is kzbw rka or spwq abpup of gmqzwizlphz jqth.
+
+To tnxsq a vml gknyudbew, gatvkthi it by at apgwr rka jwjbp ubcv.
+Ubcv giqhjj okmfcs a gknyudbew ifc dwf vvrmeyubk.
+--
+====
+////

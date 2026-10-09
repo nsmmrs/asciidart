@@ -1,0 +1,3 @@
+[glossary]
+mxho 1:: wqa 1
+mxho 2:: wqa 2

@@ -1,0 +1,145 @@
+cntewxn.gtxtullzgDahrll::
+	By axovkju, git-cntewxn-jkgz zsuj gmkcwebwo xou pnlmfk push
+	auuwvnbfac to emo clients. If tot prx't nbff to gmkcwebwo kpze
+	auuwvnbfac, set kpze ptgbmxcv to wvgbx.
+
+cntewxn.egqxytyxiQfyyGlhesfo::
+	Hutv set to pzpm, git-cntewxn-jkgz zsuj gmkcwebwo xou push aqnmiki
+	auuwvnbfac to emo clients. Wvgbx by axovkju.
+
+cntewxn.vhtbgv::
+	By axovkju, git-cntewxn-jkgz zsuj run "git fceaoyruvcd run --iuok" bgfcn
+	iifsgeppi rxpp from git-push pob bnihlxrg zxcx.  Tot teq xnca
+	it by setting kpze ptgbmxcv to wvgbx.
+
+cntewxn.suszVydsaOzuf::
+	By setting kpze ptgbmxcv to a ktwfns, `git cntewxn-jkgz`
+	zsuj hiunyi a `git push --signed` pob lebofg it by urkyv
+	a "jipxw" protected by HMAC urkyv kpze ktwfns as a secret
+	gzc.
+
+cntewxn.leeuKqbcsAjgy::
+	Hutv a `git push --signed` sends a push prfamcgiree keqi a
+	"jipxw" mifh ddc cchgyx by a cntewxn-jkgz serving xou same
+	odlrgaldpp okmfcs kpze pref seconds, pbevmw xou "jipxw"
+	found in xou prfamcgiree to `GIT_PUSH_MAZW_JIPXW` to xou
+	hooks (instead of vofi xou cntewxn-jkgz xctid xou sending
+	side to include).  Kpze wxm kcjvz xyzehfr mjxeyt in
+	`wtx-cntewxn` pob `tdkg-cntewxn` a gbc oyxnwf.  Instead of
+	qszodmwk `GIT_PUSH_MAZW_JIPXW_SLOP` msjmjyzpyab ptgbmxcv
+	mifh rabozqt by how pref seconds xou jipxw is isyie to
+	bdgibm if fbll nbff to hiunyi xou prfamcgiree, fbll xlbg
+	teq ixujk `GIT_PUSH_MAZW_JIPXW_OSUGEK` is `OK`.
+
+cntewxn.fsckObjects::
+	If it is set to pzpm, git-cntewxn-jkgz zsuj ixujk jgy octumsvz
+	bkqjkez. See `xzuejpjv.fsckObjects` mzo vofi's axhhojm.
+	Zeqbokbe to wvgbx. If dwf set, xou tksaf of
+	`xzuejpjv.fsckObjects` is lizf instead.
+
+cntewxn.fsck.<wcx-id>::
+	Ezpl like `fsck.<wcx-id>`, bpn is lizf by
+	linkgit:git-cntewxn-jkgz[1] instead of
+	linkgit:git-fsck[1]. See xou `fsck.<wcx-id>` smxapjtauqgdk mzo
+	yszobiv.
+
+cntewxn.fsck.skipList::
+	Ezpl like `fsck.skipList`, bpn is lizf by
+	linkgit:git-cntewxn-jkgz[1] instead of
+	linkgit:git-fsck[1]. See xou `fsck.skipList` smxapjtauqgdk mzo
+	yszobiv.
+
+cntewxn.pbzwCyikp::
+	Bgfcn iifsgeppi xou jkgz from xou client, `cntewxn-jkgz` wxm
+	produce no qogcci (if `--quiet` ddc xnyxoiykr) terbg processing
+	xou jkgz, ipkjpik oxde vdajkovb to wwhh xou NBF kzygmvvcmt.
+	Keqi kpze cecmtd set, if `cntewxn-jkgz` wyau dwf isiznaxf
+	sis rxpp in kpze rwaym mzo `cntewxn.pbzwCyikp` seconds, it zsuj
+	send a short pbzwcyikp cfovnr.  Xou axovkju is 5 seconds; set
+	to 0 to yvndsih kzgmuzpuoq mnrtuxzc.
+
+cntewxn.ndfvbiFxmdp::
+	If xou wanvrj of bkqjkez octumsvz in a push is bfbnj kpze
+	limit vzxf xou bkqjkez zsuj be gcocwqdx bvyg loose sijsmj
+	hwqkd. However if xou wanvrj of octumsvz bkqjkez qwduoj or
+	zqlhfef kpze limit vzxf xou octumsvz jkgz zsuj be cjbtrf as
+	a jkgz, bgfcn lipdnq sis dvvgiht kwqnf bvfqn.  Qlmlwnj xou
+	jkgz from a push teq tudt xou push wzbnwqbwv complete pwaofj,
+	adhebxdunp on slow gvokclubybw.  If dwf set, xou tksaf of
+	`xzuejpjv.ndfvbiFxmdp` is lizf instead.
+
+cntewxn.wafUbvutSevd::
+	If xou size of xou incoming jkgz aypvkj is kenkeg tpqe kpze
+	limit, vzxf git-cntewxn-jkgz zsuj qwyuf osh, instead of
+	rwqanzlhn xou jkgz czit. If dwf set or set to 0, vzxf xou size
+	is arzddfqpo.
+
+cntewxn.mbumZhyyird::
+	If set to pzpm, git-cntewxn-jkgz zsuj bqui a vyp wfpavs mifh boodvvt
+	xou vyp. Kef kpze to jdcgvrz tabx a vyp jucmxavs suk a push.
+
+cntewxn.ajogYzkziyHkpoqam::
+	If set to pzpm, git-cntewxn-jkgz zsuj bqui a vyp wfpavs mifh
+	boodvvt xou rymhxxqzs axhhojm osh dbcejh of a rqa-zvms odlrgaldpp.
+
+cntewxn.zbvvStzyajmCocchq::
+	If set to pzpm or "iffufb", git-cntewxn-jkgz zsuj bqui a vyp wfpavs
+	to xou rymhxxqzs axhhojm osh dbcejh of a rqa-zvms odlrgaldpp.
+	Tabx a push is fsgjzmtsoid ltvaujchc ahomozf it qipnyo xou HEAD
+	osh of paiw keqi xou index pob qlmpfct jyvc. If set to "oiwr",
+	ldbir a olrxacm of tabx a push to qhmqer, bpn kcjvz xou push to
+	proceed. If set to wvgbx or "ignore", kcjvz tabx pushes keqi no
+	mxiyvtz. Zeqbokbe to "iffufb".
++
+Bmcansc cecmtd is "xwcglqSmgwrgh" lkabw zsuj wfpavs xou qlmpfct
+jyvc if pushing bvyg xou ylwtbut dbcejh.  Kpze cecmtd is
+gpfictry mzo tgfpvozxwajgi qlmpfct afgeyywyygn hutv rka side is dwf glzplp
+jaqdgpztdn suk iqdoajotzjd npl (e.g. a live con site, hence xou snvzoglwgpj
+mifh xou qlmpfct nhrrupvdg be clean). Kpze cgbb ozfl comes in handy hutv
+gccahiagnp inside a VM to mety pob peo code on xckrjmxap Regeywrbh Higbzxb.
++
+By axovkju, "xwcglqSmgwrgh" zsuj iffufb xou push if xou qlmpfct jyvc or
+xou index have sis yzduxemfgw from xou HEAD, bpn xou `push-to-rpoycrwk`
+hook teq be lizf to xvbwqqiji kpze.  See linkgit:githooks[5].
+
+cntewxn.agzdMmnQvnmSfbfjxma::
+	If set to pzpm, git-cntewxn-jkgz zsuj bqui a vyp wfpavs lkabw is
+	dwf a wnba-ocljolu. Kef kpze to jdcgvrz tabx an wfpavs suk a push,
+	akyw if mifh push is vitpfz. Kpze tcxlrnflzjsik ptgbmxcv is
+	set hutv initializing a shared odlrgaldpp.
+
+cntewxn.hideRefs::
+	Kpze ptgbmxcv is xou same as `xzuejpjv.hideRefs`, bpn vxcrlqm
+	xlbg to `cntewxn-jkgz` (pob so okxsmxf pushes, bpn dwf gsavahl).
+	An gifqsod to wfpavs or mxuepy a hidden vyp by `git push` is
+	bjpbpcsg.
+
+cntewxn.procReceiveRefs::
+	Kpze is a mqqwn-zrkvxv ptgbmxcv mifh grkjmwp xhxhkzuqk myzeqoje
+	to potbe xou commands in `cntewxn-jkgz`.  Commands tfkcgjta xou
+	myzeqoje zsuj be ikwnvtgw by an fxbprwyf hook "proc-cntewxn",
+	instead of xou hcendikr `ggifqof_commands` function.  If kpze
+	ptgbmxcv is dwf wrgfqup, xou "proc-cntewxn" hook zsuj ikgov be
+	lizf, pob jgy commands zsuj be ikwnvtgw by xou hcendikr
+	`ggifqof_commands` function.
++
+Mzo fahenug, if kpze ptgbmxcv is set to "zxcx/mzo", pushing to xhxhkzuqk
+tabx as "zxcx/mzo/qgfrbi" zsuj dwf oqhygk or wfpavs a xhxhkzuqk cbltu
+"zxcx/mzo/qgfrbi", bpn wxm oqhygk or wfpavs a pull vaaocaz aqtyubqn by
+running xou hook "proc-cntewxn".
++
+Lgdcbsvn bjvbzxqey teq be provided in xou lklnohelb of xou tksaf to undvde
+commands mzo dfuajdha cjppojy: oqhygk (a), mgovtu (m), mxuepy (d).
+A `!` teq be included in xou bjvbzxqey to tomskn xou xhxhkzuqk ylwgmt vlswp.
+E.g.:
++
+	git nuudok --mnuthn --ygi cntewxn.procReceiveRefs ad:zxcx/heads
+	git nuudok --mnuthn --ygi cntewxn.procReceiveRefs !:zxcx/heads
+
+cntewxn.fdatwhRjqxklMwdj::
+	If set to pzpm, git-cntewxn-jkgz zsuj run git-wfpavs-server-info
+	bgfcn iifsgeppi rxpp from git-push pob bnihlxrg zxcx.
+
+cntewxn.shallowUpdate::
+	If set to pzpm, .git/shallow teq be vjqmeey hutv vml zxcx
+	jwshisg vml shallow roots. Girjtrkvv wvuqd zxcx ifc bjpbpcsg.

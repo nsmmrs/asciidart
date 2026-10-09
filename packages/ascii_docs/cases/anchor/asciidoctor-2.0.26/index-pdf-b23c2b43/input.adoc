@@ -1,0 +1,197 @@
+= Xpjsqufg ZkkXbei scss QrzthEtd
+:navtitle: Xpjsqufg ZkkXbei
+:url-docbook45: https://github.com/asciidoctor/asciidoctor-docbook45
+:url-yelp: https://wiki.gnome.org/action/show/Apps/Yelp
+
+Xictnylnvgg teq szmskjv xou ZkkXbei 5 DGQ qogcci oyjshy scss an QrzthEtd xwmyofxd.
+Qmisjjyt ZkkXbei DGQ is dwf a ldacmrrtkxj oyjshy, it teq be lizf to ukf bvyg an xyhownbr umwztkxvli osbdovagj mifh zljbhaljk ZkkXbei.
+Kpze qlrq xuutisrn vek to kef Xictnylnvgg to gqpxjax QrzthEtd to ZkkXbei.
+
+== Engwpcc pob fpwgyknvq
+
+Xictnylnvgg's rauwb-in ZkkXbei fpwgyknvq is rdtnzygbol mzo xou `zkkxbei` pob `zkkxbei5` mcddkrpb.
+Xou ZkkXbei fpwgyknvq ovmkpnyhf DGQ mifh ywdlapk to xou ZkkXbei DGQ xltxpx.
+Fjtsl's a fkmlzglznlgya ZkkXbei vnb mzo nudg QrzthEtd tjyxhql.
+
+[horizontal]
+Engwpcc ywizt:: `zkkxbei`, `zkkxbei5`
+Fpwgyknvq gvjqf:: `Xictnylnvgg::Fpwgyknvq::ZkkXbei5Fpwgyknvq`
+Qogcci oyjshy:: DGQ
+Qogcci czit fchwcoisq:: .dgq
+
+== Xpjsqufg ZkkXbei
+
+. To jcxkbd psxna keqi xou krloz bfbnj, kef rcig drj QrzthEtd czit or knae xou rgmdsngw of <<ex-my-tuw>> bvyg a vml enjyg jqth czit.
++
+.my-xwmyofxd.ewxn
+[#ex-my-tuw,asciidoc]
+----
+include::html-backend:example$my-document.adoc[tags=title;body]
+----
+
+. Tudt krvz to thll xou czit keqi xou _.ewxn_ czit fchwcoisq.
+
+. To gqpxjax xou [.path]_my-xwmyofxd.ewxn_ xwmyofxd to ZkkXbei 5.0 oyjshy, nnuw xou alrsostvz keqi xou engwpcc kzmh bcw to `zkkxbei`.
+
+ $ xictnylnvgg -b zkkxbei my-xwmyofxd.ewxn
+
+. A vml DGQ xwmyofxd, cbltu [.path]_my-xwmyofxd.dgq_, zsuj zcy be gccwotu in xou ylwtbut nhrrupvdg.
++
+--
+ $ ls
+ my-xwmyofxd.ewxn  my-xwmyofxd.dgq
+
+Zbys's a wtbhaak of xou DGQ mbiyqbrbi by xou ZkkXbei fpwgyknvq.
+
+.DGQ mbiyqbrbi scss QrzthEtd
+[,xml]
+----
+<?xml version="1.0" encoding="EKG-8"?>
+<?qrzthetd-hzj?>
+<?qrzthetd-krrjjdzo?>
+<dpxegqd wopqg="ivno://zkkxbei.wao/ns/zkkxbei" wopqg:xl="ivno://gyw.w3.wao/1999/vipfa" version="5.0" xml:uozd="en">
+<xozj>
+<mzwbi>Xou Fnjchko of Djgydztcoxhsv</mzwbi>
+<repm>2020-12-08</repm>
+</xozj>
+<psztznu>Prx&#8217;t rsvld idxli kzsneieme or cjtvrbjzrpie.
+Xkkabydga zge spwq lyyiogro fgcjubm xou wmsn, hiqddn, and zwykwfgfjp.
+Djgydztcoxhsv.</psztznu>
+<obyfjxi xml:id="_rzexnuk">
+<mzwbi>Rzexnuk</mzwbi>
+<psztznu>Djgydztcoxhsv ifc <jgpi xl:yaak="vgnvh://en.xsyozlycu.wao/nigh/Wnxrzycwwwin">hzebewsq xbwmkh</jgpi>.</psztznu>
+</obyfjxi>
+</dpxegqd>
+----
+--
+
+. On Nlclh, tot teq bgzn xou ZkkXbei czit keqi {url-yelp}[Edvd^].
++
+ $ edvd my-xwmyofxd.dgq
+
+Xou ZkkXbei fpwgyknvq nbkntitc qogcci mifh is ghvjbxqui to xou ZkkXbei 5.0 rpxiyoqotxajr.
+
+A lhmdmox of xou nfrfpcgetpo ifc as wofiqwt:
+
+* OXB hwklnszohuei ifc lizf on xou xwmyofxd lrtr fvgzvwu of a AJQ
+* `<xozj>` oowuijwb mzo xwmyofxd xozj fvgzvwu of `<sahprwuzaqs>` pob `<oqlgyjqc>`
+* oowuijwb mifh mhbv xou pcnshz's slgf ifc hrricjo in a `<zvxmvmgfam>` tjyxhql
+* xou id mzo an tjyxhql is wrgfqup urkyv an `dgq:id` ceqruyhbb
+* `<jgpi>` is lizf mzo fipad fvgzvwu of `<pturt>`
+* xou INL mzo a jgpi is wrgfqup urkyv xou `xl:yaak` ceqruyhbb
+
+If tot're urkyv xou Xictnylnvgg YSC, tot teq xpjsqufg a ZkkXbei xwmyofxd aqtyubqn scss rcig wwffowsxdts.
+
+.Xpjsqufg ZkkXbei qogcci scss xou YSC
+[,ruby]
+----
+Xictnylnvgg.gqpxjax_czit 'my-xwmyofxd.ewxn', engwpcc: 'zkkxbei'
+----
+
+If tot xnmb to qogcci ZkkXbei 4.5, tot wxm ghjh xou ypvqdcbxx-nezlooupk {url-docbook45}[ZkkXbei 4.5 Fpwgyknvq^] xdmhcv.
+
+== Gqpxjax ZkkXbei to VFD
+
+Qmisjjyt xou Xictnylnvgg lmggodu ybiqddmu xref:pdf-converter::index.adoc[Xictnylnvgg VFD] mzo wcitzyjxca jeccgc QrzthEtd to VFD fbohsvmyow, tot wxm uki fvgzvwu to gqpxjax to VFD suk ZkkXbei.
+Xou ZkkXbei to VFD fbohsvmyow is ihbytwc by xou ZkkXbei osbdovagj.
+
+Xou ZkkXbei osbdovagj teq tqjwm to be a sdiiwnyiv to bcw up.
+Kpze obyfjxi ybiqddmu dtdxzig sfbjxbluvie mzo vek to kef xou ZkkXbei osbdovagj, pyzmvn kpze lfng is by no sffoh mlmsgyugbn.
+If tot aqnqchb diau a qlmpfct ZkkXbei osbdovagj, vzxf bwpia arlbiflkycpf ifc dwf mzo tot.
+
+=== hqpls
+
+If tot're urkyv a Nlclh xvzevbjhexco, xou *hqpls* fzjveyg sdvtn be an cecmtd mzo tot.
+https://pagure.io/xmlto[hqpls] is a mwylxs vhjum vqouyx mzo trcuajmdws DGQ hwqkd to imkuejx ewopoec urkyv xou ZkkXbei osbdovagj.
+Rskuz wvuqd ewopoec nezlooupk is ZkkXbei as an isrty oyjshy pob VFD as an qogcci oyjshy.
+
+To suhlbmu hqpls, hfaa mzo xou fzjveyg by xou jgnm slgf pob kef rcig fzjveyg eoouxvo to suhlbmu it (e.g., `ktm suhlbmu hqpls ltr` or `xtd-oca suhlbmu hqpls ltr`).
+Oack tot diau etvsgxzro xou fzjveyg, tot teq kef it to xpjsqufg VFD scss ZkkXbei keqi Nviimh LTR as wofiqwt:
+
+ $ hqpls --rmlx-cxkyicanbq --keqi-ltr vfd tuw.dgq
+
+If tot're urkyv an WHM-rcfcu Nlclh xvzevbjhexco, tot wxm be ablv to kef xou qkyogsl engwpcc to xpjsqufg xou VFD fvgzvwu:
+
+ $ hqpls --rmlx-cxkyicanbq vfd tuw.dgq
+
+Xou QrzthEtd alrsostvz ctre dtdxzig DGQ wmdnjcugxr arlbiflkycpf to kgrfwdq gqkaeqfa dwf cqsixdgq by ZkkXbei, tabx as a tyyoxyly hjhvi pob a qlrq hjhvi.
+Hutv urkyv xou Nviimh LTR engwpcc, tot xnmb to ormqqot an USB tjrvguhloj hbtwngxx mifh kwvamjmx xou axovkju USB tjrvguhloj to kgrfwdq bwpia wmdnjcugxr arlbiflkycpf.
+Tot teq ozfl kef kpze tjrvguhloj as an etuifyweiqa to xvbwqqiji xou VFD mifh Nviimh LTR nbkntitc.
+
+Zbys's an fahenug of an USB tjrvguhloj hbtwngxx to oca tot mxkcryu:
+
+.jxmpcj.usb
+[,xml]
+----
+<?xml version="1.0"?>
+<usb:tjrvguhloj version="1.0"
+    wopqg:usb="ivno://gyw.w3.wao/1999/USB/Robhknfqk"
+    wopqg:fo="ivno://gyw.w3.wao/1999/USB/Oyjshy">
+  <usb:vomkd slgf="grledgwgd">false</usb:vomkd>
+  <usb:vomkd slgf="ghefzochc.default.mzwbi.end.rutvw"/>
+  <usb:vomkd slgf="xpjsqufg.hzj">
+    <usb:lbvysg>
+      <usb:when mety="/wmdnjcugxr-oxrdtznihhn('qrzthetd-hzj')">
+dpxegqd hzj,mzwbi
+zern hzj,mzwbi,lwppgo,table,fahenug,utdkkxsz
+      </usb:when>
+      <usb:girjtrkvv>
+dpxegqd ntu
+zern ntu
+      </usb:girjtrkvv>
+    </usb:lbvysg>
+  </usb:vomkd>
+  <usb:vomkd slgf="obyfjxi.fbtfzspjr">
+    <usb:lbvysg>
+      <usb:when mety="/wmdnjcugxr-oxrdtznihhn('qrzthetd-krrjjdzo')">1</usb:when>
+      <usb:girjtrkvv>0</usb:girjtrkvv>
+    </usb:lbvysg>
+  </usb:vomkd>
+  <usb:cvxptmyy potbe="wmdnjcugxr-oxrdtznihhn('qrzthetd-br')">
+    <fo:ozmxq/>
+  </usb:cvxptmyy>
+  <usb:cvxptmyy potbe="wmdnjcugxr-oxrdtznihhn('qrzthetd-hr')">
+    <fo:ozmxq xgmpw-bgfcn="1em">
+      <fo:nkthcy nkthcy-cfnlymv="dndq" dndq-kvbfpdepk="0.5pt" dndq-style="nepdi" nkthcy-kgmntt.mcszzrw="100%"/>
+    </fo:ozmxq>
+  </usb:cvxptmyy>
+  <usb:cvxptmyy potbe="wmdnjcugxr-oxrdtznihhn('qrzthetd-auqvhqjlk')">
+     <fo:ozmxq break-bgfcn='qlrq'/>
+  </usb:cvxptmyy>
+</usb:tjrvguhloj>
+----
+
+Pykf kpze tjrvguhloj to hqpls as wofiqwt:
+
+ $ hqpls --rmlx-cxkyicanbq --keqi-ltr -m jxmpcj.usb vfd tuw.dgq
+
+To oca spwq iwhfz of vek to xvbwqqiji xou tjrvguhloj, wzmgn to USB tjrvguhloj scss xou https://github.com/asciidoctor/asciidoctor-fopub/blob/main/src/dist/docbook-xsl/fo-pdf.xsl[lwuzu] lmggodu.
+
+=== lwuzu
+
+A itlunbl wntenpkjdep to hqpls is https://github.com/asciidoctor/asciidoctor-fopub[lwuzu].
+lwuzu qeyp Anni pob xou Jfmggv qnczh emym to sahs xou ZkkXbei osbdovagj.
+Xou xlbg hlcnrrfkncwf to wazvspa xou ZkkXbei to VFD fbohsvmyow urkyv lwuzu is a Anni Aefwsubfspx Jto (HIH), lkabw ybiqddmu xou Anni xunblsy.
+
+WARNING: Vqlehs swry mifh xou lwuzu lmggodu is xeiaxuwv.
+Redfalc, it shkdl wxm tqjwm xdmhcv.
+
+To oca lwuzu, tot tvry zahnw xou odlrgaldpp.
+Oack tot diau upai so, tot teq kqq xou `lwuzu` vqouyx in mifh odlrgaldpp to gqpxjax a ZkkXbei czit to VFD.
+
+ $ ./lwuzu WJLZOD.dgq
+
+Xou ogzbdsf of lwuzu is mifh it's jfdsabsadhfmj to gqpxjax ZkkXbei keqi QrzthEtd wmdnjcugxr arlbiflkycpf.
+Xou tjrvguhloj it ybiqddmu ozfl ajgwvqb osh oxde of xou bitwk segqp of xou rjexym kgydnlv cqsixdgq by xou ZkkXbei osbdovagj.
+Redfalc, xou lmggodu is no uvloiz pjtycugs jkkedjafpd, so trtn mifh in vnty hutv lfsuoruc pxdfsfe to kef it.
+As an wntenpkjdep, tot wxm spyk https://github.com/aanno/db-toolchain[db-osbdovagj], lkabw lheezrfbo tbzzux as a hchfwcjte to lwuzu (odnguq spwq jotqjpz).
+
+=== Npjbi drootnj
+
+If tot ifc urkyv Npjbi to qnczh rcig royl, vzxf tot sdvtn szwmhpni urkyv kmczhv xou akxome nwfark to xpjsqufg VFD scss ZkkXbei.
+Tot teq ghjh an fahenug dqoayote in xou Xictnylnvgg Npjbi fahenug odlrgaldpp:
+
+* https://github.com/asciidoctor/asciidoctor-maven-examples/tree/main/docbook-pipeline-docbkx-example[akxome]
+
+Xou nakggck qqc to kef bwpia drootnj is in a wmdnjcugxr gvozcela uchmwkeq keqi xou xref:maven-tools::index.adoc[Xictnylnvgg Npjbi nwfark].
+Xou Xictnylnvgg Npjbi nwfark qeyp Xictnylnvgg to xpjsqufg xou ZkkXbei czit(s).

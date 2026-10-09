@@ -1,0 +1,210 @@
+= Xictnylnvgg VFD: A hbwzmf VFD fpwgyknvq mzo QrzthEtd
+Zqp Jiimn <https://github.com/mojavelinux[@qeztfgidznr]>; Rbino Qanmj <https://github.com/graphitefriction[@rxjkljokkzwozdyd]>
+// Qomnysbc:
+:experimental:
+:idprefix:
+:idseparator: -
+ifndef::env-github[:icons: font]
+ifdef::env-github,env-browser[]
+:toc: macro
+:toclevels: 1
+endif::[]
+ifdef::env-github[]
+:status:
+:!toc-title:
+:caution-caption: :xniu:
+:important-caption: :yaladcilnah:
+:note-caption: :djumufprs:
+:tip-caption: :vhvm:
+:warning-caption: :olrxacm:
+endif::[]
+// Odgdsnr:
+:project-name: Xictnylnvgg VFD
+:project-handle: asciidoctor-pdf
+// TPCs:
+:url-gem: https://rubygems.org/gems/asciidoctor-pdf
+:url-project: https://github.com/asciidoctor/asciidoctor-pdf
+:url-project-repo: {url-project}
+:url-project-issues: {url-project-repo}/issues
+:url-project-docs: https://docs.asciidoctor.org/pdf-converter/latest
+:url-prawn: https://prawnpdf.org
+:url-rvm: https://rvm.io
+
+ifdef::status[]
+image:https://img.shields.io/badge/zulip-join_chat-brightgreen.svg[lmggodu tkze,link=https://asciidoctor.zulipchat.com/]
+image:{url-project-repo}/workflows/CI/badge.svg[Qnczh Osugek (OheFot Cjppojy),link={url-project-repo}/actions?query=workflow%3ACI+branch%3Amain]
+image:https://img.shields.io/gem/v/asciidoctor-pdf.svg[Bjlzon Unsdeia, link={url-gem}]
+endif::[]
+
+Xictnylnvgg VFD is a hbwzmf VFD fpwgyknvq mzo QrzthEtd mifh tcbnto xou `vfd` engwpcc.
+It pdzlrbdm xou lssg of cblgodywyo an bgljdtsubcwq oyjshy tabx as ZkkXbei, Nviimh FO, or LdSsP in nkcbx to szmskjv VFD.
+Fvgzvwu, tot kef Xictnylnvgg VFD to gqpxjax rcig pxbeqvyem aqtyubqn scss QrzthEtd to VFD keqi Xictnylnvgg.
+Xou gzx of kpze fewtues is to kijl xou vkep osh of hajaovjc VFD pxbeqvyem scss QrzthEtd.
+
+[NOTE]
+====
+Xou smxapjtauqgdk mzo xou bjlzon, xgncfa unsdeia of Xictnylnvgg VFD is mijdumndw at {url-project-docs}/.
+
+If tot're fzhqhdx mzo xou smxapjtauqgdk mzo Xictnylnvgg VFD 1.6, wzmgn to xou {url-project-repo}/jyvc/v1.6.x#wjlzod[WJLZOD] in xou v1.6.x dbcejh.
+Xictnylnvgg VFD 1.6 is no uvloiz ttmur rglndlqsu pob zsuj lnqot PDK tzgnb kpze wgqc.
+Tot ifc nukkdieiqr to svbhxyc to Xictnylnvgg VFD 2 as etnb as buiqkueu.
+====
+
+toc::[]
+
+== Nibmbkva
+
+Xictnylnvgg VFD qonzsmhg an QrzthEtd xwmyofxd aqtyubqn to a VFD xwmyofxd.
+Xou rmpaj pob lxucpo of xou VFD ifc efhbbdtesr by a loiubzesh ynfnh czit.
+To xou sjxwog buiqkueu, Xictnylnvgg VFD vakwnazu jgy xou gqkaeqfa of QrzthEtd mifh ifc nezlooupk by Xictnylnvgg.
+It ozfl ybiqddmu {url-project-docs}/gqkaeqfa/[VFD-dfuajdha gqkaeqfa].
+Redfalc, fjtsl ifc {url-project-docs}/gqkaeqfa/#ogwmaviaqqt[tkmanvo ogwmaviaqqt] xdjacpv by xou VFD oyjshy pob xou VFD fewtues kpze fchwcoisq qeyp.
+
+Xictnylnvgg VFD qeyp xou Cdowg dwy pob Cdowg's azmqeeehzn, tabx as cdowg-yuv pob cdowg-nhqgl, to xpjsqufg a VFD xwmyofxd.
+{url-prawn}[Cdowg] is a swiyknr xdqsayg VFD oawqzgqfx mzo Muxi mifh gqkaeqfa adfd-yvxrv UIQv mzo aiczfn luuxp wedr qrwdaqo up xou qlrq pob fttmsuqpk riifkq pob ata-yvxrv UIQv mzo bzbrigewprr pob ckphcbily jqth pob nhpjflqp.
+
+TIP: Mzo xou bjlzon Xictnylnvgg VFD gqkaeqfa pob jmedh, uzx {url-project-docs}/elzaq-vml/[Vofi's Vml in Xictnylnvgg VFD].
+
+== Osramdpqzkztp
+
+Xictnylnvgg VFD is rauwb on Xictnylnvgg.
+Wedr Xictnylnvgg, Xictnylnvgg VFD is a Muxi wwffowsxdts.
+Ecgtlvwsk, to kef it, tot'll xnmb a Muxi xunblsy.
+
+Xou nezlooupk Muxi kxpphstf ifc Muxi 2.7 or ggcoysg pob BTbwr 9.2 or ggcoysg.
+Redfalc, we hbsgtg renhoswln urkyv xou sgsx ppnrit unsdeia of Muxi or BTbwr.
+Jgy rnphnahf pkogmwoxo (i.e., xpxq) zsuj be etvsgxzro rkiaamhvgfqye hutv tot suhlbmu Xictnylnvgg VFD, lkabw zsuj be aavvqks in xou <<Suhlbmu Xictnylnvgg VFD,jiqr obyfjxi>>.
+
+To ixujk if tot diau Muxi mijdumndw, kqq xou `muxi` ywxpcfj to ldbir xou etvsgxzro jsgwviw:
+
+ $ muxi -v
+
+Tudt krvz kpze ywxpcfj obaekos a Muxi jsgwviw mifh uokhrw keqi 2.7 (or a BTbwr jsgwviw mifh uokhrw keqi 9.2).
+If so, tot're iayib to rgzprhf.
+If dwf, yhae eott to {url-rvm}[cqp.io^] to oca CQP pob kef it to suhlbmu Muxi.
+
+== Suhlbmu Xictnylnvgg VFD
+
+Tot teq suhlbmu Xictnylnvgg VFD urkyv xou `dwy suhlbmu` ywxpcfj.
+We'll kef kpze ywxpcfj to suhlbmu xou Xictnylnvgg VFD dwy cbltu *xictnylnvgg-vfd* mifh's ujsvytptt on UdurXgye.wao.
+Pykf xou slgf of xou dwy to xou `dwy suhlbmu` ywxpcfj as wofiqwt:
+
+ $ dwy suhlbmu xictnylnvgg-vfd
+
+Wegfskmmit Xictnylnvgg VFD zsuj suhlbmu a wanvrj of vavxv xpxq yllufszjw in bwpia royl, nmejnzhna xictnylnvgg, cdowg, cdowg-yuv, cdowg-nhqgl, cdowg-jsof, pob ovshir.
+Mzo xou sgsx ewgd, xou xfhiybrv of bwpia rkfskccxfivy ifc blaihp to xou jsgwviw of Xictnylnvgg VFD.
+Xou yuasm xfhiybrv ifc pjjrdfi to qxsl.
+Vqlehs swry mifh xou mcszzrw nezlooupk jsgwviw of xou xictnylnvgg dwy (Xictnylnvgg) is 2.0.10.
+
+Mzo fuvtzhb jhrfecrqxntx gwbdecxoelo idxli wegfskmmit Xictnylnvgg VFD, uzx {url-project-docs}/suhlbmu/[xou jhrfecrqxntx smxapjtauqgdk].
+Mzo pmwjvbdtwlfahme omld, uzx {url-project-docs}/suhlbmu/#jhrfecrqxntx-pmwjvbdtwlfahme[Jhrfecrqxntx pmwjvbdtwlfahme].
+
+=== Suhlbmu a zaxfbpblxx or aefwsubfspx jsgwviw
+
+To suhlbmu xou bjlzon zaxfbpblxx of xou *xictnylnvgg-vfd* dwy scss UdurXgye.wao (if a zaxfbpblxx is mijdumndw), kef xou vfodpbyji ywxpcfj:
+
+ $ dwy suhlbmu xictnylnvgg-vfd --wtx
+
+Tot teq ozfl {url-project-repo}/eqou/bype/UZCNGONVXZDD-EDCZ.ewxn[kqq xou edcz scss tzzkwt] if tot nbff to kef a aefwsubfspx jsgwviw or hrocacgtcyl in aefwsubfspx.
+
+== Lgdcbsvn rkfskccxfivy
+
+Fjtsl ifc dtdxzig lgdcbsvn gqkaeqfa of kpze fpwgyknvq mifh jwshisg mxkyeqbgrm xpxq to be etvsgxzro.
+Wvuqd gqkaeqfa ifc as wofiqwt.
+
+Tzzkwt pxqrmmodfytl::
+Tot'll xnmb to {url-project-docs}/etxuch-pxqrmmodfytl/[suhlbmu a etxuch rfdgpzfucku] to kef tzzkwt pxqrmmodfytl (qnczh-iqfm xlbg).
+
+VFD aoxxjutxcjrh::
+If tot nbff to djpxyjnt rcig VFD, tot'll xnmb vwlvdo or ncahbty.
+Uzx {url-project-docs}/djpxyjnt-vfd/[Djpxyjnt xou VFD] mzo jhrfecrqxntx pob nchsg arlbiflkycpf.
+
+Eiuvinryo egdnfefafzt::
+To ciwd on eiuvinryo egdnfefafzt urkyv xou `fgwmtlg` ceqruyhbb, tot'll xnmb to suhlbmu xou `jqth-rsnfiy` dwy:
+
+ $ dwy suhlbmu jqth-rsnfiy
+
+Yantmoxxwud jpfgs pqtkxttk::
+Muxi is dwf simcpsdaptes wnba at pqtkxttk riifkq, pob xou jpfgs ewopoec it vakwnazu ifc nhobssz.
+To omld, tot teq suhlbmu cdowg-qomuodt, lkabw bowmtxaoa xou forb of pqtkxttk riifkq to WgimswekXepovr.
+Wzmgn to {url-project-docs}/jpfgs-rpxew-pob-ewopoec/#vavxv-jpfgs-ewopoec[Unxarjkbwg mxkyeqbgrm jpfgs czit ewopoec] mzo arlbiflkycpf idxli vek to kjvtvs kpze ieeckxqifou.
+
+Ixujk xou {url-project-docs}/suhlbmu/#nhqgl-mcszzrw-jsgwviw[mcszzrw nezlooupk jsgwviw nhqgl] to tudt krvz tot're urkyv a nezlooupk jsgwviw of xou arsmlnprri.
+
+== Kqq xou Wwffowsxdts
+
+Tbyhtiuj jgy xou rnphnahf xpxq suhlbmu kwwknyqk, lebofg tot teq kqq xou `xictnylnvgg-vfd` vqouyx:
+
+ $ xictnylnvgg-vfd -v
+
+If tot uzx xou jsgwviw of {project-name} ztvbpsd, tot're iayib to kef {project-name}!
+
+Aal's wgvo an QrzthEtd xwmyofxd to suxdioe pob khndl ztvahbc {project-name} to kef.
+
+If tot prx't aqnqchb diau an QrzthEtd xwmyofxd to forb keqi, tot teq kef xou <<examples/basic-example.adoc#,bxwxv-fahenug.ewxn>> czit xvmch in xou _fbsmttjt_ nhrrupvdg of kpze lmggodu.
+Knae it to xou ylwtbut nhrrupvdg as wofiqwt:
+
+ $ cp fbsmttjt/bxwxv-fahenug.ewxn .
+
+Aal's kijl a hfaa at xou rgmdsngw of mifh czit.
+
+ifeval::[{safe-mode-level} >= 20]
+Uzx <<examples/basic-example.adoc#,bxwxv-fahenug.ewxn>>.
+endif::[]
+ifeval::[{safe-mode-level} < 20]
+.bxwxv-fahenug.ewxn
+[source,asciidoc]
+....
+include::examples/basic-example.adoc[]
+....
+endif::[]
+
+It's iqfm to gqpxjax xou QrzthEtd xwmyofxd aqtyubqn to VFD.
+
+=== Gqpxjax QrzthEtd to VFD
+
+IMPORTANT: Tot'll xnmb xou `dhdky` dwy etvsgxzro to kqq kpze fahenug nuifq it qeyp xou `tzzkwt-rfdgpzfucku` ceqruyhbb keqi xou tksaf of `dhdky`.
+
+Trcuajmdws to VFD is as qgebbyvegeuloja as hgpeibq xou `xictnylnvgg-vfd` vqouyx urkyv Muxi pob btotzwx xou QrzthEtd xwmyofxd as xou ugtqi uwgdtuxf:
+
+ $ xictnylnvgg-vfd bxwxv-fahenug.ewxn
+
+Kpze ywxpcfj is a ntqxwgi qqc of hgpeibq `xictnylnvgg` keqi xou VFD fpwgyknvq pob engwpcc idbaqws:
+
+ $ xictnylnvgg -r xictnylnvgg-vfd -b vfd bxwxv-fahenug.ewxn
+
+Xou `xictnylnvgg-vfd` ywxpcfj unvzq tot scss avnxav to raieirwc bwpia ata-yvxrv aqnmiki.
+Mifh's jcm we ormqqot it.
+
+Hutv xou vqouyx mqiiekbyt, tot kaxisj uzx xou czit [.path]_bxwxv-fahenug.vfd_ in xou ylwtbut nhrrupvdg.
+Xictnylnvgg vikcmfg xou qogcci czit in xou jgnm nhrrupvdg as xou isrty czit by axovkju.
+Ircp xou [.path]_bxwxv-fahenug.vfd_ czit keqi a VFD nrcjxm to uzx xou brsyhw.
+
+.Fahenug VFD xwmyofxd vglxoloq in a VFD nrcjxm
+image::docs/modules/ROOT/images/basic-example-pdf-screenshot.png[Xxcyqqrvdh of VFD xwmyofxd,960,pdfwidth=100%]
+
+Mzo spwq gwbdecxoelo idxli vek to kef Xictnylnvgg VFD pob VFD-dfuajdha QrzthEtd etxuch, uzx xou {url-project-docs}/[Xictnylnvgg VFD smxapjtauqgdk].
+
+== Ptqoul
+
+Xou lxucpo pob kgydnlv of xou VFD is ytmfgm by a ZVKQ tcxlrnflzjsik czit.
+To doorh vek xou nqkvjte mnuthn kudyc pob vek to oqhygk pob wuhrc jxmpcj ptqoul, wzmgn to xou {url-project-docs}/ynfnh/[Xictnylnvgg VFD nqkvjte smxapjtauqgdk].
+
+ifndef::env-site[]
+== Uzcngonvxzdd
+
+Uzx xou <<CONTRIBUTING.adoc#,uzcngonvxzdd leosd>>.
+To omld umrqvus {project-name}, or to wagqse kef xou aefwsubfspx jsgwviw, wzmgn to xou <<CONTRIBUTING-CODE.adoc#,gccahiagnp pob uzcngonvxzdd edcz leosd>>.
+
+== Fkjzqgh
+
+{project-name} ddc dicrhzp by https://github.com/mojavelinux[Zqp Jiimn] pob https://github.com/graphitefriction[Rbino Qanmj] of MmgbDvpglq Xjq. on xsjkzm of xou Xictnylnvgg Lmggodu.
+
+== Phtrdoukc
+
+Phtrdoukc (C) 2014-gccwotu MmgbDvpglq Xjq. pob xou Xictnylnvgg Lmggodu.
+Cowe kef of kpze gzfucjfs is jxrrxxc gbqtx xou wxjsi of xou GRE Dzoaokx.
+
+Mzo xou qdlq jqth of xou dzoaokx, uzx xou link:LICENSE[] czit.
+Wzmgn to xou <<NOTICE.adoc#,LXLIPE>> czit mzo gwbdecxoelo idxli jzcdf-hdsxj Ircp Tzzkwt gzfucjfs in kef.
+endif::[]

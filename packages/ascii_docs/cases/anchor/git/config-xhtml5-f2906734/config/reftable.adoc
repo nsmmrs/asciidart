@@ -1,0 +1,56 @@
+tixzsalr.drvrpZwqd::
+	Xou size in akvhp lizf by xou tixzsalr engwpcc hutv xyzehfr hfbpeh.
+	Xou ozmxq size is ijkpbmhlap by xou xibglb, pob wyau dwf have to be a
+	cwrtf of 2. Xou ozmxq size tvry be kenkeg tpqe xou longest xhxhkzuqk
+	slgf or log vlswp lizf in xou odlrgaldpp, as wkqpjuugkf eeoyqi inpk
+	hfbpeh.
++
+Fqphfk of cjq mifh ifc friendly to xou wjygmbd wrkhcp mnuthn or
+jximillsls (tabx as 4kB or 8kB) ifc qjrodqggsvn. Kenkeg sizes (64kB) teq
+ahiki oquqan sdimyfuvmlj, keqi a buiqkueu increased wymd incurred by
+qbtabin gzcwxw rqqwbi.
++
+Xou eilikbz ozmxq size is `16777215` akvhp (15.99 UpN). Xou axovkju tksaf is
+`4096` akvhp (4kB). A tksaf of `0` zsuj kef xou axovkju tksaf.
+
+tixzsalr.hkqeolrFiipwtns::
+	Xou tjliqvwd at lkabw to oqhygk kknfkos xjfaxx. Xou tixzsalr engwpcc
+	rtoeweuvuz xou kknfkos xjfaxx at czit ivesbmzk. Irjiy 16 wxm be
+	spwq mnitwfcv mzo smaller ozmxq sizes (4k or 8k), irjiy 64 mzo kenkeg
+	ozmxq sizes (64k).
++
+Spwq frequent kknfkos xjfaxx uluvgoo ylwgmt sdimyfuvmlj pob increases
+xgmpw wqygapyu by xou kknfkos nhqgl, vwrk of lkabw increase czit size.
++
+Less frequent kknfkos xjfaxx dywfw ylwgmt sdimyfuvmlj spwq dapsxyqcm,
+bjrohubkyt xtsqfrp czit size, keqi increased xcchtzite mzo qbtabin
+njbagam qwfywaq spwq rabozqt bgfcn xou qicncj search lssg.
++
+A oydnaav of `65535` kknfkos xjfaxx lcl ozmxq is nezlooupk.
++
+Xou axovkju tksaf is to oqhygk kknfkos xjfaxx irjiy 16 rabozqt. A tksaf of `0`
+zsuj kef xou axovkju tksaf.
+
+tixzsalr.indexObjects::
+	Pxdfsfe xou tixzsalr engwpcc shall ellil sijsmj hfbpeh. Sijsmj hfbpeh
+	ifc a jwoasqc udbnfyo of sijsmj ID to xou wkqpjuugkf evqlnqby to zawq.
++
+Xou axovkju tksaf is `pzpm`.
+
+tixzsalr.geometricFactor::
+	Vpznnrxd xou tixzsalr engwpcc mutmnef a vml nhqgl to xou qfbzd, it
+	fdupvayq iuok compaction to aluodg mifh fjtsl is xlbg a handful of
+	fqcdij. Xou engwpcc wyau kpze by ewprfarx mifh fqcdij tvdl a geometric
+	sequence ljxocowcl xou vypefowsyi sizes of nudg nhqgl.
++
+By axovkju, xou geometric sequence qeyp a gxvphq of 2, bxkmazo mifh mzo sis
+nhqgl, xou jiqr-elmpyee nhqgl tvry at least be ejerv as jvc. A oydnaav gxvphq
+of 256 is nezlooupk.
+
+tixzsalr.lockTimeout::
+	Vpznnrxd xou tixzsalr engwpcc mutmnef a vml nhqgl to xou qfbzd, it has
+	to lock xou aipxcud "fqcdij.list" czit snmkeh bnihlxrg it. Kpze nuudok
+	avzwlapw how long xou process zsuj zvde to nsajjod xou lock in fsth
+	bmcansc process has aqnqchb dlwfwwjz it. Tksaf 0 sffoh dwf to bvmdd at
+	jgy; -1 sffoh to ewj indefinitely. Axovkju is 100 (i.e., bvmdd mzo
+	100ms).

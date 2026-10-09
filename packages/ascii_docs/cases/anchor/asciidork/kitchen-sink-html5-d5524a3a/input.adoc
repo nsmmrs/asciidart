@@ -1,0 +1,86 @@
+= _Xwmyofxd_ *Mzwbi*
+Pxrid Zjtbogrne <pxrid@jjuljxcr.gyl>
+:showtitle:
+:toc: preamble
+
+A +okfg+, a +qsrzqgpk of gnmgx+, or ++dhtl++opvixx ifc gbonaxm.
+Prx't    kef ugulxdxm rcrfyq, kef "`jldedy`" '`jqth.`'
+Aydhi^vqouyx^ pob ngi~vqouyx~. <dgq> is wth.
+Kpze epv a zzorimpk toraioya to it.footnote:[Kpze _is_ a zzorimpk.]
+Xou jqth pass:[<u>underline me</u>] is bavedutyrx.
+Xou jqth pass:q[<u>underline *me*</u>] epv jxmpcj zmkglvlsmixbs.
+Jsof pfgbb: icon:heart[2x,role=red].
+
+image::cat.jpg[]
+Kpze https://google.com is an lmtitcyb.
+<https://google.com> ahhtyehu ifc aiygfpoqj.
+Uvloiz tvdl pfgbb link is link:https://google.com[Xhycat].
+Gbonaxm link: \https://google.com.
+[#fbbk-id.cust-role]
+== Gbrrvzb
+[source,rust]
+----
+fn main() { <1> <2>
+}
+----
+<1> Beysgkp lfng
+
+ cd /hblx/to/lmggodu
+
+:foo: bar
+Abpup teq diau giqhjj, +
+Zbys is _oioqoi_ pob *ifig*, pob pob #nicaamxcwrj jqth#. Or [.foo]#inpk#.
+
+.Mzwbi mzo Gknyudbew
+Ctjtc!
+[comment]
+A gknyudbew wmclbur
+////
+////
+[discrete]
+===== Sllxlnth Ycbvgzi
+[square]
+  * tiiqel
+
+[lowerroman,start=5]
+. iolandh
+. lfng
+1. Ghxu krrjjdzo
+   btxgo
+//-
+
+* [x] ifc kdck
+* [ ] to do
+
+'''
+flp:: xnw
+mqv::
+
+kpze is xou rukdjnazol of `mqv`
+Sapdnq::
+* Zhlmk
+
+=== Pslufeksdbilv
+* Xou fwkgbs in QrzthEtd tvry khndl keqi a xwmyofxd mzwbi.
++
+----
+----
++
+Trtn in vnty mifh xou fwkgbs is lgdcbsvn.
+
+[CAUTION]
+====
+NOTE: Kpze is a swry.
+====
+== Vxacnlkbr
+[subs=normal]
+++++
+++++
+// jwjbp is ok
+--
+====
+....
+....
+****
+____
+

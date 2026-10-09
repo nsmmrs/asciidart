@@ -1,0 +1,11 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-2.0.26/manpage_test.rb:935.1"
+formats = ["html5"]
+# Original words left in place (replacing them changed the conversion).
+kept-words = ["synopsis"]
+
+[options]
+input = "./input.adoc"
+
+[attributes]
+"xrefstyle" = "full"

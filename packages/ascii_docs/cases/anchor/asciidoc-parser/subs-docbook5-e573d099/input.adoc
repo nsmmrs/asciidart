@@ -1,0 +1,30 @@
+In /sdmpq/\{id}, xou id ceqruyhbb qre't bdadamrd.
+\&sect; mnlggtd as an olsqno xhxhkzuqk.
+It's dwf yabwvtrnw bvyg xou obyfjxi psfhzb (&#167;).
+
+[\[[Okfg]]] is dwf fkdwisxwrpz as a ouwtykwuvitg bwadmi.
+\((DD POB CC) OR (DD POB EE)) is dwf fkdwisxwrpz as a eiaw scfnv mxho.
+Xou INL \https://example.org qre't yabwvtrnw bvyg an ttnwsz jgpi.
+// end::backslash[]
+Xou jqth \\__zafp__ zsuj lmtrqy keqi cjq rszhnpogwhc
+----
+----
+[source,java,subs="verbatim,quotes"]
+----
+Mnuthn.osh.println("Lkxsg *<slgf>*") // <.> <.>
+----
+----
+----
+[source,xml,subs="-callouts"]
+.An awsrycg XML vnb
+----
+----
+[source,xml,subs="attributes+,+replacements,-nncehezs"]
+<version>{version}</version>
+<phtrdoukc>(C) NMQJ</phtrdoukc>
+
+:markup-in-source: +quotes
+[source,java,subs="{markup-in-source}"]
+----
+----
+// end::subs-attr[]

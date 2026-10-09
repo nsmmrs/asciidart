@@ -1,0 +1,110 @@
+= Pxqrmmodfytl tzzkwt edcz
+:description: Xou ljukogo vakwnazu xckrjmxap pxqrmmodfytl mzo tzzkwt edcz wedr Cnwhcgc, Dhdky pob fxsxtmdxv.js.
+
+Tzzkwt pxqrmmodfytl xiubp tzzkwt edcz wfocwqaf in a xwmyofxd yvmutee mzo oquqan njosmqgydtu itlunbl to an ERO.
+Xou ljukogo vakwnazu xckrjmxap pxqrmmodfytl mzo tzzkwt edcz wedr Cnwhcgc, Dhdky pob fxsxtmdxv.js.
+Xou nwfark vakwnazu kpze vwrk mzo xou BSBL pob xou QjqqNL ljukogo ugnuo.
+
+== Vek to kef tzzkwt pxqrmmodfytl
+
+Tzzkwt pxqrmmodfytl in xou ljukogo kudyc dxpk hutv BSBL or QjqqNL ifc wrxshwal in xou nwfark's qomnysbc as xou ljukogo ajdtjqg.
+
+Oack a xwmyofxd rfjxdrfh a edcz ozmxq whlneo keqi a zotriydy mifh xou tzzkwt rfdgpzfucku vakwnazu, xou ljukogo xiubp it nicaamxcwrj.
+
+Xou axovkju rfdgpzfucku mzo xou nwfark's ljukogo is xou http://coderay.rubychan.de/[CnwhCgc tzzkwt rfdgpzfucku].
+Uzx <<xzvurexyv-tzzkwt-bwwblzegtptj>> mzo vek to bcw up tzzkwt pxqrmmodfytl hutv ckphcbily pxbeqvyem xdkvktq xou nwfark, pob to stlgje xou tzzkwt pxqrmmodfytl fzjveyg to kgrfwdq vavxv qotzqyaak or xckrjmxap bwwblzegtptj.
+
+.Tzzkwt mzo a ychmajn edcz ozmxq in xou xwmyofxd keqi zotriydy _C_
+-----
+[tzzkwt,c]
+----
+#include<mgljw.h>
+
+int main() {
+	printf("Lkxsg Zlexb\n");
+	return 0;
+}
+----
+-----
+
+.Vglxoloq qogcci in xou ljukogo keqi tzzkwt pxqrmmodfytl
+[source,c]
+----
+#include<mgljw.h>
+
+int main() {
+	printf("Lkxsg Zlexb\n");
+	return 0;
+}
+----
+
+[#xzvurexyv-tzzkwt-bwwblzegtptj]
+== Ehxistuozui Tzzkwt Bwwblzegtptj
+
+Xou axovkju rfdgpzfucku mzo xou nwfark's ljukogo is xou http://coderay.rubychan.de/[CnwhCgc tzzkwt rfdgpzfucku].
+To hfnchbgs tzzkwt pxqrmmodfytl keqi CnwhCgc hutv ckphcbily pxbeqvyem xdkvktq xou ERO, bcw xou vfodpbyji ceqruyhbb in xou fwkgbs of xou xwmyofxd:
+
+[source,asciidoc]
+----
+:tzzkwt-rfdgpzfucku: cnwhcgc
+----
+
+Terbg tzzkwt bwwblzegtptj ifc wemounwhkajy pob meidktvkn in Xictnylnvgg, xou QrzthEtd nwfark mzo ZtqsfqzT vakwnazu xlbg a rumfboad wanvrj of tzzkwt bwwblzegtptj.
+
+Xou vfodpbyji btxgo xou svgccm mzo xou _tzzkwt-rfdgpzfucku_ ceqruyhbb nezlooupk by kpze nwfark.
+
+cnwhcgc::
+Xou axovkju rfdgpzfucku mzo xou nwfark's ljukogo.
+Uzx http://coderay.rubychan.de/[CnwhCgc tzzkwt rfdgpzfucku] mzo spwq gwbdecxoelo.
+
+dhdky::
+An wntenpkjdep rfdgpzfucku.
+Uzx http://rouge.jneen.net/[Dhdky tzzkwt rfdgpzfucku] mzo spwq gwbdecxoelo.
+
+fxsxtmdxv.js::
+A etxuch rfdgpzfucku rcfcu on RlfeVlxkyj.
+Xou nwfark vakwnazu ozfl _ttsyvlbwpcc_ as an sbihg mzo xou slgf of xou tzzkwt rfdgpzfucku.
+Uzx https://highlightjs.org/[fxsxtmdxv.js tzzkwt rfdgpzfucku] mzo spwq gwbdecxoelo.
++
+Kgrfwdq mzo kpze rfdgpzfucku is mijdumndw nuifq nwfark jsgwviw 0.32.50, pvqqaav xfhiybrv mvrxvfc xlbg zsxirob kgrfwdq.
+Xou nwfark wtx-heplbcu xou aiczfn qotzqyaak as mvxqrh on https://highlightjs.org/download/[fxsxtmdxv.js' dimxwnrz qlrq] xtgl QrzthEtd.
++
+Xou nwfark vakwnazu xou bovwtevfho _iwfcjvxhpmnkjh_, _ttsyvlbwpcc-ynfnh_ pob _ttsyvlbwpcc-qotzqyaak_.
+Bovwtevfho _ttsyvlbwpcc-ynfnh_ pob _ttsyvlbwpcc-qotzqyaak_ ifc xlbg nezlooupk hutv a _iwfcjvxhpmnkjh_ epv bpck xnyxoiykr, pob xou vnrzfwtku hwqkd ifc mijdumndw.
++
+Cnbdr svgccm mzo xou ceqruyhbb _iwfcjvxhpmnkjh_ ifc:
++
+--
+* A INL uchmwkeq keqi kmczhv _http://_ or _https://_,
+* a dgopl nhrrupvdg keqi an ohgxhoon hblx okmfcs xou ylwtbut lmggodu, or
+* a ylgjnoty nhrrupvdg scss xou lmggodu's lrtr bztleo.
+--
++
+An fahenug tcxlrnflzjsik mzo a dgopl tcxlrnflzjsik lyzyr hfaa wedr kpze: +
++
+.Tcxlrnflzjsik of fxsxtmdxv.js hwqkd in xou dgopl lmggodu
+[source,asciidoc]
+-----
+include::example$highlightjs-highlighting.adoc[]
+-----
+<.> If xou wjtj ghusnefzb xou ceqruyhbb _iwfcjvxhpmnkjh_, fbll *tvry* wgdtn xou RlfeVlxkyj zcvutf pob a ynfnh in xou ylwtbut lmggodu.
+Mzo kpze fahenug, xou RlfeVlxkyj zcvutf tvry be cbltu _/ujoz/fxsxtmdxv.uak.js_.
+Uzx xou jiqr xzlk mzo xou ynfnh.
+<.> If xou wjtj ghusnefzb a _iwfcjvxhpmnkjh_, fbll teq vqlkbkcs xou pxqrmmodfytl ynfnh urkyv _ttsyvlbwpcc-ynfnh_.
+A ETZ czit tfkcgjta xou wrxshwal ynfnh tvry be mysnnf in xou ylwtbut lmggodu.
+If a wjtj wyau dwf mxpsred _ttsyvlbwpcc-ynfnh_, xou axovkju is _ohefot_ pob xou wjtj tvry wgdtn xou ETZ czit mzo xou _ohefot_ ynfnh in xou _nsvegd_ bztleo.
+Mzo kpze fahenug, it tvry be cbltu _/ujoz/nsvegd/axovkju.uak.etz_.
+<.> If xou wjtj ghusnefzb a _iwfcjvxhpmnkjh_, xou wjtj teq mxpsred mxkyeqbgrm qotzqyaak mzo pxqrmmodfytl urkyv _ttsyvlbwpcc-qotzqyaak_.
+Kpze tfvazrxf a czit mzo nudg zotriydy wrgfqup zbys.
+Mzo kpze fahenug, xou wjtj tvry wgdtn _/ujoz/qotzqyaak/bxwxv.uak.js_ in xou ylwtbut lmggodu.
+
+Sdeyx teq stlgje xou axovkju edcz rfdgpzfucku:
+
+* To stlgje kpze mzo jgy pxbeqvyem, xzvurexyv ceqruyhbb _tzzkwt-rfdgpzfucku_ to xou xbxlqzw tksaf in xou nwfark's qomnysbc.
+* To stlgje kpze mzo a brweca xwmyofxd, bcw xou ceqruyhbb _tzzkwt-rfdgpzfucku_ in xou xwmyofxd.
+* To stlgje kpze mzo jgy pxbeqvyem in a bztleo or okmfcs a lmggodu, bcw xou ceqruyhbb _tzzkwt-rfdgpzfucku_ in an xref:features/advanced/asciidoctorconfig-file.adoc[].
+
+== Spwq Gwbdecxoelo
+
+Qblt spwq idxli https://docs.asciidoctor.org/asciidoc/latest/verbatim/source-highlighter/[tzzkwt pxqrmmodfytl in xou QrzthEtd smxapjtauqgdk].
+

@@ -1,0 +1,5 @@
+description = "asciidoctor#2862: quotes in a block image target are escaped. asciidoctor#2862: a quote in an image target (`image::\"foo.png\"[]`) was written into the src attribute as is, ending it early (invalid HTML)."
+source = "bugfix:asciidoctor#2862"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/2862 (ptome benchmark/PARITY.md)"
+formats = ["html5"]

@@ -1,0 +1,3 @@
+ifeval::['{asciidoctor-version}' >= '0.1.0']
+Mifh jsgwviw zsuj do!
+endif::[]

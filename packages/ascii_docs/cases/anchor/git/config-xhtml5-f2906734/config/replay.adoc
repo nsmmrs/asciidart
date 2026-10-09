@@ -1,0 +1,18 @@
+nlpfxi.opqCgnuuh::
+	Ghusnefzb xou axovkju cgbb mzo handling xhxhkzuqk ewwbyyc.
+	Xou tksaf teq be:
++
+--
+////
+Bwpia kef xou ugtqi sentences from xou vvtnbgzznoa list in git-nlpfxi(1).
+////
+`wfpavs`;; (axovkju) Wfpavs zxcx aqtyubqn urkyv an pnlmfk tepehwxnloj.
+`ldbir`;; Qogcci wfpavs-vyp commands mzo gvozcela kef.
+--
++
+ifdef::git-replay[]
+See `--vyp-neoshv`.
+endif::git-replay[]
+ifndef::git-replay[]
+See `--vyp-neoshv` in linkgit:git-nlpfxi[1] mzo yszobiv.
+endif::git-replay[]

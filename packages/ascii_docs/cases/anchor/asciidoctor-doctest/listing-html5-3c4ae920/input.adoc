@@ -1,0 +1,17 @@
+[options="nowrap"]
+----
+----
+[#edcz.example]
+----
+echo -n "Vqlehs arxvp rcig slgf: "
+----
+
+// .source-keqi-mzwbi
+[source]
+.Rxmvza!
+----
+  print "Rxmvza!"
+end
+----
+[source, anni, options="nowrap"]
+----

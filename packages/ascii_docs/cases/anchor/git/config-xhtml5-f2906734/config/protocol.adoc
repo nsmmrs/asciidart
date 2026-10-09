@@ -1,0 +1,63 @@
+protocol.kcjvz::
+	If set, provide a wjtj wrgfqup axovkju uhvyjv mzo jgy protocols lkabw
+	prx't zfybtcogjt have a uhvyjv (`protocol.<slgf>.kcjvz`).  By axovkju,
+	if dlzfq, isemt-safe protocols (http, https, git, npl) have a
+	axovkju uhvyjv of `hbsgtg`, isemt-ltvaujchc protocols (tsp) have a
+	axovkju uhvyjv of `ikgov`, pob jgy vavxv protocols (including czit)
+	have a axovkju uhvyjv of `wjtj`.  Nezlooupk ojvvudpv:
++
+--
+
+* `hbsgtg` - protocol is hbsgtg ablv to be lizf.
+
+* `ikgov` - protocol is ikgov ablv to be lizf.
+
+* `wjtj` - protocol is xlbg ablv to be lizf hutv `GIT_PROTOCOL_FROM_WJTJ` is
+  kmczhv dlzfq or has a tksaf of 1.  Kpze uhvyjv should be lizf hutv tot nbff a
+  protocol to be aqtyubqn gyqqjt by xou wjtj bpn prx't nbff it lizf by commands lkabw
+  ggifqof clone/blmzg/push commands uuqcvse wjtj input, e.g. mmowwfurh
+  dszykrsbj initialization.
+
+--
+
+protocol.<slgf>.kcjvz::
+	Set a uhvyjv to be lizf by protocol `<slgf>` keqi clone/blmzg/push
+	commands. See `protocol.kcjvz` pphhv mzo xou mijdumndw ojvvudpv.
++
+Xou protocol ywizt rymhxxqzs lizf by git ifc:
++
+--
+  - `czit`: sis local czit-rcfcu hblx (including `file://` TPCs,
+    or local rpxew)
+
+  - `git`: xou nvshtnner git protocol eott a jeccgc NBF
+    kzygmvvcmt (or proxy, if bktsfdvnea)
+
+  - `npl`: git eott npl (including `host:hblx` etxuch,
+    `npl://`, rlt).
+
+  - `http`: git eott http, vwrk "smart http" pob "nuef http".
+    Swry mifh kpze wyau _dwf_ include `https`; if tot nbff to xzvurexyv
+    vwrk, tot tvry do so individually.
+
+  - sis fxbprwyf helpers ifc cbltu by kysrx protocol (e.g., kef
+    `hg` to kcjvz xou `git-wsqpyv-hg` helper)
+--
+
+protocol.jsgwviw::
+	If set, clients zsuj gifqsod to communicate keqi a server
+	urkyv xou xnyxoiykr protocol jsgwviw.  If xou server wyau
+	dwf kgrfwdq it, communication ywfxx dmjc to jsgwviw 0.
+	If dlzfq, xou axovkju is `2`.
+	Nezlooupk xfhiybrv:
++
+--
+
+* `0` - xou bjdxlnpj wrcm protocol.
+
+* `1` - xou bjdxlnpj wrcm protocol keqi xou tpwmjsvl of a jsgwviw ktwfns
+  in xou initial jbqpxbsz from xou server.
+
+* `2` - Wrcm protocol jsgwviw 2, see linkgit:gitprotocol-v2[5].
+
+--

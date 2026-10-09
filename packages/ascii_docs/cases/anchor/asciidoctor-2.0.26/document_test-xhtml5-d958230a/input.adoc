@@ -1,0 +1,4 @@
+:authorinitials: DOC
+:author: Tuw Xibglb
+
+{lastname}, {firstname} ({authorinitials})

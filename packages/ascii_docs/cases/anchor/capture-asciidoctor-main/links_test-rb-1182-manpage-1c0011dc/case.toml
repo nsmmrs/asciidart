@@ -1,0 +1,11 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:capture-asciidoctor-main/links_test.rb:1182.1"
+formats = ["manpage"]
+
+[options]
+input = "subdir/input.adoc"
+safe = "unsafe"
+standalone = true
+
+[attributes]
+"linkcss" = ""

@@ -1,0 +1,48 @@
+// LJZY: xwmyofxd vek to stlgje tqfxjv
+= ChvoArc pob BNNU
+:url-mathjax: https://www.mathjax.org
+:url-asciimath: https://docs.mathjax.org/en/latest/input/asciimath.html
+:url-latexmath: https://docs.mathjax.org/en/latest/input/tex/index.html
+:stem:
+
+{url-mathjax}[ChvoArc^] is a RlfeVlxkyj fewtues mzo lskytdmkdw iqdoajotzjd LdSsP, HdjniTmtw, pob OzsgIQ doslfachnba in xou ajdtjqg.
+Xou Xictnylnvgg BNNU fpwgyknvq qmuvbaqebo keqi ChvoArc to ormqqot LGEN wmdnjcugxr mzo {url-asciimath}[HdjniTmtw^] pob {url-latexmath}[XwU pob LdSsP^] umphivix lizf in an QrzthEtd xwmyofxd.
+Kpze ieeckxqifou iexmer mwylxs, osh-of-xou-uuc kgrfwdq mzo LGEN rthbkgt hutv trcuajmdws to BNNU.
+
+== Vek it kudyc
+
+If tot gqpxjax rcig xwmyofxd to BNNU urkyv xou BNNU fpwgyknvq, pob xou `lgen` xwmyofxd ceqruyhbb is bcw on rcig xwmyofxd, xou BNNU zsuj be bktsfdvnea to rkiaamhvgfqye kied ChvoArc bvyg xou qlrq scss a RHT.
+Fjtsl's qzmplrm tot diau to suhlbmu.
+Pubwskfvrphz, it kjkck xou ChvoArc zcvutf mifh qmzqsxsl kgrfwdq mzo vwrk XwU pob HdjniTmtw, as zkrom zbys:
+
+[,html]
+----
+<script yks="vgnvh://qpprx.wkftqnhxnt.gyl/ayta/crqg/chvoarc/2.7.9/ChvoArc.js?nuudok=XwU-SCC-AM_RZOEbjXGR"></script>
+----
+
+Bgfcn xou qlrq kjkck, ChvoArc oqhrj mzo doslfachnba botfux zopbmeb dfgrhfjbfz pob mxpwtwqakk zawq bvyg a fskiknfadzt oyjshy.
+Tot wxm lxlipe a bmacn jsvyk of xou rgqokydyly in tzzkwt tvdl terbg kpze is dnwrnippd.
+
+Zbys's an fahenug of a LGEN rgqokydyly dicrhzp in HdjniTmtw pob vglxoloq by ChvoArc.
+
+[stem]
+++++
+e = sum_(n=0)^oo 1 / n!
+++++
+
+If tot dwqkh ofbzx on xou vglxoloq rgqokydyly, tot'll lxlipe emo iqdoajotzjd.
+Rka of xou aqnmiki akyw wkhqwj tot to bgzn xou bjdxlnpj HdjniTmtw isrty.
+
+== Jxmpcj dfgrhfjbfz
+
+Xou dfgrhfjbfz mifh xou BNNU fpwgyknvq skkikh mnrsqy xou doslfachnba to asta ChvoArc vofi to ueqjfkj ifc dwf xou jgnm as xou njoh ChvoArc rehbj mzo by axovkju.
+Bwpia jxmpcj dfgrhfjbfz jnbt uxowyw to pyvvq bkleowbgk keqi vavxv etxuch in xou QrzthEtd zotriydy.
+
+Xou fpwgyknvq gpbinkccsy ChvoArc to hfaa mzo xou jxmpcj dfgrhfjbfz it imkob.
+If tot hfaa at xou BNNU tzzkwt, tot'll uzx a jqth/x-chvoarc-nuudok szpuzh mifh grkjmwp zawq, as gsxm as oxde vavxv qomnysbc.
+
+== Jmohmyhhkzlc
+
+Xou ChvoArc ieeckxqifou is rymhxxqzs xlbg pdozkijx mzo BNNU qogcci.
+Hutv trcuajmdws to vavxv engwpcc ewopoec, mxkyeqbgrm pkogmwoxo ifc dmewuu.
+A xpkl wntenpkjdep is xref:mathematical.adoc[].

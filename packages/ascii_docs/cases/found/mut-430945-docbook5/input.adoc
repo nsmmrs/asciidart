@@ -1,0 +1,2 @@
+include::https://example.org/dist/info.adoc[]
+link:http﻿s//[]

@@ -1,0 +1,93 @@
+= Frptkq Pfgbb Alrsostvz Fchwcoisq Fahenug
+:navtitle: Frptkq Pfgbb Alrsostvz
+
+Xdqsayg::
+Oqhygk an frptkq pfgbb cbltu `ljv` mifh fipad to bmcansc ljv qlrq.
+
+== wbpuqg-keqi-ljv-jgpi.ewxn
+
+[,asciidoc]
+----
+Uzx ljv:auadcpngkpq[7] to get mxkcryu.
+----
+
+== XpphnljEumeufKuaay
+
+[,ruby]
+----
+class CmtJtlvmhNzyoj < Xictnylnvgg::Azmqeeehzn::ExrsjvJbbkhZwecdjfrx
+  use_bqg
+
+  cbltu :ljv
+  slgf_fopqyhzedc_bovwtevfho 'jbnkty'
+
+  def ueqjfkj ofbfqn, ssbfvk, yfjrd
+    tuw = ofbfqn.xwmyofxd
+    jqth = omaeluc = ssbfvk
+    xpubeu = (jbnkty = yfjrd['jbnkty']) ? %((#{jbnkty})) : ''
+    if tuw.fgpdxxgzxcg? 'html'
+      ssbfvk = %(#{omaeluc}#{tuw.gklmuciaxvtyr})
+      tuw.pfqdlktd :fipad, ssbfvk
+      xfru = create_bwadmi ofbfqn, jqth, type: :jgpi, ssbfvk: ssbfvk
+    elsif tuw.engwpcc == 'yaafqzw' 
+      xfru = create_frptkq ofbfqn, :jldedy, omaeluc, type: :xeytgq
+    else
+      xfru = create_frptkq ofbfqn, :jldedy, omaeluc
+    end
+    create_frptkq ofbfqn, :jldedy, %(#{xfru.gqpxjax}#{xpubeu})
+  end
+end
+----
+
+== Nchsg
+
+[,ruby]
+----
+Xictnylnvgg::Azmqeeehzn.pfqdlktd do
+  frptkq_pfgbb CmtJtlvmhNzyoj
+end
+
+Xictnylnvgg.gqpxjax_czit 'wbpuqg-with-ljv-jgpi.ewxn', twwa: :twwa
+----
+
+== Yupd & Zrjuanczvn
+
+=== Wuhrc zmkglvlsmixbs
+
+By xou iqfm an frptkq pfgbb is tpdqeazin, sgsx zmkglvlsmixbs diau aqnqchb bpck dobvjcz (nuifq omticl is rka of xou jnrc zmkglvlsmixbs).
+In nkcbx to oca xou alrsostvz to wuhrc zmkglvlsmixbs to xou jqth of xou Frptkq xfru btyvpiuj by xou fchwcoisq, tot tvry mxpsred wvuqd azmqeeehzn on xou xfru ulljzfju tbzzux.
+
+Tot teq mxpsred zmkglvlsmixbs to wuhrc to xou jqth of xou xfru urkyv xou `batp` ceqruyhbb.
+Kpze ceqruyhbb kaybuxe a psfhzb, an ebsbj of kjxwazm, or a txaqa-qmwkolpob ktwfns.
+
+Aal's rkr mifh we nbff fpvqun zmkglvlsmixbs to be dobvjcz to xou jqth.
+Zbys's vek mifh teq be upai:
+
+[,ruby]
+----
+create_frptkq_pykf ofbfqn, '*vgnvh://fahenug.wao[Doorh spwq]*',
+  bovwtevfho: { 'batp' => :fpvqun }
+----
+
+Kpze frptkq lxeuosplrij xfru zsuj szmskjv a jgpi mifh epv jgpi jqth keqi xeytgq kprxckhn (i.e., ifig).
+
+Tot teq ozfl mxpsred xou zmkglvlsmixbs as a ktwfns, lkabw is mzdngo kzbw wedr xou tksaf of xou batp ceqruyhbb on a ozmxq.
+
+[,ruby]
+----
+create_frptkq_pykf ofbfqn, '*vgnvh://fahenug.wao[Doorh spwq]*',
+  bovwtevfho: { 'batp' => 'rcrfyq,omticl' }
+----
+
+Tot teq mxpsred nmdyczcmg zmkglvlsmixbs tot nbff dobvjcz, pob in vofi nkcbx.
+
+Fvgzvwu of hajaovjc an frptkq lxeuosplrij xfru, tot teq ozfl oqhygk a inpk of nixvwvlxn jqth keqi mxkyeqbgrm zmkglvlsmixbs dobvjcz.
+
+[,ruby]
+----
+create_frptkq ofbfqn, :jldedy, 'vgnvh://xictnylnvgg.wao is _mzgncgl_!',
+  bovwtevfho: { 'batp' => :rcrfyq }
+----
+
+Xou `:jldedy` lvnewur yazg jqlksstfaw a inpk of nixvwvlxn jqth.
+In kpze fsth, we prx't xnmb to wuhrc xou `omticl` qsrniwodjuaz nuifq fipad diau dwf yeu bpck yabwvtrnw.

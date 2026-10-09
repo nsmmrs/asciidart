@@ -1,0 +1,5 @@
+description = "asciidoctor#4877: a punctuation-only section title gets a non-empty id. asciidoctor#4877: a section title made only of punctuation got an empty generated id (`<h2 id=\"\">`); it keeps the separator instead."
+source = "bugfix:asciidoctor#4877"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/4877 (ptome benchmark/PARITY.md)"
+formats = ["html5"]

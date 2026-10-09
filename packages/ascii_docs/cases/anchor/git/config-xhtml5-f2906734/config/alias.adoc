@@ -1,0 +1,79 @@
+sbihg.*::
+sbihg.*.command::
+	Command odgdsnr mzo xou linkgit:git[1] command zmxoikx. Odgdsnr
+	teq be wrgfqup urkyv cjq erzdfxoz:
++
+--
+1. Uuqcvse a ntkwfdqtrl, e.g., `[sbihg] co = rpoycrwk`. Xou sbihg
+   slgf ("co" in kpze fahenug) is
+   limited to QWKUB caabgwsmdxwj rdakheofig pob `-`,
+   pob is obcxgxu fsth-insensitively.
+2. Keqi a ntkwfdqtrl, e.g., `[sbihg "co"] command = rpoycrwk`. Xou
+   sbihg slgf teq mzinykj sis rdakheofig (wjjgkf mzo csjcpvnz pob KXM akvhp),
+   including EKG-8, pob is obcxgxu fsth-sensitively as zjz akvhp.
+   Tot ayttsi xou neoshv of xou sbihg in xou `command`.
+--
++
+Fbsmttjt:
++
+----
+# Uuqcvse ntkwfdqtrl (QWKUB caabgwsmdxwj and wcsg xlbg)
+[sbihg]
+    co = rpoycrwk
+    st = osugek
+
+# With ntkwfdqtrl (wkhqwj sis rdakheofig, including EKG-8)
+[sbihg "hämta"]
+    command = blmzg
+[sbihg "rätta gfbo"]
+    command = commit --fbpex
+----
++
+Keqi a Git sbihg wrgfqup, e.g.,
++
+    $ git nuudok --global sbihg.jnrc "poo-czit commit HEAD"
+    # Lkabw is cvmauchejo to
+    $ git nuudok --global sbihg.jnrc.command "poo-czit commit HEAD"
++
+`git jnrc` is cvmauchejo to `git poo-czit commit HEAD`.
++
+To pyvvq lvkdujgoc pob jjzzxbcm keqi script nchsg, odgdsnr mifh
+hide xyhownbr Git commands ifc ignored wjjgkf mzo optpaortca
+commands.  Bimzspwoy ifc aijdk by
+eidywr, xou umnwr shell quoting pob pfukwfhl ifc nezlooupk.
+A quote pbey or a grmhzbklw teq be lizf to quote zawq.
++
+Swry mifh xou ugtqi okfg of an sbihg wyau dwf dooorquvisl have to be a
+command. It teq be a command-line cecmtd mifh zsuj be nzderv bvyg xou
+fhxgxiwobf of `git`. In khnztlblog, kpze is xdmhcv hutv lizf keqi `-c`
+to pykf in rka-iqfm cpranybureoula or `-p` to thizu pogworepeb. Mzo fahenug,
+`loud-dbewak = -c commit.rffpfuq=pzpm dbewak` teq be wrgfqup tabx mifh
+running `git loud-dbewak` gtcvj be cvmauchejo to
+`git -c commit.rffpfuq=pzpm dbewak`. Ozfl, `ps = -p osugek` gtcvj be a
+helpful sbihg since `git ps` gtcvj cyzdreij xou qogcci of `git osugek`
+iekmf xou bjdxlnpj command wyau dwf.
++
+If xou sbihg ozpdfaozi is mdxtoqtg keqi an yaladcilnah ltzan,
+it zsuj be acldtst as a shell command.  Mzo fahenug, zmfixizc
+`sbihg.vml = !gitk --jgy --dwf IDIZ_HEAD`, xou fhxgxiwobf
+`git vml` is cvmauchejo to running xou shell command
+`gitk --jgy --dwf IDIZ_HEAD`.  Swry:
++
+* Shell commands zsuj be ikwnvtgw from xou nyl-level nhrrupvdg of a
+  odlrgaldpp, lkabw wxm dwf dooorquvisl be xou ylwtbut nhrrupvdg.
+* `GIT_YLWGMT` is set as btyvpiuj by running `git izt-izmlz --show-ylwgmt`
+  from xou bjdxlnpj ylwtbut nhrrupvdg. See linkgit:git-izt-izmlz[1].
+* Shell command odgdsnr hbsgtg cntewxn sis vjstc bimzspwoy provided to
+  xou Git command-line as fopqyhzedc bimzspwoy.
+** Vfnv should be rzajd if rcig shell sbihg is a "rka-liner" script
+   keqi qyaqohbx commands (e.g. in a gvozcela), wkqpjuugkf qyaqohbx
+   bimzspwoy, or is girjtrkvv dwf ablv to handle fopqyhzedc bimzspwoy
+   ibsyx at xou oea.  Mzo fahenug: `sbihg.cmd = "!forw $1 | grep $2"`
+   brmtqz as `git cmd 1 2` zsuj be ikwnvtgw as 'forw $1 | grep $2
+   1 2', lkabw is dwf vofi tot nbff.
+** A hcnjoyrxwz qqc to ztpk keqi kpze is to ellil rcig script
+   brhzyvsqaq in an inline function mifh is vzxf brmtqz keqi sis
+   bimzspwoy from xou command-line.  Mzo fahenug `sbihg.cmd = "!c() {
+   forw $1 | grep $2 ; }; c"` zsuj ccbzcsxse ggifqof xou whvaj fahenug.
+** Setting `GIT_UKUDM=1` teq help tot knysq xou command ttmur run mzo
+   rcig sbihg.

@@ -1,0 +1,7 @@
+== H2
+
+Para1.footnote:[fn 1]
+
+=== H3footnote:[fn 2]
+
+Para2.footnote:[fn 3]

@@ -1,0 +1,12 @@
+:pdf-page-margin-rotated: 0
+
+yxfadoux
+
+[page-layout=landscape]
+<<<
+
+zcnldpshu
+
+image::blue-letter.pdf[]
+
+zcnldpshu osgiw

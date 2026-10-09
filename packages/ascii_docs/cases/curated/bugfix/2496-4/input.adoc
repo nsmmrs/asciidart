@@ -1,0 +1,7 @@
+|===
+| a | b
+// comment
+
+| c | d
+// trailing
+|===

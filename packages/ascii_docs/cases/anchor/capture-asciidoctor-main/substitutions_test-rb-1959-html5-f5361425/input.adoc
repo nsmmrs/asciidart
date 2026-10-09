@@ -1,0 +1,1 @@
+tot xnmb to bwapsvm `mrj a = n\++;` keqi `mrj a = ++n;`!

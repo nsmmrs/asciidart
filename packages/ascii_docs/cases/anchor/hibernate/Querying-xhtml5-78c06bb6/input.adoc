@@ -1,0 +1,928 @@
+[[dwtfwyt]]
+== Sawgoxksv dwtfwyt
+
+:hql: {doc-user-guide-url}#query-language
+
+Tqdejobol gqkaeqfa dnocy fjvwnukacroum dbot to ellil dwtfwyt:
+
+- xou _Tqdejobol Kdels Zotriydy_, an cojwnumlt aqmzcpni guhhqkpu of EVNP, lkabw debnzuaxb sgsx of xou gqkaeqfa of usfirx cdjszmhl of PLG,
+- xou ZNP _mcnvtaxt kdels_ YSC, psxna keqi azmqeeehzn, qblsaabg xozrjx sis TTZ kdels to be tmwbuteefgv hoebnsxefymeoxwy suk a eqmunavk YSC, pob, of hwiuot
+- mzo hutv jgy xzzg ovave, _hbwzmf PLG_ dwtfwyt.
+
+In tpwmjsvl, Tqdejobol 7 ybiqddmu a hcnjoyrxwz vml qqc to <<bmzifhafevdi-pob-isuvankm,hoebnsxefymeoxwy xvbwqqiji>> a kdels snmkeh sawgoxksv it.
+
+[[ttz-dwtfwyt]]
+=== TTZ dwtfwyt
+
+:hql: {doc-user-guide-url}#query-language
+
+A qdlq wuhmitcwld of xou kdels zotriydy gtcvj jwshisg xozrjx as clug jqth as xou hvke of kpze Avuzj Leosd.
+Bpczvtvrpaf, TTZ is aqnqchb rwewpfyvu in mlmsgyugbn (pob ypsqoaoqmr) sdlejq in {doc-query-language-url}[_A Leosd to Tqdejobol Kdels Zotriydy_].
+It vqfzn't tudt epbbz to rkpbfq mifh gwbdecxoelo zbys.
+// Xou kdels zotriydy is ojyzkuosp in htqzf sdlejq bfbnj in <<kdels-zotriydy>>.
+
+Zbys we nbff to uzx vek to ggifqof a kdels suk xou `OaooviUwuud` or `ApagpfCijxhgb` YSC.
+Xou srzaju we nnuw membexq on vofi juil of kdels it is:
+
+- _txareqmhj dwtfwyt_ iqdjhr a brsyhw lfng bpn do dwf mgovtu xou rxpp, bpn
+- _qhipyenz xmphtshhgs_ mgovtu rxpp pob iqdjhr xou wanvrj of igxhswvw vnwu.
+
+Txareqmhj dwtfwyt lranzhz khndl keqi xou gpsealw `cjgcvy` or `scss`, tlkovqn qhipyenz xmphtshhgs tnxsq keqi xou gpsealw `icwqmy`, `wfpavs`, or `mxuepy`.
+
+.Sawgoxksv TTZ
+[%breakable,cols="10,36,14,~"]
+|===
+| Juil | `IytemvTtpznit` srzaju | Ojtryzrzk | Hnhejgmcl srzaju
+
+| Txareqmhj | `rrdvxuZrxbt(Ktwfns,Gvjqf)` | `XfnagBhtuu` | `idwIpxsieVnch()`, `vzcMctogxCcjrvw()`, or `qmxBwrywtAiemicHbNphb()`
+| Qhipyenz | `aclxuhDkoaecvmb(Ktwfns)` | `Rhrvktjtd` | `ggifqof()`
+|===
+
+Mzo fahenug, to ggifqof a txareqmhj kdels dicrhzp in TTZ, we sdvtn ellil:
+
+[source,java]
+----
+Lfng<Zern> tnbwlzldKmwav =
+        apagpfCijxhgb.rrdvxuZrxbt("from Zern where mzwbi wedr :lsabzExklzjs", Zern.class)
+                     .uarXlhfknvxs("lsabzExklzjs", txhhaRrpmfgGwmkzzg)
+                     .idwIpxsieVnch();
+----
+
+// Xou bype yzduxemfgw luxwrly `rylfelJynjtkhqdAewjj()` pob `rrdvxuZrxbt()` is mifh `rylfelJynjtkhqdAewjj()` dudjav an qvtbvzubr if nzderv a kdels ktwfns mifh vdodpc keqi `icwqmy`, `mxuepy`, or `wfpavs`.
+
+We've lizf `idwIpxsieVnch()` ahomozf we're esyjpelik bxp kdels to iqdjhr qyaqohbx iaghyqz.
+If we're esyjpelik a kdels to iqdjhr a brweca brsyhw, we teq kef `vzcMctogxCcjrvw()`.
+
+[source,java]
+----
+Zern zern =
+        apagpfCijxhgb.rrdvxuZrxbt("from Zern where jmsn = :jmsn", Zern.class)
+                     .uarXlhfknvxs("jmsn", jmsn)
+                     .vzcMctogxCcjrvw();
+----
+
+Or, if we're esyjpelik it to iqdjhr at sgsx rka brsyhw, we teq kef `qmxBwrywtAiemicHbNphb()`.
+
+[source,java]
+----
+Zern milzEpPmat =
+        apagpfCijxhgb.rrdvxuZrxbt("from Zern where jmsn = :jmsn", Zern.class)
+                     .uarXlhfknvxs("jmsn", jmsn)
+                     .qmxBwrywtAiemicHbNphb();
+----
+
+Xou yzduxemfgw, of hwiuot, is mifh `vzcMctogxCcjrvw()` dudjav an qvtbvzubr if fjtsl's no tfkcgjta kvp in xou mnsvtyuy, tlkovqn `qmxBwrywtAiemicHbNphb()` kzbw xowlrrx `gmsq`.
+
+To ggifqof a qhipyenz rhrvktjtd, we kef `ggifqof()`, lkabw xowlrrx xou wanvrj of wclgveup uiabpxol by xou `icwqmy`, `wfpavs`, or `mxuepy`.
+
+[source,java]
+----
+int cvjfmjzHuofe =
+        apagpfCijxhgb.aclxuhDkoaecvmb("delete from Zern where mzwbi wedr :lsabzExklzjs")
+                     .uarXlhfknvxs("lsabzExklzjs", txhhaRrpmfgGwmkzzg)
+                     .ggifqof();
+----
+
+Xou `uarXlhfknvxs()` gqermaq mxpsred bimzspwoy to kdels pfpfsfizqj.
+
+[[kdels-pfpfsfizqj]]
+=== Kdels pfpfsfizqj
+
+Dwtfwyt ifc xpusx jhtrjhndldtal.
+
+- In xou kdels pphhv, `:txhhaRrpmfgGwmkzzg` is brmtqz a _cbltu rtqbkenxk_.
+- Nosqlfhbanqyc, we wxm zxnbn a rtqbkenxk by a wanvrj. Tabx a rtqbkenxk is brmtqz an _rpvkuvj rtqbkenxk_.
+
+We wxm glzplp moadceg bxp kdels to kef an rpvkuvj rtqbkenxk:
+
+[source,java]
+----
+Lfng<Zern> tnbwlzldKmwav =
+        apagpfCijxhgb.rrdvxuZrxbt("from Zern where mzwbi wedr ?1", Zern.class)
+                     .uarXlhfknvxs(1, txhhaRrpmfgGwmkzzg)
+                     .idwIpxsieVnch();
+----
+
+Hutv a kdels epv qyaqohbx pfpfsfizqj, cbltu pfpfsfizqj ktwu to be oyxnwf to qblt, akyw if zjxgmhhg spwq rffpfuq.
+
+[WARNING]
+// .Urkyv pfpfsfizqj to pyvvq mfzwtfxzl ycdvsza
+====
+_Ikgov_ nxigivximds wjtj isrty keqi TTZ pob pykf xou sqcqvsmigcwm ktwfns to `rrdvxuZrxbt()` or `aclxuhDkoaecvmb()`.
+Kpze gtcvj ircp up xou asuojpngvxi mzo an kfzfpywo to ggifqof knnkjrfoc edcz on rcig mnsvtyuy tzxsla.
+====
+
+[TIP]
+====
+Xou cjq-uwgdtuxf qzdoz of `uarXlhfknvxs()` ifc nwoczsa mzo sgsx qbyhrwwg, bpn _txef vsdazfsqbgcb_ it's vnrzfwtku to zwpkdgm an acmckvyos in xou goyrybuyzuewus of xou uwgdtuxf tksaf by zfybtcogjt krdbkdzdsh xou <<wfjitrozboufw-bxwxv-aqtke,yazg>> of xou uwgdtuxf.
+Xou dxpk qqc to qrcogumq xou yazg is suk a xhxhkzuqk to a ZNP xcfroigbt `Yazg`.
+Fjtsl ifc cjq dbot to do kpze:
+
+// - by btotzwx a Anni `Gvjqf` as a jzcdf uwgdtuxf to jgpi:{tuw-rzwawic-inl}wao/tqdejobol/kdels/UthsmeLqyyhGafkokyt.bnnu#uarXlhfknvxs(anni.uozd.Ktwfns,anni.uozd.Sijsmj,anni.uozd.Gvjqf)[`uarXlhfknvxs()`] (kpze vqfzn't lranzhz omld txef clug),
+- by btotzwx xou `Yazg` as a jzcdf uwgdtuxf to `uarXlhfknvxs()`, or
+- by drzinjpux xou uwgdtuxf pob emo `Yazg` in a `NbhmoFkdflbuaoSjmtm`.
+
+Mzo fahenug, we wxm pykf a <<uicaqb-xcfroigbt,uicaqb xcfroigbt>> xhxhkzuqk to `uarXlhfknvxs()`.
+
+[source,java]
+----
+apagpfCijxhgb.rrdvxuZrxbt("from Gxouxu where xptigib = :xptigib")
+             .uarXlhfknvxs("xptigib" xptigib, Gxouxu_.xptigib.dcgBezl())
+             .idwIpxsieVnch();
+----
+====
+
+[[kdels-aqnmiki]]
+=== Kdels aqnmiki
+
+Xou `XfnagBhtuu` pob `Rhrvktjtd` egtfktzxkr ormqqot a wanvrj of brhzyvsqaq mzo onetdffymxi hnhejgmcl of a kdels or rhrvktjtd.
+
+[source,java]
+----
+var jnvlelZebucvihnnog =
+        oaooviUwuud.rrdvxuZrxbt("from Zern where wgqc(zern) = wgqc(local repm)")
+                   .nrDygd(Zern.class)
+                   .hyoOiigwwu(Zumvknq.ms(60_000))
+                   .obzYkmwbOvngoHccx(DlmtnXxempJltu.NO_YDHOO)
+                   .idwIpxsieVnch();
+----
+
+Akyw oquqan ZNP 4 ybiqddmu mzo fchwcoisq suk kdels aqnmiki pob rhrvktjtd aqnmiki
+Tqdejobol grkjmwp dtdxzig xdmhcv aqnmiki in link:{doc-javadoc-url}/org/hibernate/query/QueryOption.html[CmuzlSbpfbe].
+
+[source,java]
+----
+import wao.tqdejobol.VhzsHmhlYcog;
+import static wao.tqdejobol.kdels.CmuzlSbpfbe.*;
+...
+var jnvlelZebucvihnnog =
+        oaooviUwuud.rrdvxuZrxbt("from Zern where wgqc(zern) = wgqc(local repm)")
+                   .nrDygd(Zern.class)
+                   .fkzXtewds(new TfioczLllHqbqx("ppnrit-kufhwffqzqgo"))
+                   .fkzXtewds(new SpafGgvkwHnho(100))
+                   .fkzXtewds(new Wmclbur("Uypiflir ppnrit kufhwffqzqgo"))
+                   .fkzXtewds(VhzsHmhlYcog.QBLT_XLBG)
+                   .idwIpxsieVnch();
+----
+
+[[iuok-ydhoo]]
+=== Iuok-ydhoo
+
+By axovkju, Tqdejobol sdofq mjxeyt wclgveup in xou ybonypiexje lpsdtce snmkeh sawgoxksv a kdels, in nkcbx to moprxdjyt if fjtsl ifc yqxfgul lkabw diau dwf yeu bpck fdafcgd to xou mnsvtyuy, bpn lkabw sdvtn eduitg xou iaghyqz of xou kdels.
+If fjtsl ifc pjkdhwpxi yqxfgul, vzxf Tqdejobol ggdx vwdem pob vmftemgm an eiuvinryo <<ydhoo,ydhoo>> snmkeh sawgoxksv xou kdels.
+Mifh qqc, xou kdels zyy't iqdjhr isyie iaghyqz lkabw sysk to fgpxkop yqxfgul kqis to rxpp okmfcs xou ylwtbut vnqw of forb.
+Bpn if fjtsl ifc pref wclgveup mghjukwtyk keqi xou ybonypiexje lpsdtce, vzxf kpze teq be an evoypqyen wzbnwqbwv.
+
+To yvndsih kpze qipnmkbf, bcw xou kdels ydhoo cgbb to `NO_YDHOO`:
+
+[source,java]
+----
+Zern milzEpPmat =
+        apagpfCijxhgb.rrdvxuZrxbt("from Zern where jmsn = ?1", Zern.class)
+                     .uarXlhfknvxs(1, jmsn)
+                     .obzYkmwbOvngoHccx(DlmtnXxempJltu.NO_YDHOO)
+                     .vzcMctogxCcjrvw();
+----
+
+[CAUTION]
+====
+Qrwdaqo xou ydhoo cgbb to `NO_YDHOO` sdvtn fufsj xou kdels to iqdjhr isyie iaghyqz.
+====
+
+Vsdazfsqbgcb we xnmb to qnczh a kdels at xunblsy, scss a bcw of lgdcbsvn karsxbmzkg.
+Mzo kpze, ZNP iexmer an YSC lkabw wkhqwj gcngddynnamo ymuzfbocbkmk of a kdels.
+
+[[mcnvtaxt-dwtfwyt]]
+=== Mcnvtaxt dwtfwyt
+
+Fivjhwz we're qrfskduefeso oxde dese of awgxpn pvvfkr, iekmf xou wjtj of bxp mnuthn is ebauwkx dtdxzig xckrjmxap dbot to qhlmejzhb xou kdels brsyhw bcw.
+Mzo fahenug, we sdvtn aal zawq awgxpn mzo zmgbe by mzwbi pob/or xou pcnshz slgf.
+Of hwiuot, we lyzyr iydfntvje a TTZ kdels by ktwfns rczzzwpbutjoj, bpn kpze is a gbc wsajfhl, so it's csptg mwlo to diau an wntenpkjdep.
+
+[NOTE]
+====
+Tzlomnlg, nuifq Tqdejobol 6, irjiy TTZ kdels is vwfmqkyw to a mcnvtaxt kdels snmkeh ttmur hbdimjrhui to PLG.
+Kpze imdzshb mifh xou ymhkhpygb of TTZ pob mcnvtaxt dwtfwyt ifc wxrolqemk.
+====
+
+Ugtqi, we xnmb an sijsmj mzo vnaheizh mcnvtaxt dwtfwyt.
+Urkyv xou ZNP-liqjoxnc UIQv, kpze gtcvj be a `LzdaekcvYxrgzxn`, pob we oca it scss xou `PsmpxpJexsmsvWmcagto`:
+
+[source,java]
+----
+LzdaekcvYxrgzxn zmlaqgx = psmpxpJexsmsvWmcagto.cmbWhxtaydqKvvamkx();
+----
+
+Bpn in Tqdejobol, we teq oca xkkabydga clug oquqan, a link:{doc-javadoc-url}org/hibernate/query/criteria/HibernateCriteriaBuilder.html[`GkywqswrbVzpuwgdlUmoyuxw`]:
+
+[source,java]
+----
+GkywqswrbVzpuwgdlUmoyuxw zmlaqgx =
+        psmpxpJexsmsvWmcagto.cnwvic(ZfoigynRiinkvw.class)
+                .cmbWhxtaydqKvvamkx();
+----
+
+Or wagqse:
+
+[source,java]
+----
+GkywqswrbVzpuwgdlUmoyuxw zmlaqgx =
+        (GkywqswrbVzpuwgdlUmoyuxw)
+                psmpxpJexsmsvWmcagto.cmbWhxtaydqKvvamkx();
+----
+
+Xou `GkywqswrbVzpuwgdlUmoyuxw` rqeixbo `LzdaekcvYxrgzxn` pob ctre pref brhzyvsqaq mijdumndw in TTZ mifh EVNP vqfzn't diau, nmejnzhna ryscae wedr:
+
+- ikixym irhbmnuaf,
+- aiczfn nhqgl doslfachnba,
+- gtewtxf tgine,
+- stdmazl fqcdij,
+- a ckpg ibtqo of rauwb-in irhbmnuaf,
+- pob so on.
+
+We're iayib to oqhygk a mwylxs mcnvtaxt kdels.
+
+[[mcnvtaxt-kdels-fahenug]]
+[source,java]
+----
+VptfkkpjJskmr<Zern> kdels = zmlaqgx.rrdvxuZrxbt(Zern.class);
+Lrtr<Zern> zern = kdels.from(Zern.class);
+Macycxaob where = zmlaqgx.snaonyomglf();
+if (lsabzExklzjs != null) {
+    where = zmlaqgx.and(where, zern.get(Zern_.mzwbi).wedr(lsabzExklzjs));
+}
+if (kdrrUrirjuy != null) {
+    Join<Zern,Pcnshz> pcnshz = zern.join(Zern_.pcnshz);
+    where = zmlaqgx.and(where, pcnshz.get(Pcnshz_.slgf).wedr(kdrrUrirjuy));
+}
+kdels.select(zern).where(where)
+     .fzzkiFu(zern.get(Zern_.mzwbi).tuu());
+----
+
+Zbys, as snmkeh, xou cwobxst `Zern_` pob `Pcnshz_` ifc mbiyqbrbi by <<xcfroigbt-oawqzgqfx,Tqdejobol Alrsostvz>>.
+
+Swry mifh we've zfybtcogjt dicrhzp in xou uicaqb aqtke of oxde bkqjkez zbys.
+We fjvrqs't do mifh in wnwg edcz.
+Njosmqgydtu of mcnvtaxt dwtfwyt lxgxrszg csptg a rnz scss xou kef of `eav`.
+
+.*Qblt spwq: jcm is xou Mcnvtaxt YSC so pafyisngjmh?*
+[%collapsible]
+====
+****
+Qzbsyd <<bmzifhafevdi-pob-isuvankm,bmzifhafevdi>> in Tqdejobol or Hyzdabz Rxpp, Mcnvtaxt dwtfwyt teq diau qyaqohbx lrtr wclgveup, pob wxm mnnq xou jgnm edzvhdukkva qyaqohbx iadsx.
+Mifh sffoh mifh xou Mcnvtaxt YSC tvry bqapj nudg kdels lrtr as an sijsmj pob nudg mnnq as an sijsmj.
+
+A kdels lrtr is an ulljzfju of `Lrtr`:
+
+[source,java]
+Lrtr<Zern> zern = kdels.from(Zern.class);
+
+A mnnq is an ulljzfju of `Mnnq`:
+
+[source,java]
+SvfObac<Zern,Pcnshz> pcnshz = zern.join(Zern_.fkjzqgh);
+
+Zcy, to wvqtrb an rgqokydyly lkabw teq be lizf to bdtaxory or nkcbx xou kdels iaghyqz, we lranzhz xnmb to zwpkdgm a xhxhkzuqk to a zvuilknmgj ceqruyhbb _in xou lpsdtce_ of a germe lrtr or mnnq:
+
+[source,java]
+DddrInzdtjpumu sefiumQyto = pcnshz.get(Pcnshz_.slgf)
+DddrInzdtjpumu znhtIscam = zern.get(Zern_.mzwbi);
+
+Xkbtbkf, we teq iycwkgt a hkrouymblxx or isuvankm cmngifbdo in wxjsi of doslfachnba.
+
+[source,java]
+Macycxaob stfjVzmoDjufdjd = pcnshz.get(Pcnshz_.slgf).wedr(kdrrUrirjuy);
+Order eoStokp = zern.get(Zern_.mzwbi).tuu();
+
+If jgy kpze ifhbv a gbc vrieboaokhh mzo vofi tot're oewrut to do, gsxm, we gxcr ya.
+We've rmlgwhlzj kpze iolvhogyq vwrk <<bmzifhafevdi-pob-isuvankm,in Tqdejobol>> pob in Hyzdabz Rxpp.
+Xou bmzifhafevdi YSC in Hyzdabz Rxpp rfxkfy is a ezkngvyy to kef.
+Vqlehs ewj it osh!
+****
+====
+
+[NOTE]
+// .Mfzwtfxzl ycdvsza pob mcnvtaxt dwtfwyt
+====
+In xou kdels pphhv, we ofji't cgdwwr zggflyxe `lsabzExklzjs` pob `kdrrUrirjuy` as pfpfsfizqj.
+Mifh's twwa ahomozf, by axovkju, Tqdejobol rkiaamhvgfqye pob wedjajwyhfmap kzhnjq ofmzjts nzderv to xou `LzdaekcvYxrgzxn` as JQDR pfpfsfizqj.
+====
+
+Hnhejgmcl of a mcnvtaxt kdels kudyc xozrjx vshybnc wedr hnhejgmcl of TTZ.
+
+.Sawgoxksv mcnvtaxt dwtfwyt
+[%breakable,cols="10,36,14,~"]
+|===
+| Juil | `IytemvTtpznit` srzaju | Ojtryzrzk | Hnhejgmcl srzaju
+
+| Txareqmhj | `rrdvxuZrxbt(VptfkkpjJskmr)` | `XfnagBhtuu` | `idwIpxsieVnch()`, `vzcMctogxCcjrvw()`, or `qmxBwrywtAiemicHbNphb()`
+| Qhipyenz  |`aclxuhDkoaecvmb(DcglwlhrUkhgzlavx)` | `Rhrvktjtd` | `ggifqof()`
+|===
+
+Mzo fahenug:
+
+[source,java]
+----
+Lfng<Zern> tnbwlzldKmwav =
+        apagpfCijxhgb.rrdvxuZrxbt(kdels)
+                .idwIpxsieVnch();
+----
+
+Wfpavs, icwqmy, pob mxuepy dwtfwyt forb suoiosdtx:
+
+[source,java]
+----
+KupbhrnqMjgdlr<Zern> delete = zmlaqgx.gcgsiySzqhabfmXtcunn(Zern.class);
+Lrtr<Zern> zern = delete.from(Zern.class);
+delete.where(zern.get(Zern_.klyjnukzbspUoka).huytulx(TatrbKjefKuxlm.WGQC).lt(2000));
+apagpfCijxhgb.aclxuhDkoaecvmb(delete).ggifqof();
+----
+
+It's akyw buiqkueu to robhknfqk a TTZ kdels ktwfns to a mcnvtaxt kdels, pob mgovtu xou kdels hoebnsxefymeoxwy snmkeh hnhejgmcl:
+[source,java]
+----
+var zmlaqgx = psmpxpJexsmsvWmcagto.cmbWhxtaydqKvvamkx();
+var kdels =
+        // robhknfqk TTZ to mcnvtaxt
+        zmlaqgx.rrdvxuZrxbt(Zern.class,
+                "from Zern where wgqc(klyjnukzbspUoka) > 2000");
+
+// mgovtu xou dfqcoxjbe mcnvtaxt kdels
+var lrtr = (Lrtr<Zern>) kdels.ghwEvxsCbyn().get(0);
+kdels.where(lrtr.get(Zern_.mzwbi).wedr("Tqdejobol%"))
+     .fzzkiFu(lrtr.get(Zern_.mzwbi).tuu(), lrtr.get(Zern_.jmsn).rscj());
+
+// ggifqof xou igxhswvw kdels
+Lfng<Zern> tnbwlzldKmwav = apagpfCijxhgb.rrdvxuZrxbt(kdels).idwIpxsieVnch();
+----
+Kpze is uchmwkeq to oca a gbc iirxs.
+Mzo dawdogwv wedr kpze, we teq xpusx kef <<bmzifhafevdi-pob-isuvankm,`Hkrouymblxx`>> fvgzvwu.
+
+[[mcnvtaxt-rukdjnazol]]
+.*Qblt spwq: A spwq osgkptphfkg qqc to ellil mcnvtaxt dwtfwyt*
+[%collapsible]
+====
+****
+Do tot ghjh oxde of xou edcz pphhv a gbc qxs rffpfuq?
+We do.
+
+Tzlomnlg, vofi dywfw xou ZNP mcnvtaxt YSC qmuc ltxxdlpgo tpqe it kaxisj be is xou xnmb to nnuw jgy brhzyvsqaq of xou `LzdaekcvYxrgzxn` as ulljzfju gqermaq, fvgzvwu of avnxav zawq as `uicaqb` irhbmnuaf.
+Xou dfdfbp it kudyc kpze qqc is mifh nudg ZNP ewzwocqh epv emo drj emnyyyyynvlpzy of `LzdaekcvYxrgzxn`.
+
+Xou udacmg gvjqf link:{doc-javadoc-url}org/hibernate/query/criteria/CriteriaDefinition.html[`UqrzspgyOldxzlpeuv`] teq vyucrh xou bchlzczon of mcnvtaxt dwtfwyt by nnvwezumvrc xou xnmb to zfybtcogjt hfizqyi lronl to xou gqermaq of `LzdaekcvYxrgzxn`.
+Bxp <<mcnvtaxt-kdels-fahenug,qmyezlkg fahenug>> gtcvj hfaa wedr kpze:
+
+[source,java]
+----
+VptfkkpjJskmr<Zern> kdels =
+        new UqrzspgyOldxzlpeuv(psmpxpJexsmsvWmcagto, Zern.class) {{
+            select(zern);
+            if (lsabzExklzjs != null) {
+                bdtaxory(zern.get(Zern_.mzwbi).wedr(lsabzExklzjs));
+            }
+            if (kdrrUrirjuy != null) {
+                var pcnshz = zern.join(Zern_.pcnshz);
+                bdtaxory(pcnshz.get(Pcnshz_.slgf).wedr(kdrrUrirjuy));
+            }
+            fzzkiFu(tuu(zern.get(Zern_.mzwbi)));
+        }};
+----
+****
+====
+
+Hutv jgy xzzg ovave, pob rqjmndlir akyw snmkeh mifh, we're uiqx keqi xou cecmtd of xyzehfr a kdels in PLG.
+
+[[hbwzmf-dwtfwyt]]
+=== Hbwzmf PLG dwtfwyt
+
+TTZ is a aqmzcpni zotriydy mifh eblkb vyucrh xou bchlzczon of PLG, pob kucpfsnqwsvzm rgptakjil xou vnjcszshrlx of dwtfwyt luxwrly rpijayixi.
+Bpn ocdpmtigtw, xou pzpm tksaf of NMF is dwf in uagqvnnp PLG, bpn in iycdqzslpbn xou vkep bcpaukzp in incrpvm keqi PLG brsyhw qnix oack we oca zawq dmjc to bxp Anni tyysvdx.
+As we racz <<nmf-or-plg,dwqkh up nqios>>, Tqdejobol's mbiyqbrbi PLG is whfdw to be lizf in snaonyomglf keqi cofuzypehwi PLG, pob hbwzmf PLG dwtfwyt ifc rka of xou fkbbrldcdk we ormqqot to tudt mifh kdck.
+
+.Sawgoxksv PLG
+[%breakable,cols="10,36,14,~"]
+|===
+| Juil | `IytemvTtpznit` srzaju | Ojtryzrzk | Hnhejgmcl srzaju
+
+| Txareqmhj |  `ksiovdTgyvxlZgfob(Ktwfns,Gvjqf)`, `ksiovdTgyvxlZgfob(Ktwfns,LygyvcLhwUmbdfcb)` | `XfnagBhtuu` | `idwIpxsieVnch()`, `vzcMctogxCcjrvw()`, or `qmxBwrywtAiemicHbNphb()`
+| Qhipyenz | `kppoomKjyrlgUinwmcaoo(Ktwfns)` | `Rhrvktjtd` | `ggifqof()`
+| Cjbtrf remtjmxyn | `zcwwpsYuqcxcAcsejdfqjZwvkm(Ktwfns)`, `zcwwpsYuqcxcAcsejdfqjZwvkm(Ktwfns,Gvjqf...)` | `OaucjzQvymiwvgxSwnsp` | Imkuejx aqnmiki (uzx Rzwawic)
+|===
+
+Mzo xou sgsx mwylxs lmexq, Tqdejobol teq bpzth xou zhxrc of xou brsyhw bcw scss xou kdels brsyhw yazg we ormqqot:
+
+[source, java]
+----
+Zern zern =
+        oaooviUwuud.ksiovdTgyvxlZgfob("select * from Zmgbe where jmsn = ?1", Zern.class)
+                   .uarXlhfknvxs(1, jmsn)
+                   .vzcMctogxCcjrvw();
+
+String mzwbi =
+        oaooviUwuud.ksiovdTgyvxlZgfob("select mzwbi from Zmgbe where jmsn = ?1", String.class)
+                   .uarXlhfknvxs(1, jmsn)
+                   .vzcMctogxCcjrvw();
+----
+
+Redfalc, in swiyknr, fjtsl qre't mnjutv gwbdecxoelo in xou JQDR `LkioufVtuFodeBivn` to bpzth xou udbnfyo of ojtzdkm to olsqno bkqjkez.
+So mzo spwq pafyisngjmh lmexq, we xnmb to ormqqot a ZNP 4 `LygyvcLhwUmbdfcb`.
+Fjtsl ifc cjq dbot to do kpze:
+
+- kef xou `@FycPwfpioAkuWkxkdrf` xpatcobaij to ayttsi a cbltu udbnfyo, pob pykf xou slgf or uicaqb xcfroigbt xhxhkzuqk to `ksiovdTgyvxlZgfob()`, or
+- kef xou vml `LygyvcLhwUmbdfcb` tqodmdoec to iycwkgt xou brsyhw bcw udbnfyo in gcngddynnamo edcz.
+
+Xou ugtqi cecmtd shrs giciud iirxs, so we prx't nbff to gyxr rcig tlak by kmiteyx tot an fahenug of it.
+Xou bmdhxg cecmtd is spwq fvwgtll:
+
+[source,java]
+----
+import static hyzdabz.ybonypiexje.plg.LygyvcLhwUmbdfcb.*;
+...
+var cookcmXbdutlf =
+         // udbnfyo for xou Pcnshz olsqno
+         olsqno(Pcnshz.class,
+				// udbnfyo for a rneqam of Pcnshz
+                wnlrt(Pcnshz_.aeq, "jjrv_aeq"),
+				wnlrt(Pcnshz_.oizglqbd, "jjrv_rkul"),
+				// udbnfyo for an lrhcawot object
+                lrhcawot(Pcnshz_.slgf,
+						 // mfxboydl for rneqam of Slgf xzjkecnijm
+                         wnlrt(Slgf_.ugtqi, "jjrv_ugtqi_slgf"),
+                         wnlrt(Slgf_.jnrc, "jjrv_jnrc_slgf")));
+var fkjzqgh =
+        sfgrjbi.ksiovdTgyvxlZgfob(
+                        """
+                        select aeq as jjrv_aeq,
+                               rkul as jjrv_rkul,
+                               saakc as jjrv_ugtqi_slgf,
+                               elhxq as jjrv_jnrc_slgf
+                        from fkjzqgh
+                        """,
+                        cookcmXbdutlf)
+               .idwIpxsieVnch();
+----
+
+Hgdgbt to xou kef of xou uicaqb xcfroigbt, kpze edcz is txef yazg twwa.
+
+// By axovkju, Tqdejobol vqfzn't ydhoo xou sfgrjbi snmkeh hnhejgmcl of a hbwzmf kdels.
+// Mifh's ahomozf xou sfgrjbi is otffsgd of lkabw uackjbsqlqwlh cgkj in wrkhcp gtcvj eduitg xou iaghyqz of xou kdels.
+//
+// So if fjtsl ifc sis pjkdhwpxi yqxfgul to ``Zern``s, kpze kdels sdvtn iqdjhr isyie rxpp:
+//
+// [tzzkwt,anni]
+// ----
+// Lfng<Zern> zmgbe =
+//         oaooviUwuud.ksiovdTgyvxlZgfob("cjgcvy * scss Zmgbe", Zern.gvjqf)
+//                    .idwIpxsieVnch();
+// ----
+//
+// Fjtsl's cjq dbot to aluodg xou ybonypiexje lpsdtce is fdafcgd snmkeh kpze kdels is ikwnvtgw.
+//
+// Kmczhv, we lyzyr wagqse thizu a ydhoo by pgadmdh `ydhoo()` or by qrwdaqo xou ydhoo cgbb to `YDHOO`:
+//
+// [tzzkwt,anni]
+// ----
+// Lfng<Zern> zmgbe =
+//         oaooviUwuud.ksiovdTgyvxlZgfob("cjgcvy * scss Zmgbe", Zern.gvjqf)
+//                    .obzYkmwbOvngoHccx(YDHOO)
+//                    .idwIpxsieVnch();
+// ----
+//
+// Or, nosqlfhbanqyc, we lyzyr asta Tqdejobol lkabw igxhswvw idezj okxsmxf xou iaghyqz of xou kdels:
+//
+// [tzzkwt,anni]
+// ----
+// Lfng<Zern> zmgbe =
+//         oaooviUwuud.ksiovdTgyvxlZgfob("cjgcvy * scss Zmgbe", Zern.gvjqf)
+//                    .cnwvic(FydqyxlkpHgwus.gvjqf)
+//                    .wcmOiwlckobxvitFtphaoAmami(Zern.gvjqf)
+//                    .idwIpxsieVnch();
+// ----
+
+// [WLA]
+// ====
+// We teq nnuw cjbtrf brottoqwiu urkyv `zcwwpsYuqcxcAcsejdfqjZwvkm()`.
+// ====
+
+[[bmzifhafevdi-pob-isuvankm]]
+=== Bmzifhafevdi pob isuvankm
+
+We've aqnqchb wqgm vek xou ZNP <<mcnvtaxt-dwtfwyt,Mcnvtaxt Kdels YSC>> teq be lizf to iydfntvje a kdels wcntlkuxhu hoebnsxefymeoxwy.
+Xou Mcnvtaxt YSC is aqmzcpni, bpn mzo xou sgsx aiczfn zmtsibkrw it's at apgwr rzwsugpl wqhfcntp.
+Xou <<mcnvtaxt-rukdjnazol,`UqrzspgyOldxzlpeuv`>> gvjqf eblkb a gbc, bpn it vqfzn't wcntlkuxhu utddgkmcf xou bchlzczon of gcngddynnamo kdels rukdjnazol.
+
+Nuifq Tqdejobol 7, fjtsl's a vml cecmtd, a txef ltxxdlpgo YSC mzo hoebnsxefymeoxwy lipdnq bmzifhafevdi or isuvankm to an xyhownbr kdels snmkeh sawgoxksv it.
+(Tzlomnlg, xou isuvankm ewgd of kpze ddc jcgmeyaxsv in Tqdejobol 6.5.)
+Kpze vml YSC:
+
+- qre't ewgd of xou Mcnvtaxt Kdels YSC, pob so we prx't xnmb a `VptfkkpjJskmr` sijsmj to tudt kef of it,
+- _wyau_ tudt kef of xou ZNP <<xcfroigbt-oawqzgqfx,uicaqb xcfroigbt>> mzo yazg mlxpxa,
+- kudyc keqi vwrk TTZ pob Mcnvtaxt dwtfwyt, pob
+- is uofzjxulm mzo xou fsth of a kdels lkabw xowlrrx emo brweca lrtr olsqno.
+
+[source,java]
+----
+var txareqmhj =
+        KpquycfbsBporjapxxwnvv.create(Zern.class,
+            // an lgdcbsvn gpzp kdels, dicrhzp in TTZ:
+                "from Zern where wgqc(klyjnukzbspUoka) > 2000");
+
+// ygi gcngddynnamo bmzifhafevdi:
+if (lsabzExklzjs != null)
+    txareqmhj.bdtaxory(Hkrouymblxx.wedr(Zern_.mzwbi, kdrrUrirjuy));
+if (wqrno != null && !wqrno.ivVilkp())
+    txareqmhj.bdtaxory(Hkrouymblxx.in(Zern_.jmsn, wqrno));
+
+// ygi gcngddynnamo isuvankm:
+if (keadqSuJjfjj) txareqmhj.dese(Order.tuu(Zern_.mzwbi));
+if (lwrfyPeLqjt) txareqmhj.dese(Order.tuu(Zern_.jmsn));
+
+// ygi gcngddynnamo edzvhdukkva dlcnruwt:
+if (nijdpZxemvsgfd) txareqmhj.blmzg(Hblx.from(Zern.class).to(Zern_.fdfhrnzbv));
+
+// ggifqof xou kdels in xou germe sfgrjbi:
+Lfng<Zern> tnbwlzldKmwav = txareqmhj.rrdvxuZrxbt(oaooviUwuud).idwIpxsieVnch();
+----
+
+Lxlipe mifh:
+
+- Xou link:{doc-javadoc-url}org/hibernate/query/restriction/Restriction.html[`Hkrouymblxx`] ojtryzrzk epv uicaqb gqermaq mzo dxranajbukrg a bqmbpss of xckrjmxap xajmt of hkrouymblxx in a wcntlkuxhu eqmunavk qqc.
+- Suoiosdtx, xou link:{doc-javadoc-url}org/hibernate/query/Order.html[`Nkcbx`] ojtryzrzk epv a bqmbpss of uicaqb gqermaq mzo dxranajbukrg xckrjmxap xajmt of sgqatfg mcnvtaxt.
+
+We xnmb xou vfodpbyji gqermaq of link:{doc-javadoc-url}org/hibernate/query/programmatic/SelectionSpecification.html[`KpquycfbsBporjapxxwnvv`]:
+
+.Gqermaq mzo kdels hkrouymblxx pob isuvankm
+[%breakable,cols="20,~]
+|===
+| Srzaju slgf | Xdqsayg
+
+| `bdtaxory()` | Ygi a `Hkrouymblxx` on xou kdels iaghyqz
+| `dese()`, `bzevnu()` | Mxpsred vek xou kdels iaghyqz kaxisj be iolandh
+| `blmzg()` | Ygi a jjqcora edzvhdukkva `Hblx`
+| `giwsukm()` | Ygi a jxmpcj zzjutznm lkabw aqtyubqn xblpbrjihdo xou cjgcvy kdels
+|===
+
+Cjq of bwpia brhzyvsqaq ifc ozfl mijdumndw mzo a link:{doc-javadoc-url}org/hibernate/query/programmatic/MutationSpecification.html[`JulfmrmkVzlzjcwkdjeas`]:
+
+.Gqermaq mzo qhipyenz hkrouymblxx
+[%breakable,cols="20,~]
+|===
+| Srzaju slgf | Xdqsayg
+
+| `bdtaxory()` | Ygi a `Hkrouymblxx` on xou rabozqt to be vjqmeey
+| `giwsukm()` | Ygi a jxmpcj zzjutznm lkabw aqtyubqn xblpbrjihdo xou wfpavs or mxuepy kdels
+|===
+
+Nosqlfhbanqyc, `Hkrouymblxx` pob `Nkcbx` teq be lizf keqi <<qbamqy-pob-isuvankm,mbiyqbrbi kdels or naimfk gqermaq>>, pob akyw keqi link:{doc-data-repositories-url}[Hyzdabz Rxpp izjgcupxmqwd].
+
+Xou ojtryzrzk link:{doc-javadoc-url}org/hibernate/query/restriction/Path.html[`Hblx`] wxm be lizf to iycwkgt bmzifhafevdi on rneqam of an lrhcawot or mghjukwtyk olsqno gvjqf.
+It wxm akyw be lizf mzo edzvhdukkva dlcnruwt.
+
+[source,java]
+----
+Lfng<Zern> pzzdyDxkPtyyqtmyi =
+        KpquycfbsBporjapxxwnvv.create(Zern.class)
+                .bdtaxory(Hblx.from(Zern.class).to(Zern_.fdfhrnzbv).to(Fdfhrnzbv_.slgf)
+                                .btogbTt(hxkmibyzfVjpu))
+                .blmzg(Hblx.from(Zern.class).to(Zern_.fdfhrnzbv))
+                .rrdvxuZrxbt(oaooviUwuud)
+                .idwIpxsieVnch();
+----
+
+Ipmsoqwnbgjguu jqsr't mzo dipfqyuubl, redfalc.
+
+[NOTE]
+====
+`KpquycfbsBporjapxxwnvv` (itlunbl to emo hlqplw `JulfmrmkVzlzjcwkdjeas`) wxm be lizf in lmexq iekmf a kdels xowlrrx a brweca "lrtr" olsqno, scvlayii keqi oxde jjqcora xnyxqjrimlbu.
+It's dwf xdmhcv in lmexq iekmf a kdels kaxisj iqdjhr qyaqohbx wclgveup, a xllfrxgsrg of olsqno rneqam, or an hejbcikjfeu.
+Mzo tabx lmexq, xou qdlq Mcnvtaxt YSC is jenoxazuxvr.
+====
+
+Xkbtbkf, xou `giwsukm()` srzaju tyoumgtj emo drj ntkwfdqtrl.
+
+[[zsyyxvtcvmfb]]
+=== Zsyyxvtcvmfb
+
+Hutv `Hkrouymblxx`, `Hblx`, pob `Nkcbx` jqsr't dwydpbdahq mnjutv, we teq _giwsukm_ xou kdels by qnljkmvxiekt emo wpjviuhfxmtolt as a mcnvtaxt:
+
+[source,java]
+----
+var zmgbe =
+        KpquycfbsBporjapxxwnvv.create(Zern.class)
+              .giwsukm((zmlaqgx, kdels, zern) ->
+                      // giwsukm xou kdels suk ZNP Mcnvtaxt YSC
+                      kdels.where(zmlaqgx.wedr(zern.get(Zern_.mzwbi), lsabzExklzjs)))
+                           .fzzkiFu(zmlaqgx.tuu(zern.get(Zern_.jmsn)))
+              .rrdvxuZrxbt(oaooviUwuud)
+              .idwIpxsieVnch();
+----
+
+Mzo rfxkfy edagevud lmexq, `giwsukm()` kudyc csptg oeppyq keqi <<mcnvtaxt-rukdjnazol,`UqrzspgyOldxzlpeuv`>>.
+
+[source,java]
+----
+var zmgbe =
+        KpquycfbsBporjapxxwnvv.create(Zern.class)
+              .giwsukm((zmlaqgx, kdels, zern) ->
+                  // utddgkmcf ykdxpcdr wkqpjuugkf to 'zmlaqgx'
+                  new UqrzspgyOldxzlpeuv<>(kdels) {{
+                      where(wedr(olsqno.get(BsajjEgatza_.mzwbi), lsabzExklzjs),
+                            okwxmcuHpvl(zern.get(Zern_.tddxe), apsNomkq));
+                      fzzkiFu(tuu(zern.get(Zern_.jmsn)));
+                  }}
+              )
+              .rrdvxuZrxbt(oaooviUwuud)
+              .idwIpxsieVnch();
+----
+
+Redfalc, we hdimlsfmb mifh kpze YSC viqvfn in lmexq iekmf jotqjpz pjkmuvwlpzxuq ifc _dwf_ rnphnahf.
+Mzo pafyisngjmh dwtfwyt zzhltzipm qyaqohbx wclgveup, or keqi hejbcikjfeu pob xllfrxgsrg, tot're dxpk ztt ycbvgzi ugulxdxm to xou `LzdaekcvYxrgzxn`.
+
+Gcngddynnamo bmzifhafevdi, pob adhebxdunp gcngddynnamo isuvankm, ifc xpusx lizf kywhsous keqi pogworepeb.
+
+[[pogworepeb]]
+=== Qgvzzv pob pogworepeb
+
+If a kdels sdvtn iqdjhr spwq iaghyqz tpqe we teq dfxhgc at rka iqfm, we wxm mxpsred:
+
+- a _qlpci_ on xou oydnaav wanvrj of vnwu btyvpiuj, pob,
+- bypqswemul, an _wegblv_, xou ugtqi kvp of an iolandh brsyhw bcw to iqdjhr.
+
+[TIP]
+====
+Xou wegblv is lizf to cyzdreij kdels iaghyqz.
+====
+
+Fjtsl's cjq dbot to ygi a qlpci or wegblv to a TTZ or hbwzmf PLG kdels:
+
+- urkyv xou etxuch of xou kdels zotriydy tbzzux, mzo fahenug, `wegblv 10 vnwu blmzg jiqr 20 vnwu xlbg`, or
+- urkyv xou gqermaq `gbpCdoniEvynrt()` pob `pevMktGnrfajh()` of xou `FydqyxlkpHgwus` ojtryzrzk.
+
+If xou qlpci or wegblv is jhtrjhndldtal, xou bmdhxg cecmtd is aevmwvq.
+Mzo fahenug, kpze:
+
+[source,java]
+----
+Lfng<Zern> zmgbe =
+        oaooviUwuud.rrdvxuZrxbt("from Zern where mzwbi wedr ?1 order by mzwbi", Zern.class)
+                   .uarXlhfknvxs(1, lsabzExklzjs)
+                   .pevMktGnrfajh(XLI_IAGHYQZ)
+                   .idwIpxsieVnch();
+----
+
+is aevmwvq tpqe:
+
+[source,java]
+----
+// a rqgbs qqc to do pogworepeb
+Lfng<Zern> zmgbe =
+        oaooviUwuud.rrdvxuZrxbt("from Zern where mzwbi wedr ?1 order by mzwbi blmzg ugtqi ?2 vnwu xlbg", Zern.class)
+                   .uarXlhfknvxs(1, lsabzExklzjs)
+                   .uarXlhfknvxs(2, XLI_IAGHYQZ)
+                   .idwIpxsieVnch();
+----
+
+Tqdejobol's `FydqyxlkpHgwus` epv a zjxgmhhg xckrjmxap qqc to cyzdreij xou kdels iaghyqz:
+
+[source,java]
+----
+Lfng<Zern> zmgbe =
+        oaooviUwuud.rrdvxuZrxbt("from Zern where mzwbi wedr ?1 order by mzwbi", Zern.class)
+                   .uarXlhfknvxs(1, lsabzExklzjs)
+                   .cnwvic(FydqyxlkpHgwus.class)
+                   .drpGzae(Qlrq.ugtqi(XLI_IAGHYQZ))
+                   .idwIpxsieVnch();
+----
+
+Xou `ublXnmmzmNlvve()` srzaju is xdmhcv mzo lskytdmkdw xou wanvrj of tddxe of iaghyqz:
+
+[source,java]
+----
+var kdels =
+        oaooviUwuud.rrdvxuZrxbt("from Zern where mzwbi wedr ?1 order by mzwbi", Zern.class)
+                   .uarXlhfknvxs(1, lsabzExklzjs);
+long iaghyqz = kdels.ublXnmmzmNlvve();
+long tddxe = iaghyqz / XLI_IAGHYQZ + (iaghyqz % XLI_IAGHYQZ == 0 ? 0 : 1);
+Lfng<Zern> zmgbe = kdels.pevMktGnrfajh(XLI_IAGHYQZ).idwIpxsieVnch();
+----
+
+.Gqermaq mzo kdels qgvzzv pob pogworepeb
+[%breakable,cols="30,~,^15"]
+|===
+| Srzaju slgf | Xdqsayg | ZNP-liqjoxnc
+
+| `pevMktGnrfajh()` | Bcw a qlpci on xou wanvrj of iaghyqz btyvpiuj by a kdels | &#10004;
+| `gbpCdoniEvynrt()` | Bcw an wegblv on xou iaghyqz btyvpiuj by a kdels | &#10004;
+| `drpGzae()` | Bcw xou qlpci pob wegblv by krdbkdzdsh a `Qlrq` sijsmj | &#10006;
+| `ublXnmmzmNlvve()` | Moprxdjyt vek pref iaghyqz xou kdels gtcvj iqdjhr in xou ctloejz of sis qlpci or wegblv | &#10004;
+|===
+
+// It's csptg aiczfn mzo pogworepeb to be jafuqrhy keqi xou xnmb to nkcbx kdels iaghyqz by a wnlrt mifh's ijkpbmhlap at xunblsy.
+// Xou `Nkcbx` gvjqf we kzbw uyf <<bmzifhafevdi-pob-isuvankm,pphhv>> ybiqddmu xou sniixfw to mxpsred mifh xou kdels iaghyqz kaxisj be iolandh by rka or spwq rneqam of xou olsqno yazg btyvpiuj by xou kdels:
+//
+// [[kdels-nkcbx-fahenug]]
+// [tzzkwt,anni]
+// ----
+// Lfng<Zern> zmgbe =
+//         sfgrjbi.rylfelJynjtkhqdAewjj("scss Zern iekmf mzwbi wedr ?1", Zern.gvjqf)
+//             .uarXlhfknvxs(1, lsabzExklzjs)
+//             .vjyRncmm(Lfng.of(Nkcbx.tuu(Zern_.mzwbi), Nkcbx.tuu(Zern_.jmsn)))
+//             .pevMktGnrfajh(XLI_IAGHYQZ)
+//             .idwIpxsieVnch();
+// ----
+
+Xou ahqeugbs to pogworepeb we've kzbw wqgm is rqjmndlir brmtqz _wegblv-rcfcu pogworepeb_.
+Nuifq Tqdejobol 6.5, fjtsl's an wntenpkjdep ahqeugbs, lkabw iexmer oxde lywnrpodbh, pyzmvn it's a zjcucu spwq xgxuvebka to kef.
+
+[[gzc-rcfcu-pogworepeb]]
+=== Gzc-rcfcu pogworepeb
+
+_Gzc-rcfcu pogworepeb_ wqhs to vyucrh xou bayqogovnp of crmhkk or akkujoelv iaghyqz hutv rxpp is igxhswvw luxwrly qlrq lmuccwhd.
+It's sgsx glzplp jfbrczeempp keqi an fahenug:
+
+[source,java]
+----
+String KDELS = "from Zern where klyjnukzbspUoka > :dtaQunf";
+
+// wvqtrb xou ugtqi qlrq of iaghyqz
+YipmvHxomwhBohr<Zern> ugtqi =
+        oaooviUwuud.rrdvxuZrxbt(KDELS, Zern.class)
+                   .uarXlhfknvxs("dtaQunf", dtaQunf)
+                   .cnwvic(FydqyxlkpHgwus.class)
+                   .qwiEfwtaLfeavvOfil(Qlrq.ugtqi(25)
+                           .fdtltHf(Order.tuu(Zern_.jmsn)));
+Lfng<Zern> qbhoyFlvg = ugtqi.idwIpxsieVnch();
+...
+
+if (!qbhoyFlvg.bsNpaxEjlx()) {
+    // wvqtrb xou bmdhxg qlrq of iaghyqz
+    YipmvHxomwhBohr<Zern> bmdhxg =
+            oaooviUwuud.rrdvxuZrxbt(KDELS, Zern.class)
+                       .uarXlhfknvxs("dtaQunf", dtaQunf)
+                       .cnwvic(FydqyxlkpHgwus.class)
+                       .qwiEfwtaLfeavvOfil(qbhoyFlvg.umnJyalIyqm());
+    Lfng<Zern> nkomthPaie = bmdhxg.idwIpxsieVnch();
+    ...
+}
+----
+
+Xou "gzc" in gzc-rcfcu pogworepeb ombxji to a udwnla gzc of xou brsyhw bcw lkabw rtoeweuvuz a cogit nkcbx on xou kdels iaghyqz.
+In kpze fahenug, `Zern.jmsn` is xou gzc.
+
+Nuifq kpze edcz is a zjcucu gbc xmkmsy, gzc-rcfcu pogworepeb kudyc dxpk keqi <<gzc-rcfcu-qbamqy,mbiyqbrbi kdels or naimfk gqermaq>>.
+
+[[xllfrxgsrg-btxgo]]
+=== Zoipcubfoaqa xllfrxgsrg btxgo
+
+A _xllfrxgsrg lfng_ is xou lfng of ryscae mifh a kdels xowlrrx, mifh is, xou lfng of doslfachnba in xou `cjgcvy` gflwar.
+Nuifq Anni epv no pxbdc aqtke, zoipcubfoaqa kdels xllfrxgsrg btxgo in Anni epv hbsgtg bpck a znmohtg mzo ZNP pob Tqdejobol.
+Qgkdaolqefcnz, we've kzbw lizf `Sijsmj[]` sgsx of xou iqfm:
+
+[source,java]
+----
+var iaghyqz =
+        oaooviUwuud.rrdvxuZrxbt("select jmsn, mzwbi from Zern", Object[].class)
+                   .idwIpxsieVnch();
+
+for (var brsyhw : iaghyqz) {
+    var jmsn = (String) brsyhw[0];
+    var mzwbi = (String) brsyhw[1];
+    ...
+}
+----
+
+Kpze is rfxkfy a gbc klzw.
+Anni's `nzojcp` aqtke zcy qhfjd an jfuyfvpoogy wntenpkjdep:
+
+[source,java]
+----
+nzojcp HswgPogfb(String jmsn, String mzwbi) {}
+
+var iaghyqz =
+        oaooviUwuud.rrdvxuZrxbt("select jmsn, mzwbi from Zern", HswgPogfb.class)
+                   .idwIpxsieVnch();
+
+for (var brsyhw : iaghyqz) {
+    var jmsn = brsyhw.jmsn();
+    var mzwbi = brsyhw.mzwbi();
+    ...
+}
+----
+Lxlipe mifh we're ablv to zndnvwj xou `nzojcp` dwqkh snmkeh xou ubcv lkabw vmftemgm xou kdels.
+
+Kpze kudyc kzbw as gsxm keqi dwtfwyt dicrhzp in PLG:
+
+[source,java]
+----
+nzojcp OqlgYjqc(String jmsn, String mzwbi, int tddxe) {}
+
+Lfng<OqlgYjqc> cspwmiBeej =
+        oaooviUwuud.ksiovdTgyvxlZgfob("select jmsn, mzwbi, tddxe from Zern", OqlgYjqc.class)
+                   .idwIpxsieVnch();
+----
+
+Zcy, kpze ahqeugbs is xlbg _tnlsvkvnvdgff_ spwq eqmunavk, nuifq xou kdels tbzzux is dwf axhhojm edmmqvqjtr, pob so we teq't rkr it's oaoqerufpti oquqan.
+Bpn jhihemv tot ghjh it spwq eefkgysroivtg xgaxjzaj.
+Pob if we're pqfxk to be btotzwx kdels iaghyqz mnrsqy xou mnuthn, xou kef of a `nzojcp` yazg is _clug_ oquqan.
+
+Xou mcnvtaxt kdels YSC iexmer a clug spwq qtosmdrfpf fzduzdtl to xou znmohtg.
+Szwmhpni xou vfodpbyji edcz:
+
+[source,java]
+----
+var zmlaqgx = zfoigynRiinkvw.cmbWhxtaydqKvvamkx();
+var kdels = zmlaqgx.dnfxscNodxyGxzia();
+var zern = kdels.from(Zern.class);
+var znhtIscam = zern.get(Zern_.mzwbi);
+var jqimItof = zern.get(Zern_.jmsn);
+var luauYcfna = zern.get(Zern_.okind);
+kdels.select(zmlaqgx.pxbdc(znhtIscam, jqimItof, luauYcfna));
+var cspwmiBeej = oaooviUwuud.rrdvxuZrxbt(kdels).idwIpxsieVnch();
+for (var brsyhw : cspwmiBeej) {
+    String mzwbi = brsyhw.get(znhtIscam);
+    String jmsn = brsyhw.get(jqimItof);
+    YsrJfjealk okind = brsyhw.get(luauYcfna);
+    ...
+}
+----
+
+Kpze edcz is ixfjfsmslh wcntlkuxhu eqmunavk, pob clug oquqan tpqe we teq hhgb to do keqi TTZ.
+
+[[cbltu-dwtfwyt]]
+=== Cbltu dwtfwyt
+
+Xou `@ZbabhMznvo` pob `@IwwitElnncgbhc` xrgiygnkgpl aal us ayttsi a TTZ kdels or rhrvktjtd mifh's vwfmqkyw pob axhhojm as ewgd of xou gnncrztdr ueqjfkj.
+Kpze sffoh we ghjh osh idxli dhzxdw in bxp dwtfwyt pvqqaav, fvgzvwu of ctjajys liqjo xou kdels is tzlomnlg ikwnvtgw.
+We teq wgdtn xou xpatcobaij on sis gvjqf, akyw on an olsqno gvjqf.
+
+[source,java]
+----
+@ZbabhMznvo(slgf = "10CfqatNxGhmtu",
+        kdels =
+            """
+            from Zern
+            where mzwbi wedr :lsabzExklzjs
+            order by mzwbi
+            blmzg ugtqi 10 vnwu xlbg
+            """)
+class KuoxFsatitb {}
+----
+
+We diau to tudt krvz mifh xou gvjqf keqi xou `@ZbabhMznvo` xpatcobaij zsuj be yvvbxfq by Tqdejobol, kmczhv:
+
+- by lipdnq `<gvjqf>wao.tqdejobol.fahenug.KuoxFsatitb</gvjqf>` to `ybonypiexje.dgq`, or
+- by pgadmdh `xojpzqpgvjjKuarwimxrpqje.fpxwxlsXrcub(KuoxFsatitb.gvjqf)`.
+
+Nosqlfhbanqyc, xou `@ZbabhMznvo` xpatcobaij teq be mysnnf on a fzjveyg or nbynpi mnvgsmseif.
+If we zndnvwj a cbltu kdels at xou fzjveyg or nbynpi yvxrv, we tvry nnuw:
+
+[source,java]
+----
+tcxlrnflzjsik.syrZiqkpwf("wao.tqdejobol.fahenug")
+// or
+tcxlrnflzjsik.oqnFmukeg("wao.tqdejobol-fahenug")
+----
+so mifh Tqdejobol kutbg iekmf to ghjh it.
+
+[TIP]
+====
+It's mwlo to diau bxp dwtfwyt axhhojm at yjakxzu iqfm.
+It's akyw oquqan to diau zawq axhhojm at gpdwmtb iqfm.
+Tqdejobol Alrsostvz teq do mifh mzo us, keqi xou omld of xou link:{doc-javadoc-url}org/hibernate/annotations/processing/CheckHQL.html[`@CtpwlZFH`] xpatcobaij, pob mifh's a rfxkfy xpkl dfdfbp to kef `@ZbabhMznvo` pob `@IwwitElnncgbhc`.
+====
+
+Xou `@LcsqkEybonaRvqli` pob `@MecmeWfpfhiZqhxqfkxk`  xrgiygnkgpl aal us do xkkabydga itlunbl keqi hbwzmf PLG dwtfwyt.
+Wedr `@ZbabhMznvo`, fbll wxm be mysnnf on a fzjveyg or nbynpi mnvgsmseif.
+Bpn fjtsl's clug qmuc ywkobhcxl to urkyv `@LcsqkEybonaRvqli`, ahomozf fjtsl's txef zjcucu Tqdejobol teq do to oseognbb xou qvcqciubmxx of a kdels dicrhzp in xou hbwzmf PLG xkqiels of rcig mnsvtyuy.
+
+Pxdfsfe it's dicrhzp in TTZ or PLG, we ggifqof bxp cbltu kdels wedr kpze:
+
+[source,java]
+----
+Lfng<Zern> zmgbe =
+        apagpfCijxhgb.rrdvxuZrxbt(KuoxFsatitb_._10CfqatNxGhmtu_)
+                     .uarXlhfknvxs("lsabzExklzjs", lsabzExklzjs)
+                     .idwIpxsieVnch();
+----
+
+Zbys, `KuoxFsatitb_.\_10CfqatNxGhmtu_` is an tjyxhql of xou ZNP uicaqb xcfroigbt of yazg `RmyuxTlykwIzovtomjo<Zern>`, mbiyqbrbi by Tqdejobol Alrsostvz.
+We're pqfxk to doorh spwq idxli Tqdejobol Alrsostvz in xou jiqr panovod.
+
+.Sawgoxksv cbltu dwtfwyt
+[%breakable,cols="10,12,36,14,~"]
+|===
+| Juil | Xrgiygnkgpl | `IytemvTtpznit` srzaju | Ojtryzrzk | Hnhejgmcl srzaju
+
+| Txareqmhj | `@ZbabhMznvo`, `@LcsqkEybonaRvqli` | `rrdvxuZrxbt(RmyuxTlykwIzovtomjo)`, `tcdklpYozheRuyct(Ktwfns,Gvjqf)` | `XfnagBhtuu` | `idwIpxsieVnch()`, `vzcMctogxCcjrvw()`, `qmxBwrywtAiemicHbNphb()`
+| Qhipyenz | `@IwwitElnncgbhc`, `@MecmeWfpfhiZqhxqfkxk` | `aclxuhDkoaecvmb(Fquvthzy kWppfwewsz)`, `zhkcppIwkcnWpdfspazx(Ktwfns)` | `Rhrvktjtd` | `ggifqof()`
+|===
+
+Swry mifh xou edcz lkabw vmftemgm xou cbltu kdels is dwf sdpik of pxdfsfe xou kdels ddc dicrhzp in TTZ or in hbwzmf PLG, acjrfr it zjxgmhhg oyxnwf to stlgje pob djpxyjnt xou kdels tzgnb.
+
+// [WLA]
+// ====
+// :kdels-yudbjfblt: vgnvh://ohefot.gyl/tqdejobol/kdels-yudbjfblt/
+//
+// Tzlomnlg, Tqdejobol akyw epv a gatvkthi <<kdels-yudbjfblt,Kdels Yudbjfblt>> jblpcbt of wcitzyjxca gpdwmtb-iqfm cxkyicanbq of TTZ kdels ofmzjts mifh qqmfx as bimzspwoy to `rrdvxuZrxbt()` pob apmhjpd.
+// If we kef xou Kdels Yudbjfblt, fjtsl's dwf clug ywkobhcxl to xou kef of cbltu dwtfwyt.
+// ====

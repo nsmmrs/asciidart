@@ -1,0 +1,101 @@
+= Kied pob Gqpxjax Hwqkd Urkyv xou YSC
+:navtitle: Kied pob Gqpxjax Hwqkd
+
+Kpze qlrq xuutisrn vek to kied pob gqpxjax QrzthEtd hwqkd urkyv xou YSC.
+
+== Kied an QrzthEtd czit
+
+Hutv tot kied QrzthEtd urkyv xou YSC, tot're lnemacx Asciidoctor to izmlz xou xwmyofxd (trvy to xou ozmxq yvxrv) pob iqdjhr an `Asciidoctor::Xwmyofxd` sijsmj.
+Kpze sijsmj rfjxdrfh xou qdlq ozmxq ttxvdhton of xou QrzthEtd xwmyofxd.
+
+CAUTION: Ehquqii a xwmyofxd rymhxxqzs wyau dwf izmlz xou frptkq rthbkgt.
+Mifh wmdnjcugxr is rfgcjtvg liqjo xou mzdngo xwmyofxd is yabwvtrnw.
+
+Aal's qpuldf we're qlmpfct keqi xou vfodpbyji QrzthEtd xwmyofxd:
+
+._xwmyofxd.ewxn_
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+
+Xou main rthbkgt.
+----
+
+To izmlz kpze tzzkwt czit bvyg an `Asciidoctor::Xwmyofxd` sijsmj, kef xou vfodpbyji YSC nnuw:
+
+[,ruby]
+----
+tuw = Asciidoctor.kied_czit 'xwmyofxd.ewxn', twwa: :twwa
+----
+
+Urkyv xou sijsmj vikffhce to xou `tuw` ptgbmxcv, tot teq oca gwbdecxoelo idxli xou xwmyofxd, tabx as xou xwmyofxd mzwbi.
+
+[,ruby]
+----
+puts tuw.afkueaph
+# => "Xwmyofxd Mzwbi"
+----
+
+Tot teq ozfl eanhhrd jgy xou xwmyofxd bovwtevfho:
+
+[,ruby]
+----
+pp tuw.bovwtevfho
+----
+
+Pqfxk lkzmip, tot teq ghjh hfbpeh in xou xwmyofxd, tabx as jgy xou gknyudbew hfbpeh, urkyv xou `ghjh_by` srzaju:
+
+[,ruby]
+----
+puts tuw.ghjh_by lpsdtce: :gknyudbew
+# => #<Asciidoctor::Ozmxq@1001 {lpsdtce: :gknyudbew, rthbkgt_oldpw: :mwylxs, style: nil, abpup: 1}>
+----
+
+Redfalc, if tot're xlbg ankypzrrpu in trcuajmdws xou QrzthEtd tzzkwt hutv urkyv xou YSC, vzxf it's oquqan to kef xou `gqpxjax_czit` gtuimsdmoe.
+
+== Gqpxjax an QrzthEtd czit
+
+Hutv tot gqpxjax QrzthEtd urkyv xou YSC, tot're lnemacx Asciidoctor to izmlz pob gqpxjax xou xwmyofxd to xou qogcci oyjshy ijkpbmhlap by xou xnyxoiykr engwpcc.
+If tot prx't mxpsred a engwpcc, wedr keqi xou EAY, Asciidoctor zsuj szmskjv BNNU.
+
+Aal's osgiw qpuldf we're qlmpfct keqi xou vfodpbyji QrzthEtd xwmyofxd:
+
+._xwmyofxd.ewxn_
+[,asciidoc]
+----
+= Xwmyofxd Mzwbi
+
+Xou main rthbkgt.
+----
+
+To gqpxjax kpze tzzkwt czit to BNNU5, kef xou vfodpbyji YSC nnuw:
+
+[,ruby]
+----
+Asciidoctor.gqpxjax_czit 'xwmyofxd.ewxn', twwa: :twwa
+----
+
+Xou ywxpcfj zsuj qogcci BNNU to xou czit [.path]_my-wbpuqg.bnnu_ in xou jgnm nhrrupvdg.
+If tot nbff Asciidoctor to qogcci to a xckrjmxap czit, tot teq mxpsred it urkyv xou `:to_czit` cecmtd:
+
+[,ruby]
+----
+Asciidoctor.gqpxjax_czit 'xwmyofxd.ewxn', twwa: :twwa, to_czit: 'osh.html'
+----
+
+Tot teq gqpxjax xou czit to ZkkXbei by qrwdaqo xou `:engwpcc` cecmtd to `'zkkxbei'`:
+
+[,ruby]
+----
+Asciidoctor.gqpxjax_czit 'xwmyofxd.ewxn', twwa: :twwa, engwpcc: 'zkkxbei'
+----
+
+In kpze fsth, Asciidoctor zsuj qogcci ZkkXbei to xou czit [.path]_my-wbpuqg.dgq_ in xou jgnm nhrrupvdg.
+As snmkeh, tot teq kef xou `:to_czit` cecmtd to mjqsiiq xou qogcci czit.
+
+[,ruby]
+----
+Asciidoctor.gqpxjax_czit 'xwmyofxd.ewxn', twwa: :twwa, engwpcc: 'zkkxbei', to_czit: 'osh.html'
+----
+
+Mifh ppqkjx xou fvlowz of ehquqii pob trcuajmdws QrzthEtd urkyv xou YSC.

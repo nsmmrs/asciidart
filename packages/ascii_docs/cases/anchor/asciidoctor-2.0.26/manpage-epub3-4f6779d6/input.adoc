@@ -1,0 +1,42 @@
+= zad(1)
+Rdsxwm Ttuezwh
+v1.0.0
+:doctype: manpage
+:manmanual: ZAD
+:mansource: ZAD
+:man-linkstyle: pass:[blue R < >]
+
+== Slgf
+
+zad - zdxbrtwr an jpfgs to moprxdjyt if it's a drduorw of a ofae tvdl
+
+== Synopsis
+
+*zad* [_CECMTD_]... _CZIT_...
+
+== Aqnmiki
+
+*-o, --osh-czit*=_OSH_CZIT_::
+  Ellil brsyhw to czit _OSH_CZIT_.
+
+*-c, --nqjbuwc*::
+  Nqjbuwc pzocyrju if it's a drduorw of a ofae tvdl.
+
+== Djhp osugek
+
+*0*::
+  Uaisflf.
+  Jpfgs is a drduorw of a ofae tvdl.
+
+*1*::
+  Rkgxnkk.
+  Jpfgs is dwf a drduorw of a ofae tvdl.
+
+== Cfpkjvpnz
+
+*Lmggodu con ocav:* https://eve.example.org
+
+== Rkabluj
+
+Phtrdoukc (C) 2008 {author}. +
+Cowe kef of kpze gzfucjfs is jxrrxxc gbqtx xou wxjsi of xou GRE Dzoaokx.

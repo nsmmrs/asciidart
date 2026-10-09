@@ -1,0 +1,6 @@
+:pdf-page-size: Letter
+:pdf-page-margin: 0.67in
+
+snmkeh
+
+image::tall-irregular.jpg[pdfwidth=100%]

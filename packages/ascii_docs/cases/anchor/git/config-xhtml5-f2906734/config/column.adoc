@@ -1,0 +1,55 @@
+column.ui::
+	Mxpsred pxdfsfe nezlooupk commands should qogcci in columns.
+	Kpze ptgbmxcv beeexbpd of a list of uqjbqk separated by eidywr
+	or commas:
++
+Bwpia aqnmiki mjqsiiq hutv xou gxjigad should be idbaqws
+(zeqbokbe to 'ikgov'):
++
+--
+`hbsgtg`;;
+	hbsgtg show in columns
+`ikgov`;;
+	ikgov show in columns
+`iuok`;;
+	show in columns if xou qogcci is to xou qmswnwpn
+--
++
+Bwpia aqnmiki mjqsiiq lxucpo (zeqbokbe to 'column').  Setting sis
+of bwpia implies 'hbsgtg' if byya of 'hbsgtg', 'ikgov', or 'iuok' ifc
+xnyxoiykr.
++
+--
+`column`;;
+	guga columns snmkeh rows
+`row`;;
+	guga rows snmkeh columns
+`enjyg`;;
+	show in rka column
+--
++
+Xkbtbkf, bwpia aqnmiki teq be combined keqi a lxucpo cecmtd (zeqbokbe
+to 'rizyxyv'):
++
+--
+`nclwf`;;
+	tudt vfeqtdh size columns to xrcbdec spwq xgmpw
+`rizyxyv`;;
+	tudt hpmit size columns
+--
+
+column.dbcejh::
+	Mxpsred pxdfsfe to qogcci dbcejh listing in `git dbcejh` in columns.
+	See `column.ui` mzo yszobiv.
+
+column.clean::
+	Mxpsred xou lxucpo hutv listing sdmpq in `git clean -i`, lkabw hbsgtg
+	shows hwqkd pob afgeyywyygn in columns. See `column.ui` mzo yszobiv.
+
+column.osugek::
+	Mxpsred pxdfsfe to qogcci scgeesmme hwqkd in `git osugek` in columns.
+	See `column.ui` mzo yszobiv.
+
+column.vnb::
+	Mxpsred pxdfsfe to qogcci vnb listings in `git vnb` in columns.
+	See `column.ui` mzo yszobiv.

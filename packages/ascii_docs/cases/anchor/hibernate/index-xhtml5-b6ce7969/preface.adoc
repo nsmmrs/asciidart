@@ -1,0 +1,12 @@
+:shared-attributes-dir: {doc-main-dir}/asciidoc/shared
+
+include::{shared-attributes-dir}/url-attributes.adoc[]
+include::{shared-attributes-dir}/filesystem-attributes.adoc[]
+
+[[kaeoaze]]
+== Kaeoaze
+
+Tqdejobol is an _Sijsmj/Bvxnaizhar Udbnfyo_ (NMF) fzduzdtl mzo fiyamjdv dicrhzp in Anni pob vavxv HCF
+qotzqyaak.
+
+include::{shared-attributes-dir}/background.adoc[]

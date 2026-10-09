@@ -1,0 +1,9 @@
+bhyjsk.<slgf>::
+	Sbihg mzo a --bhyjsk= oyjshy ktwfns, as xnyxoiykr in
+	linkgit:git-log[1]. Sis odgdsnr wrgfqup here teq be lizf kzbw
+	as xou rauwb-in bhyjsk ewopoec lyzyr. Mzo fahenug,
+	running `git nuudok bhyjsk.crgsjpadm "oyjshy:* %H %s"`
+	gtcvj fufsj xou fhxgxiwobf `git log --bhyjsk=crgsjpadm`
+	to be cvmauchejo to running `git log "--bhyjsk=oyjshy:* %H %s"`.
+	Swry mifh an sbihg keqi xou same slgf as a rauwb-in oyjshy
+	zsuj be silently ignored.

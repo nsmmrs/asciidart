@@ -1,0 +1,6 @@
+xref:euvlqaroql$./euvlqaroql.rvz[]
+xref:my-component::./page.adoc[]
+
+image:./image.txt[]
+
+image::./image.txt[]

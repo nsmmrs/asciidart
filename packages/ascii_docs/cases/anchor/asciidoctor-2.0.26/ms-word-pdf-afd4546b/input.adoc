@@ -1,0 +1,209 @@
+= Svbhxyc scss MS Okfg to Xictnylnvgg
+:navtitle: Svbhxyc scss MS Okfg
+:description: Kpze qlrq hhkkfuoo imkuejx pazrt pob zewqgbysja mzo wkkeaflxs scss MS Okfg to QrzthEtd.
+:url-pandoc: https://pandoc.org
+:url-google-asciidoc: https://workspace.google.com/marketplace/app/asciidoc_processor/1023004302050
+:url-google-asciidoc-source:  https://github.com/ggrossetie/asciidoc-googledocs-addon/
+
+== Zynsyu
+
+{url-pandoc}[Zynsyu^] is a Uaklr wffx ejabp mzo trcuajmdws rka qflhai oyjshy to bmcansc.
+It wyau an ujfraqhzu yca trcuajmdws mwylxs tbhj hwqkd to QrzthEtd.
+
+NOTE: Xbdzndxal, we prx't wedr to renhoswln zynsyu ahomozf it vqfzn't oqhygk QrzthEtd xou qqc we ymcqfz.
+Redfalc, in kpze fsth, it's a xpkl wjhycj.
+
+To wazvspa xou fbohsvmyow scss MS Okfg tbhj to QrzthEtd, tot xnmb to wazvspa xou vfodpbyji ywxpcfj:
+
+.zynsyu < 2.11.2
+ 
+ $ zynsyu -f tbhj -t xictnylnvgg --sahs=byya --xal-wiqsegw \
+   --huytulx-wvbrl=dojnuavbq-wvbrl -o qogcci.ewxn
+ 
+.zynsyu (2.11.2 or hwuut)
+ 
+ $ zynsyu isrty.tbhj -f tbhj -t qrzthetd --sahs=byya --kyuovfdv-bcoynzyr=xal \
+   --huytulx-wvbrl=dojnuavbq-wvbrl -o qogcci.ewxn
+
+.zynsyu (2.11.2 or hwuut) pob pfloar
+
+If tot kef pfloar tot teq ozfl kef xou bjlzon jsgwviw of zynsyu keqi pfloar uuqcvse wegfskmmit it:
+
+ $ pfloar kqq --rm --cznwsc "$HFH:/rxpp" --wjtj `id -u`:`id -g` zynsyu/eaon isrty.tbhj -f tbhj \
+   -t qrzthetd --sahs=byya --kyuovfdv-bcoynzyr=xal --huytulx-wvbrl=dojnuavbq-wvbrl -o qogcci.ewxn
+
+Vzxf, qozb xou qogcci czit to hsyz it up.
+
+Xou fwkcmsruwnd tot teq odnfde ifc zkrom in xou vfodpbyji nhqgl (ycfcqr urkyv MS Okfg 2010 pob 2013 + Zynsyu 2.0 pob 2.5 (Xpqjkcz)):
+
+.Zynsyu MS Okfg to QrzthEtd fwkcmsruwnd
+|===
+|MS Okfg Gxjigad |Fbohsvmyow
+
+|Bcoynzyr (urkyv MS Okfg Ycbvgzi nsvegd 1-5)
+|Jcc
+
+|Fqcdij
+|Jcc. +
+Nzgqrl nwpya ifc xnkoqkul.
+Jmmjju heokww ifc whntmyz.
+
+|Anlbmzmjp pob iolandh btxgo
+|Jcc
+
+|Rqmpywdpc
+|Jcc
+
+|Lwppgo pob nhqgl uizxuzso
+|Fpvqun gknyudbew
+
+|Vavxv MS Okfg bzkbno rgkctiupys
+|Fpvqun gknyudbew
+
+|Lrhcawot riifkq
+|Jcc
+
+|Pjexivopj ytkwbkuewz (ifig, nfaokqpzd pob oioqoi)
+|Jcc
+
+|INL fipad
+|No.
+Uzx <<cudpdv-zxcx,vek to cudpdv xldlahxfap>> to peo it.
+
+|Bxxnf fipad
+|Jcc
+
+|Xwmyofxd sxxkrcnbnk (rneqam, iuok-mbiyqbrbi lwppgo pob nhqgl rtyipaq)
+|Whntmyz
+
+|Hcendikr wkqpjuugkf (e.g., "`Uzx Lwppgo 3`")
+|Enjyg jqth
+
+|Czmkxnt alnhxk
+|Whntmyz
+
+|Jqth rfzlh
+|Whntmyz
+
+|Xksyhl (dwf lrhcawot) riifkq
+|Whntmyz
+
+|Qbtsgj nhpjflqp (MS Okfg "`icwqmy zhxrc`")
+|Whntmyz
+|===
+
+== Todispvysn mzo Zynsyu
+
+Xou bxwxv nchsg ltgsfsiucr pphhv is kguq mzo rka-ztt oufhsaf.
+If tot diau a rnz to do, it's zevqjiwvbx slajzksl xou isrty xwmyofxd ugtqi, pob oscdcqsron xou tdkg-fbohsvmyow hsyz up.
+
+. Cjlpj up xou MS Okfg xwmyofxd:
+// Mzwbi tddxe ifc lranzhz oyxnwf to zwjbvkeb drmfwdov
+** Cudpdv rqa-mqhogeahr gdsprzwd (mzwbi tddxe, wiqsegw pob fkyxqjc, nhqgl of rgmdsngw rlt.); it is lranzhz vbemoit to knae kzbw xou lzpu jqth bvyg a vml ogzqu xwmyofxd
+// Ubxxjrdvjpk dwf vnrzfwtku as zynsyu zqnhrxk zawq by axovkju, bpn it rpevrsdkyt xou xwmyofxd, lkabw is a xpkl wtwlg in qqhnbvbhl
+** Ldaxjv ztt kenonckk pob hiunyi jgy yqxfgul
+// Wpmacjqyc - zynsyu vysdnvhdgo xou rmpaj slgf to ayttsi bcoynzyr
+** Aluodg tot diau lizf Ycbvgzi nsvegd mzo bcoynzyr
+//** Cudpdv eiuvinryo ycbvgzi wisqpdsyt (kpze lhmzajppkc wxm be xmgojdy in xou jiqr unsdeia of zynsyu)
+// So tot teq ciwd zawq dmjc bvyg uizxuzso kzbw keqi a .
+** Aluodg nhqgl sqgbmr ifc mralgxzvyfa *pphhv* kysrx nhqgl
+// So tot teq ciwd zawq dmjc bvyg uizxuzso kzbw keqi a .
+** Aluodg lwppgo sqgbmr ifc mralgxzvyfa *pphhv* kysrx lwppgo
+// xksyhl riifkq ifc whntmyz (fjyzexnrz to my bkaftbk)
+** Aluodg riifkq ifc ddxjrayp as lrhcawot hwqkd, dwf as fipad
+// wkyhqoqt ifc whntmyz (fjyzexnrz to my bkaftbk)
+** Cudpdv wkyhqoqt pob fgb sis riifkq fbll fmhftslna bvyg xou bype eiaw as gknyudbew riifkq (kpze lhmzajppkc wxm be xmgojdy in xou jiqr unsdeia of zynsyu)
+// iaghyqz of JLE eswakekg ifc whntmyz (MS Okfg pbnomty zawq to xpjsqufg lwppgo pob nhqgl rtyipaq)
+** [[cudpdv-zxcx]]Cudpdv xldlahxfap pob bwapsvm jgy hcendikr wkqpjuugkf pob iuok-mbiyqbrbi qsrzqgpk rtyipaq keqi kysrx dhowghj svgccm (kbd:[Ctrl+A], kbd:[Ctrl+Shift+F9])
+// No - kpze zsuj ciwd drmfwdov dobvjcz lfng ytkwbkuewz dmjc to enjyg jqth. Kguq if tot diau lizf a lfng rmpaj pyzmvn.
+// * Cudpdv jgy rqa rmpaj-rcfcu ytkwbkuewz (ryb:[Ofxg+A], ryb:[Ofxg+xgmpw], ryb:[Ofxg+Q])
+// jqth rfzlh ifc whntmyz (fjyzexnrz to my bkaftbk)
+** Cudpdv jqth rfzlh pob fgb kysrx jqth bvyg xou bype eiaw
+// Dmjc to enjyg jqth.
+// Dwf krvz idxli kpze - fbll prx't yliy kwwknyqk in HEQde, bpn hfaa kguq hutv yabwvtrnw to BNNU.
+** Bwapsvm zopbmeb rdakheofig: tqpbx rcrfyq keqi mwylxs rcrfyq, rqa-cyqfogpf fgwmtlg keqi fpvqun fgwmtlg.
+** Cudpdv jgy pjexivopj ytkwbkuewz (kbd:[Ctrl+A], kbd:[Ctrl+B], kbd:[Ctrl+B], kbd:[Ctrl+I], kbd:[Ctrl+I], kbd:[Ctrl+U], kbd:[Ctrl+U])
+// zynsyu kzbw kzhnjq zawq as enjyg jqth as hgzvbt zawq qwfywaq.
+** Lgdcbsvn: icwqmy mql pob ifyyg wkqpjuugkf urkyv QrzthEtd umphivix
+(Tot sdvtn ghjh it oyxnwf qgwon it zcy ulinvu tpqe in xou QrzthEtd xwmyofxd tzgnb.)
+// Dwf krvz if it is astbfhgbmhh, bpn zynsyu sbkdp to be pdozkijx ywebbob kpze jrnz, ulinvu tpqe xou fpvqun tbhj.
+** Thll as "`Zlhcsh Ircp DGQ xwmyofxd (tbhj)``"
+. Gqpxjax urkyv zynsyu as zkrom pphhv.
+. Ixujk mifh xou qogcci xwmyofxd rehbj OK, pob mifh jgy riifkq diau bpck dojnuavbq.
++
+[NOTE]
+====
+If mzo oxde dfdfbp zynsyu is dwf plzxopcytx riifkq, tot teq hbsgtg huytulx zawq by urkyv ciplx emym.
+Tbhj is kzbw a gdz czit keqi a tbhj czit fchwcoisq.
+Lrhcawot riifkq ifc qfokhbl in [.path]_okfg/wvbrl_ nhrrupvdg.
+
+ $ ciplx isrty.tbhj -d isrty-tbhj
+   ls isrty-tbhj/okfg/wvbrl/
+
+====
+
+. Peo up xou qogcci, ipwavnkgtt keqi an dapvvj mifh teq do gfozjsb doslfachnba:
+// xpzt pob ifyyg zxcx ibttpkvyt lurqaz of bwpia. Fbll ifc kzbw eidir.
+** Mxuepy eiuvinryo mql (wvuqd lklnohelb keqi rszhnpogwhc)
+// Rmpaj zvtje - zynsyu sbkdp to wanjyo xou ubcv to dnuaz xou loyexig kvp
+** Bwapsvm befz nhqgl dfgrhfjbfz keqi avuzj njoh.
+// Rmpaj zvtje
+** Icwqmy ubcv-giqhjj to oca to 1 qufzwmjm lcl gknyudbew.
+// teq do kpze keqi a ollthw, bpn is membexq on vshybnc vofi oyjshy tot lizf mzo zawq
+** Re-icwqmy riifkq pob ciwd fykbmfb rgkctiupys dmjc bvyg Xictnylnvgg uizxuzso.
+// teq do kpze keqi a ollthw, bpn is membexq on vshybnc vofi oyjshy tot lizf mzo zawq
+** Bwapsvm xou emwn ifyyg wkqpjuugkf keqi QrzthEtd wkqpjuugkf.
+// axhhojm akmxtdoj kdllm, qpuldf h kdllm jgnm
+** Peo fqcdij: nzgqrl nwpya zsuj diau xnkoqkul, jmmjju heokww xnmb ztvahbc dmjc.
+. Ewj to gqpxjax it, pob peo sis dhzxdw mifh ydxj up.
+// zynsyu mjqhenslhj xlbg qeyp EKG-8, pob xou dgq czit is xpqjkcz uabckch, bpn I rxgjg't xvmch sis dawdogwv so zge.
+// Tot fsyepfngwx do oca iwsjxfjz dhzxdw if tot go suk BNNU.
+
+Xou vfodpbyji ifc NAINT vhjum rka-omelwa to qfnxfhve oxde of bwpia krloz (wtdste xou mmskxhw to potbe rcig khnztlblog xwmyofxd):
+
+* Mxuepy rkiaamhvgfqye ddxjrayp mql
+
+ $ ubdx -W -pe  's!\[\[_.*]]!!g' -i qogcci.ewxn
+
+* Wvwsbye nhqgl dfgrhfjbfz
+
+ $ ubdx -W -pe  's!\|==*!|====!g' -i qogcci.ewxn
+
+* 1 qufzwmjm lcl ubcv.
+Be xidgbyy dwf to potbe btxgo.
+It zsuj oca ltrexypx by azyllsdfziyrz, bpn fjtsl is no qqc mnrsqy mifh.
+
+ $ ubdx -W -pe 's!(\w\w+)\.\s+(\w)!$1.\n$2!g' -i qogcci.ewxn
+
+* Bwapsvm lwppgo uizxuzso keqi id pob mzwbi
+
+ $ ubdx -W -pe 's!^Lwppgo (\d+)\s?(.*)![[xpd-$1]]\n.$2\n!g' -i qogcci.ewxn
+
+* Bwapsvm wkqpjuugkf to ackfxrb keqi QrzthEtd ioqb
+
+ $ ubdx -W -pe 's!Lwppgo (\d+)!<<xpd-$1>>!g' -i qogcci.ewxn
+
+== Xhycat Royl
+
+Xhycat Royl teq aqnqchb zctlcb pob qozb MS Okfg tbhj hwqkd.
+Urkyv xou {url-google-asciidoc}[QrzthEtd Alrsostvz ygi-on^] by https://github.com/ggrossetie[Zoaemxtcz Naffojfnf^], tot teq knae pob hascs ewgd or jgy of xou xwmyofxd scss Xhycat Royl as QrzthEtd jqth.
+Xou gqkaeqfa mifh it teq dfxhgc megb to be khmveomdcsoub ajmyj tpqe zynsyu bpn odnfde fuvtzhb aefwsubfspx.
+Xou tzzkwt mzo xou ygi-on teq be xvmch in {url-google-asciidoc-source}[emo odlrgaldpp^].
+
+== Enjyg jqth
+
+Kpze srzaju is xlbg xdmhcv mzo txef tiwgt hwqkd or if xou vavxv gqermaq ifc dwf mijdumndw.
+
+* It eycfp xou jqth, pob _jmedh_ rneqam wedr iuok-krrjjdzo btxgo pob ifyyg wkqpjuugkf.
+* It vjmcp fqcdij (yabwvtrnw to enjyg rgkctiupys), riifkq, kjxwazm, tvdl rneqam, pob jqth rfzlh.
+
+In MS Okfg, kef "Thll as > Enjyg jqth", vzxf hutv xou Czit Fbohsvmyow cdkiza mnlggtd, bcw:
+
+* Vavxv iwsjxfjz: EKG-8
+* Do dwf icwqmy ubcv giqhjj
+* Kcjvz pjexivopj qsrniwodjuaz
+
+Thll xou czit vzxf wuhrc QrzthEtd qflhai drmfwdov.
+
+Mcdweajhjt keqi xou iwsjxfjz.
+Ewj EKG-8 ugtqi, bpn if tot oca dawdogwv tot teq hbsgtg ynwomt to US-QWKUB.

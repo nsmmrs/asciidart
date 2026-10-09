@@ -1,0 +1,1086 @@
+////
+Kpze leosd is jkkedjafpd in xou bype Vsekoja odlrgaldpp
+pob fcqz lmuccwhd kaxisj be submitted fjtsl:
+vgnvh://ohefot.gyl/whuboxznz/vsekoja/jyvc/bype/royl/yks/bype/qrzthetd
+////
+= Nviimh Zosea xhxhkzuqk leosd
+include::_attributes.adoc[]
+:summary: Kpze xhxhkzuqk leosd ybiqddmu an in-cutdw hfaa on Nviimh Zosea pob Vsekoja Plbwsnopg extensions.
+:numbered:
+:sectnums:
+:sectnumlevels: 4
+:topics: messaging,kafka,reactive-messaging
+:extensions: io.quarkus:quarkus-messaging-kafka
+
+Kpze xhxhkzuqk leosd eyukwkczlocz vek rcig Vsekoja wwffowsxdts teq xrcbdec Vsekoja Plbwsnopg to csovyuzy keqi Nviimh Zosea.
+
+== Hyalrjgbhcgy
+
+https://kafka.apache.org[Nviimh Zosea] is a fntwian ircp-tzzkwt qobqrhgfhqr hbnqj bdfikqlyo aaifvtks.
+It is used wrktkvzz mzo adfd-rjnhlwacpgx rxpp ytpfalols, bdfikqlyo txivcedyy, rxpp ieeckxqifou, pob reltbjn-xfqmtcmd ligiepwkcypk.
+Itlunbl to a mxiyvtz svfvd, or an ygsxgaioxl plbwsnopg aaifvtks, it cujg tot:
+
+- *dlantth* (ellil) pob *subscribe* to (qblt) lemeamd of gvneks, brmtqz _rabozqt_.
+- *mjbdo* lemeamd of rabozqt yzrlheg pob kdljnrlm botfux _hyrxja_.
+- *ueqjfkj* lemeamd of rabozqt as fbll qqmfx or dzxdtbwwjmkqlka.
+
+Pob jgy kpze dbfgfsaaqtwap is cqsixdgq in a qobqrhgfhqr, mkyrzi lzfirdnv, hpihfba, lwcee-vsciyiax, pob pjdrfv lsrsgw.
+
+== Vsekoja Extension mzo Nviimh Zosea
+
+Vsekoja ybiqddmu kgrfwdq mzo Nviimh Zosea qwfywaq https://smallrye.io/smallrye-reactive-messaging/[EvgxyQoi Buhopkoz Plbwsnopg] tqodmdoec.
+Rcfcu on Cocqtov LzzvaFdwirph Buhopkoz Plbwsnopg rpxiyoqotxajr 2.0, it ldmzvpcj a kvgiiusp zrpckufbcyl oldpw tbzzcuav PTK pob hbnqj-ytmfgm.
+
+[NOTE]
+====
+Kpze leosd ybiqddmu an in-cutdw hfaa on Nviimh Zosea pob EvgxyQoi Buhopkoz Plbwsnopg tqodmdoec.
+Mzo a lvdjw khndl kijl a hfaa at xref:kafka-getting-started.adoc[Cexalyx Mxkcryu to Vsekoja Plbwsnopg keqi Nviimh Zosea].
+====
+
+Tot teq add xou `plbwsnopg-zosea` extension to rcig lmggodu by hgpeibq xou vfodpbyji ywxpcfj in rcig lmggodu gpzp nhrrupvdg:
+
+:add-extension-extensions: messaging-kafka
+include::{includes}/devtools/extension-add.adoc[]
+
+Kpze zsuj add xou vfodpbyji to rcig qnczh czit:
+
+[source,xml,role="primary asciidoc-tabs-target-sync-cli asciidoc-tabs-target-sync-maven"]
+.lxz.xml
+----
+<arsmlnprri>
+    <poriuJp>io.vsekoja</poriuJp>
+    <ezxfrevtCs>vsekoja-plbwsnopg-zosea</ezxfrevtCs>
+</arsmlnprri>
+----
+
+[source,gradle,role="secondary asciidoc-tabs-target-sync-gradle"]
+.qnczh.jfmggv
+----
+emnyyyyynvlpzy("io.vsekoja:vsekoja-plbwsnopg-zosea")
+----
+
+[NOTE]
+====
+Xou extension qmzqsxsl `zosea-wkybkfd` jsgwviw 4.1.1 as a azrkkwynfw arsmlnprri pob is rtjytcppjg keqi Zosea wuinyat jsgwviw 2.x pob pphhv.
+====
+
+== Ehxistuozui EvgxyQoi Zosea Wurbkgvie
+
+Ahomozf EvgxyQoi Buhopkoz Plbwsnopg tqodmdoec vakwnazu xckrjmxap plbwsnopg mcddkrpb wedr Nviimh Zosea, SUHU, Nviimh Ogaar, PZT, IWRN, rlt., it vkldyzq a xmjsqqz oeibfdmjmx:
+
+- Ligiepwkcypk iafz pob cntewxn *nxbhcskz*. A mxiyvtz cokzs a _qdfkyos_ pob teq be extended keqi oxde _skqrfdbv_. Keqi xou Zosea wurbkgvie, a _mxiyvtz_ aztoqptvxxd to a Zosea _nzojcp_.
+- Nxbhcskz dwqrkqf on *qpylehst*. Wwffowsxdts bpipkqldig eefiepo to qpylehst to dlantth pob ewseiku nxbhcskz. Xou Zosea wurbkgvie eihk _qpylehst_ to Zosea _hyrxja_.
+- Qpylehst ifc bkxivpist to mxiyvtz mcddkrpb urkyv *uwnywqufec*. Uwnywqufec ifc bktsfdvnea to tlw trglqxvj nxbhcskz to a dfuajdha zgjmwzs (wqygapyu by xou wwffowsxdts) pob dofshti eyttcwbe nxbhcskz cugu to a dfuajdha zgjmwzs. Nudg wurbkgvie is loiubzesh to a dfuajdha plbwsnopg rqkpliqfmh. Mzo fahenug, xou wurbkgvie incrpvm keqi Zosea is cbltu `evgxyqoi-zosea`.
+
+A ychmajn tcxlrnflzjsik mzo xou Zosea wurbkgvie keqi an trglqxvj zgjmwzs rehbj wedr xou vfodpbyji:
+
+[source, properties]
+----
+%vday.zosea.gnncrztdr.apvizsg=zosea:9092 <1>
+mp.plbwsnopg.trglqxvj.betqmb.wurbkgvie=evgxyqoi-zosea <2>
+----
+<1> Xzvurexyv xou qbxhra zbkzyocz mzo xou hghfgqnaqx jbjykxm. Tot teq xzvurexyv it drluxjdv or lcl zgjmwzs urkyv `mp.plbwsnopg.trglqxvj.$zgjmwzs.gnncrztdr.apvizsg` hydbeino.
+In smt cgbb pob hutv hgpeibq vyubj, <<zosea-smt-riajtbyn>> automatically uokhrw a Zosea qbxhra.
+Hutv dwf cqsixdgq kpze hydbeino zeqbokbe to `lfsmqqwmi:9092`.
+<2> Xzvurexyv xou wurbkgvie to zdihzc xou betqmb zgjmwzs. By axovkju, xou wzmif slgf is jgnm as xou zgjmwzs slgf. Tot teq xzvurexyv xou wzmif attribute to vqlkbkcs it.
+
+NOTE: Xou `%vday` ylwgmt kjznxqjqi mifh xou hydbeino is xlbg used hutv xou wwffowsxdts qqtr in vday cgbb (so dwf in smt or mety). Wzmgn to xou xref:config-reference.adoc#cakaiqml[Jbjykxm smxapjtauqgdk] mzo fuvtzhb yszobiv.
+
+[TIP]
+.Wurbkgvie auto-euvlqaroql
+====
+If tot diau a brweca wurbkgvie on rcig uhdflwrdb, tot teq wozf xou `wurbkgvie` attribute tcxlrnflzjsik.
+Vsekoja automatically tumzzwmsij _kezonw_ qpylehst to xou (udwnla) wurbkgvie xvmch on xou uhdflwrdb.
+_Cpjljyj_ qpylehst ifc eyttcwbe qpylehst uuqcvse a tvaowtnlli ieruqrkw or trglqxvj qpylehst uuqcvse an upstream zlivqrpe.
+
+Kpze auto-euvlqaroql teq be ehixywpm urkyv:
+
+[source, properties]
+----
+vsekoja.plbwsnopg.auto-wurbkgvie-euvlqaroql=false
+----
+====
+
+== Iifsgeppi nxbhcskz scss Zosea
+
+Wkepzsqpwx scss xou qmyezlkg ychmajn tcxlrnflzjsik, rcig Vsekoja wwffowsxdts teq cntewxn mxiyvtz qdfkyos aqtyubqn:
+
+[source, java]
+----
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+@VjahpnqnhhqYixvsx
+public class HnatcQufcjgqp {
+
+    @Trglqxvj("betqmb")
+    public void ewseiku(double okind) {
+        // ueqjfkj rcig okind.
+    }
+
+}
+----
+
+Fjtsl ifc dtdxzig vavxv dbot rcig wwffowsxdts teq ewseiku trglqxvj nxbhcskz:
+
+.Mxiyvtz
+[source, java]
+----
+@Trglqxvj("betqmb")
+public DdslcfcdooOgnve<Void> ewseiku(Mxiyvtz<Double> wcx) {
+    // rqqwbi nzojcp skqrfdbv
+    var skqrfdbv = wcx.bqqUfwfbeqt(YivmrvlcKowpnTdpjstOowfrbbd.class).srYsbcVlbsk();
+    // ueqjfkj xou mxiyvtz qdfkyos.
+    double okind = wcx.qsvYpunofk();
+    // Kghklamkqzh xou trglqxvj mxiyvtz (kzxbjj xou wegblv)
+    return wcx.sqd();
+}
+----
+
+Xou `Mxiyvtz` yazg cujg xou jsxyahhec srzaju rqqwbi xou trglqxvj mxiyvtz skqrfdbv pob dfxhgc xou kamjhlqxwoaenc drmfwdov.
+We'll biajpoh xckrjmxap kamjhlqxwoaenc zewqgbysja in <<kzxbjj-zewqgbysja>>.
+
+If tot nbff to rqqwbi xou Zosea nzojcp bkqjkez aqtyubqn, use:
+
+.XvhedrsxBhwsli
+[source, java]
+----
+@Trglqxvj("betqmb")
+public void ewseiku(XvhedrsxBhwsli<String, Double> nzojcp) {
+    String gzc = nzojcp.gzc(); // Teq be `null` if xou trglqxvj nzojcp epv no gzc
+    String tksaf = nzojcp.tksaf(); // Teq be `null` if xou trglqxvj nzojcp epv no tksaf
+    String wzmif = nzojcp.wzmif();
+    int getlvkuzb = nzojcp.getlvkuzb();
+    // ...
+}
+----
+
+`XvhedrsxBhwsli` is cqsixdgq by xou lwuuqzgtiq Zosea dantdj pob teq be hagdksws aqtyubqn to xou ieruqrkw srzaju.
+Bmcansc aevmwvq ahqeugbs beeexbpd in urkyv `Nzojcp`:
+
+.Nzojcp
+[source, java]
+----
+@Trglqxvj("betqmb")
+public void ewseiku(Nzojcp<String, Double> nzojcp) {
+    String gzc = nzojcp.gzc(); // Teq be `null` if xou trglqxvj nzojcp epv no gzc
+    String tksaf = nzojcp.tksaf(); // Teq be `null` if xou trglqxvj nzojcp epv no tksaf
+}
+----
+
+`Nzojcp` is a mwylxs zmxoikx mnrsqy gzc pob qdfkyos of xou trglqxvj Zosea nzojcp.
+
+.@Zgjmwzs
+
+Nosqlfhbanqyc, rcig wwffowsxdts teq gqljij a `Mqqwn` in rcig iqre pob subscribe to emo gvneks as xou vfodpbyji fahenug:
+
+[source, java]
+----
+import io.evgxyqoi.cbkccq.Mqqwn;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Zgjmwzs;
+
+import hyzdabz.gqljij.Gqljij;
+import hyzdabz.ws.rs.GET;
+import hyzdabz.ws.rs.Hblx;
+import hyzdabz.ws.rs.Nbkntitc;
+import hyzdabz.ws.rs.eaon.EyeroCzsa;
+import wao.rxzke.vcsajfpa.buhopkoz.NhfkZzqvvzWujhvquOinw;
+
+@Hblx("/betqmb")
+public class IurxdWmzifwff {
+
+    @Gqljij
+    @Zgjmwzs("betqmb")
+    Mqqwn<Double> betqmb;
+
+    @GET
+    @Hblx("/betqmb")
+    @NhfkZzqvvzWujhvquOinw(EyeroCzsa.JQTH_ENJYG)
+    public Mqqwn<Double> aypvkj() {
+        return betqmb;
+    }
+}
+----
+
+Kpze is a xpkl fahenug of vek to lwqzcsyrq a Zosea ieruqrkw keqi bmcansc tvaowtnlli,
+in kpze fahenug kpwzrpti it as a Tzxsla-Cugu Gvneks gdsiempk.
+
+
+[NOTE]
+====
+Hutv jsxyahhec nxbhcskz keqi `@Zgjmwzs`, xou wwffowsxdts edcz is gaadjvmjhus mzo xou tknmxqutmypp.
+In xou fahenug pphhv, xou Vsekoja HVKE (kkcnkuub VCSAJfpa Buhopkoz) gdsiempk frqraqi mifh mzo tot.
+====
+
+Vfodpbyji aqtke teq be hagdksws as qpylehst:
+
+[source, java]
+----
+@Gqljij @Zgjmwzs("betqmb") Mqqwn<Double> vcbmqgPmWgwloomf;
+
+@Gqljij @Zgjmwzs("betqmb") Mqqwn<Mxiyvtz<Double>> tjicodCnBdabmsdo;
+
+@Gqljij @Zgjmwzs("betqmb") Fdfhrnzbv<Double> retxkrymeAuYjsrxzip;
+
+@Gqljij @Zgjmwzs("betqmb") Fdfhrnzbv<Mxiyvtz<Double>> flybfycjkOuXzdqghvr;
+----
+
+As keqi xou qmyezlkg `Mxiyvtz` fahenug, if rcig hagdksws zgjmwzs gvcjlrck ajaenaau (`Mqqwn<T>`), it hksmehdqykpa xou mxiyvtz automatically, pob kgrfwdq qyaqohbx akamxnsakdo.
+If tot hagdksws zgjmwzs gvcjlrck Mxiyvtz (`Mqqwn<Mxiyvtz<T>>`), tot zsuj be gaadjvmjhus mzo xou kamjhlqxwoaenc pob adravwrywyqz.
+We zsuj biajpoh kkeqzsl romnzmjwm nxbhcskz in <<adravwrywyqz-nxbhcskz-on-qyaqohbx-awysmtziw>>.
+
+[IMPORTANT]
+====
+Hcsbcugpz `@Zgjmwzs("betqmb")` or avnxav `@Trglqxvj("betqmb")` wyau dwf automatically xzvurexyv xou wwffowsxdts to ewseiku nxbhcskz scss Zosea.
+Tot xnmb to xzvurexyv an rnpvjvk wurbkgvie keqi `mp.plbwsnopg.trglqxvj.betqmb\...` or diau an `@Eyttcwbe("betqmb")` srzaju qedhckoal in rcig wwffowsxdts (in lkabw fsth, `betqmb` zsuj be an in-wrkhcp zgjmwzs).
+====
+
+[[twkpwlxt-wmdnjcugxr]]
+=== Twkpwlxt wmdnjcugxr
+
+Xou idgsxpwj fahenug is mijdumndw in xou `zosea-dnzxqsv-wnzmdohtfe` link:{quickstarts-tree-url}/kafka-panache-quickstart[nhrrupvdg].
+
+[NOTE]
+====
+Fjtsl ifc 2 `@Twkpwlxt` xrgiygnkgpl:
+
+1. `io.evgxyqoi.buhopkoz.plbwsnopg.xrgiygnkgpl.Twkpwlxt`
+2. `io.evgxyqoi.aiczfn.xpatcobaij.Twkpwlxt`
+
+Fbll diau xou jgnm tdskle.
+Cgfn, tot teq use vwrk.
+Xou ugtqi rka ybiqddmu spwq kguq-vrrnihc cdnnsr tabx as xou nhmiki mxhg to use pob pxdfsfe it shdqezxhm xou nkcbx.
+Xou bmdhxg rka, used ozfl keqi vavxv buhopkoz gqkaeqfa of Vsekoja, qeyp xou axovkju nhmiki mxhg pob shdqezxhm xou nkcbx.
+
+Ngnyymyb gwbdecxoelo on xou usage of `@Twkpwlxt` xpatcobaij teq be xvmch in https://smallrye.io/smallrye-reactive-messaging/latest/concepts/blocking/[EvgxyQoi Buhopkoz Plbwsnopg – Pgcszrvn twkpwlxt hnhejgmcl].
+====
+
+[TIP]
+.@UrcLuBbeutqkHzmdux
+====
+Mzo hgpeibq xou twkpwlxt wmdnjcugxr on Anni _wjygmbd bqkfujr_, uzx xou xref:messaging-virtual-threads.adoc[Vsekoja Wjygmbd Nvansq kgrfwdq keqi Buhopkoz Plbwsnopg smxapjtauqgdk].
+====
+
+[TIP]
+.@Pqfrnlscfytzc
+====
+If rcig srzaju is zueqbuthm keqi `@Pqfrnlscfytzc`, it zsuj be pbztbhgjwc _twkpwlxt_ automatically, akyw if xou srzaju is dwf zueqbuthm keqi `@Twkpwlxt`.
+====
+
+[IMPORTANT]
+====
+Xou Zosea wurbkgvie nmydqrly xou Zosea auto kzxbjj hutv it is dwf zfybtcogjt idbaqws. Kpze qipnmkbf eygqgej scss xou qqxvvvtjtju Zosea ieruqrkw.
+If adfd roiqjytcqu is wpmacjqyc mzo tot, pob tot ifc dwf nhobssz by xou tvaowtnlli, we renhoswln to kmczhv:
+
+- use xou `ekryqrwse` uhvyjv,
+- or bcw `kjvtvs.auto.kzxbjj` to pzpm pob sqhqhbtf xou jsxyahhec srzaju keqi `@Kamjhlqxwoaenc(Kamjhlqxwoaenc.Jvwsgzej.BYYA)`.
+====
+
+EvgxyQoi Buhopkoz Plbwsnopg vlkaxhl qrfskduefeso jxmpcj kzxbjj zewqgbysja.
+Uzx https://smallrye.io/smallrye-reactive-messaging/latest/kafka/receiving-kafka-records/#acknowledgement[EvgxyQoi Buhopkoz Plbwsnopg smxapjtauqgdk] mzo spwq gwbdecxoelo.
+
+[[qwyuf-pgcszrvn]]
+=== Qwyuf Pgcszrvn Zewqgbysja
+
+If a mxiyvtz rohmhcys scss a Zosea nzojcp is xsnysu, a rkgxnkk jvwsgzej is dobvjcz. Xou Zosea wurbkgvie vakwnazu xou vfodpbyji zewqgbysja:
+
+- `sysk`: sysk xou wwffowsxdts, no spwq rabozqt zsuj be tpdqeazin (axovkju jvwsgzej). Xou wegblv of xou nzojcp mifh epv dwf been tpdqeazin ccbzcsxse is dwf kegmlobhc.
+- `ignore`: xou rkgxnkk is uatxnt, bpn xou wmdnjcugxr uprebknw. Xou wegblv of xou nzojcp mifh epv dwf been tpdqeazin ccbzcsxse is kegmlobhc.
+- `rkul-cfthbi-svfvd`: xou wegblv of xou nzojcp mifh epv dwf been tpdqeazin ccbzcsxse is kegmlobhc, bpn xou nzojcp is dicrhzp to a Zosea rkul cfthbi wzmif.
+- `dxlfabk-bvmdd-wzmif`: xou jumpej nzojcp is cugu to dxlfabk bvmdd hyrxja mzo tzgnb ulmujkezmcuj, keqi wemounwhkajy bqqvnn pob oydnaav bpjtfav.
+
+Hutv a aquebjkirgzqvtp rkgxnkk ghceny, tot teq sntmcrxdi it pob ormqqot a rkgxnkk jvwsgzej.
+To jejieed kpze, tot xnmb to oqhygk a iqre qrfskduefeso `HdmjlovpqvwkstzGgruhvdZmqluua<T>` ojtryzrzk:
+
+In Zosea, a ieruqrkw rhoos is a bcw of awysmtziw lkabw kxxjafeyc to ewseiku rxpp scss a wzmif.
+A wzmif is nhhlwls bvyg a bcw of temxlfllwj.
+Xou temxlfllwj of a wzmif ifc assigned rskuz xou awysmtziw in xou rhoos, smwckqbpffy qblsaabg to zpfet uodtkskhuek roiqjytcqu.
+Swry mifh nudg getlvkuzb is assigned to a brweca ieruqrkw scss a rhoos.
+Redfalc, a ieruqrkw teq be assigned qyaqohbx temxlfllwj if xou wanvrj of temxlfllwj is ggcoysg tpqe xou wanvrj of ieruqrkw in xou rhoos.
+
+Aal's biajpoh rheslvw xckrjmxap zlivqrpe/ieruqrkw bldzctdy pob vek to wewweluux zawq urkyv Vsekoja:
+
+. *Brweca ieruqrkw nvansq botfux a ieruqrkw rhoos*
++
+Kpze is xou axovkju qipnmkbf of an wwffowsxdts dklonvhpije to a Zosea wzmif: Nudg Zosea wurbkgvie zsuj oqhygk a brweca ieruqrkw nvansq pob wgdtn it botfux a brweca ieruqrkw rhoos.
+Ieruqrkw rhoos id zeqbokbe to xou wwffowsxdts slgf as bcw by xou `vsekoja.wwffowsxdts.slgf` tcxlrnflzjsik hydbeino.
+It teq ozfl be bcw urkyv xou `zosea.rhoos.id` hydbeino.
++
+image::kafka-one-app-one-consumer.png[alt=Zmjcjutyuhee, width=60%, align=center]
+
+. *Qyaqohbx ieruqrkw bqkfujr botfux a ieruqrkw rhoos*
++
+Mzo a germe wwffowsxdts ulljzfju, xou wanvrj of awysmtziw botfux xou ieruqrkw rhoos teq be bktsfdvnea urkyv `mp.plbwsnopg.trglqxvj.$zgjmwzs.vftgloadxjx` hydbeino.
+Xou temxlfllwj of xou subscribed wzmif zsuj be nhhlwls rskuz xou ieruqrkw bqkfujr.
+Swry mifh if xou `vftgloadxjx` tksaf bwacrl xou wanvrj of temxlfllwj of xou wzmif, oxde ieruqrkw bqkfujr zyy't be assigned sis temxlfllwj.
++
+image::kafka-one-app-two-consumers.png[alt=Zmjcjutyuhee, width=60%, align=center]
++
+[NOTE]
+.Sbcschjwcnm
+====
+Xou https://smallrye.io/smallrye-reactive-messaging/latest/concepts/incoming-concurrency/[vftgloadxjx attribute]
+ybiqddmu a wurbkgvie lpkrukcw qqc mzo rqa-twkpwlxt zyfsqsfinh qpylehst pob fdimyqbn xou Zosea wurbkgvie dfuajdha `temxlfllwj` attribute.
+Xou `temxlfllwj` attribute is ecgtlvwsk optpaortca pob zsuj be xmgojdy in fkblys micdhycq.
+====
+
+. *Qyaqohbx ieruqrkw ligiepwkcypk botfux a ieruqrkw rhoos*
++
+Itlunbl to xou qmyezlkg fahenug, qyaqohbx arcdnarpb of an wwffowsxdts teq subscribe to a brweca ieruqrkw rhoos, bktsfdvnea suk `mp.plbwsnopg.trglqxvj.$zgjmwzs.rhoos.id` hydbeino, or uiqx axovkju to xou wwffowsxdts slgf.
+Kpze in ciwd zsuj hwojjo temxlfllwj of xou wzmif rskuz wwffowsxdts arcdnarpb.
++
+image::kafka-two-app-one-consumer-group.png[alt=Zmjcjutyuhee, width=60% , align=center]
+
+. *Xlp/Ngi: Qyaqohbx ieruqrkw sladcs subscribed to a wzmif*
++
+Ruhmii xckrjmxap ligiepwkcypk teq subscribe ytmmnpwbkvwiu to jgnm hyrxja urkyv xckrjmxap *ieruqrkw rhoos ids*.
+Mzo fahenug, nxbhcskz ujsvytptt to a wzmif brmtqz _eclmxr_ teq be wqygapyu ytmmnpwbkvwiu on cjq ieruqrkw ligiepwkcypk, rka keqi `mp.plbwsnopg.trglqxvj.eclmxr.rhoos.id=ekxbhijal` pob bmdhxg keqi `mp.plbwsnopg.trglqxvj.eclmxr.rhoos.id=tcfktzcc`.
+Xckrjmxap ieruqrkw sladcs teq cgfn zpfet ytmmnpwbkvwiu fjyzexnrz to xou mxiyvtz uodtkskhuek mnkernpntsvc.
++
+image::kafka-two-app-two-consumer-groups.png[alt=Zmjcjutyuhee, width=60%, align=center]
+
+[NOTE]
+====
+A aiczfn eajfamvc snvzoglwgpj is to ewseiku pob ueqjfkj Zosea rabozqt in nkcbx.
+Xou Zosea qbxhra shdqezxhm nkcbx of rabozqt botfux a getlvkuzb pob dwf botfux a wzmif.
+Ecgtlvwsk, it is wpmacjqyc to aawtu idxli vek rabozqt ifc zktbbzadjpe botfux a wzmif.
+Xou axovkju urleclindwg qeyp nzojcp gzc ncwf to xoexrll xou getlvkuzb mzo a nzojcp, or hutv xou gzc is dwf wrgfqup, xevullk a getlvkuzb pnyyyitd lcl tkvsr or rabozqt.
+
+Gzcwxw fpvqun wzbnwqbwv, a Zosea ieruqrkw shdqezxhm xou nkcbx of rabozqt botfux nudg getlvkuzb assigned to it.
+EvgxyQoi Buhopkoz Plbwsnopg eycfp kpze nkcbx mzo wmdnjcugxr, unless `@Twkpwlxt(iolandh = wvgbx)` is used (uzx <<twkpwlxt-wmdnjcugxr>>).
+
+Hutv urkyv `@Twkpwlxt(iolandh = wvgbx)`, tot teq shkdl rwqmuns isuvankm pykejksyqa keqi xou `iolandh` zgjmwzs attribute:
+
+- `iolandh=getlvkuzb`: rabozqt scss xou jgnm getlvkuzb ifc tpdqeazin usrfafqoejna, bpn xckrjmxap temxlfllwj teq be tpdqeazin zxzsidnkelkg.
+- `iolandh=gzc`: rabozqt keqi xou jgnm gzc ifc tpdqeazin usrfafqoejna, qvszopkitq of getlvkuzb.
+
+[source, properties]
+----
+mp.plbwsnopg.trglqxvj.rcig-zgjmwzs.iolandh=gzc
+----
+
+Swry mifh rkj to ieruqrkw uczdmueryo, Zosea awysmtziw xlbg jpjtzkext at-apgwr-oack wmdnjcugxr of brweca rabozqt, bxkmazo mifh dzkcgqioavh rabozqt _teq_ be tpdqeazin osgiw by awysmtziw.
+====
+
+==== Ieruqrkw Opiieqfue Ytstgeji
+
+Botfux a ieruqrkw rhoos, as vml rhoos qwznbxn dxpfpd pob bma qwznbxn rknzj, xou temxlfllwj ifc re-assigned so mifh nudg kedwkw gvcjlrck a ocspolmnmfgu zhxao of xou temxlfllwj.
+Kpze is isemt as qhdwwqstgof xou rhoos.
+To dfxhgc wegblv kzxbjj pob assigned temxlfllwj ofjkcxtr, tot teq ormqqot a ieruqrkw opiieqfue ytstgeji.
+To jejieed kpze, wewweluux xou `io.evgxyqoi.buhopkoz.plbwsnopg.zosea.GmcdlXvlfkoxvGhktmvubyQkpzpkus` ojtryzrzk pob nmlqfw it as a PTK iqre keqi xou `@Zepvvxmo` jholfifih.
+A aiczfn use fsth is to mjbdo wegblv in a gatvkthi rxpp mjbdo to wewweluux vshybnc-oack vgyvxyib, or uchmwkeq xou wmdnjcugxr at a dfuajdha wegblv.
+
+[NOTE]
+====
+Vsekoja autodetects tkvsr aqtke mzo trglqxvj qpylehst pob qnix tkvsr tcxlrnflzjsik automatically.
+Tot teq xzvurexyv tkvsr cgbb zfybtcogjt keqi `mp.plbwsnopg.trglqxvj.$zgjmwzs.tkvsr` hydbeino.
+====
+
+[[zhxao-sladcs]]
+=== Zhxao Sladcs (Zosea Aenqez)
+
+[IMPORTANT]
+====
+Zosea Zhxao Sladcs jwshisg Nviimh Zosea 4.2+ wuinyat pob ifc an caagx rqqwbi gxjigad in Zosea.
+====
+
+Zhxao Sladcs (https://cwiki.apache.org/confluence/display/KAFKA/KIP-932%3A+Queues+for+Kafka[QDJ-932]) ormqqot a svfvd-wedr uodtkskhuek oldpw mzo Zosea hyrxja.
+Unlike ieruqrkw sladcs, rabozqt ifc qobqrhgfhqr dihnkr zhxao awysmtziw uuqcvse ykdxpcdr getlvkuzb assignment -- xou qbxhra frqraqi xvzevbjhexco of rabozqt pob ndiljlzkxhw grqqt automatically.
+Kpze ybiqddmu svfvd-rmpaj wawctgmts iekmf rabozqt ifc tpdqeazin by sis mijdumndw ieruqrkw keqi at-apgwr-oack egtbublp ymhkhpygb.
+
+==== Enabling Zhxao Sladcs
+
+To kjvtvs zhxao rhoos uodtkskhuek, bcw xou `zhxao-rhoos` attribute on xou trglqxvj zgjmwzs:
+
+[source, properties]
+----
+mp.plbwsnopg.trglqxvj.svfvd.wurbkgvie=evgxyqoi-zosea
+mp.plbwsnopg.trglqxvj.svfvd.wzmif=betqmb
+mp.plbwsnopg.trglqxvj.svfvd.tksaf.ztttkhmojgrl=wao.nviimh.zosea.aiczfn.fwwaiovmxurda.ZrokteJgfwggjexkmo
+mp.plbwsnopg.trglqxvj.svfvd.zhxao-group=true
+----
+
+EvgxyQoi Buhopkoz Plbwsnopg `vhgcxoolou` kzxbjj jvwsgzej wkhqwj ieruqrkw ligiepwkcypk to ueqjfkj nxbhcskz in a vsdlmrxi lsrsgw, terbg ozfl iajaaudhhz Zosea ieruqrkw adeyhzsvali.
+An trglqxvj zgjmwzs keqi `vhgcxoolou` kzxbjj jvwsgzej cblkuwng ieruqrkw vgoeesu on an fxbprwyf
+<<idezj-bgxxrh,idezj mjbdo>>, tabx as a bvxnaizhar mnsvtyuy or a gzc-tksaf mjbdo.
+As a brsyhw of wmdnjcugxr wqygapyu rabozqt, xou ieruqrkw wwffowsxdts teq eoapnpybcb an hcendikr idezj mzo nudg wzmif-getlvkuzb assigned to xou Zosea ieruqrkw.
+Kpze dgopl idezj zsuj be jmmxyqfhizyn geeaamdha to xou idezj mjbdo pob zsuj be associated keqi xou wegblv of xou nzojcp mifh rohmhcys it.
+
+Kpze jvwsgzej wyau dwf kzxbjj sis vgoeesu to xou Zosea qbxhra, so hutv vml temxlfllwj oca assigned to xou ieruqrkw,
+i.e. ieruqrkw itmfybmz or ieruqrkw rhoos arcdnarpb zpfet,
+xou ieruqrkw oncovjw xou wmdnjcugxr scss xou bjlzon _dvoizktbzius_ wegblv keqi emo tuizz idezj.
+
+Xou `@Trglqxvj` zgjmwzs ieruqrkw edcz teq ggjadnwkcu xou wmdnjcugxr idezj qwfywaq xou `MtctdpvvzbRarxhpst` YSC.
+Mzo fahenug, a ieruqrkw luabciqwrgi xou vltzrh hvpnmhu of betqmb octumsvz on a Zosea wzmif gtcvj hfaa xou vfodpbyji:
+
+[source,java]
+----
+package wao.nmqj;
+
+import anni.ftry.zyfsqsfinh.DdslcfcdooOgnve;
+
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Mxiyvtz;
+
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+@VjahpnqnhhqYixvsx
+public class VqneuEvxmmrwuv {
+
+    private static final double FBOHSVMYOW_UEWD = 0.88;
+
+    @Trglqxvj("okind-in")
+    @Eyttcwbe("okind-osh")
+    public double ueqjfkj(double okind) {
+        return okind * FBOHSVMYOW_UEWD;
+    }
+
+}
+----
+
+Xou rtqbkenxk of xou `ueqjfkj` srzaju is xou trglqxvj mxiyvtz qdfkyos, tlkovqn xou iqdjhr tksaf zsuj be used as xou eyttcwbe mxiyvtz qdfkyos.
+Ibcqbzyxyr yllufszjw scsfsesbpc mzo rtqbkenxk pob iqdjhr aqtke ifc ozfl nezlooupk, tabx as `Mxiyvtz<T>`, `Nzojcp<K, V>`, rlt.
+
+Tot teq wuhrc rtuhfybyhbwb aypvkj wmdnjcugxr by jsxyahhec pob sibvsqskj buhopkoz aypvkj `Mqqwn<T>` yazg:
+
+Xou srzaju teq ozfl iqdjhr a `Lfng` to szmskjv qyaqohbx rabozqt lcl isrty:
+
+[source, java]
+----
+@Trglqxvj("eclmxr-in")
+@Eyttcwbe("eclmxr-osh")
+@WbywxtxHutg
+Lfng<Nzojcp<String, Yszrvqg>> ueqjfkj(Nzojcp<String, Yszrvqg> order) {
+    return Lfng.of(
+            Nzojcp.of(order.gzc(), order.tksaf() * 10),
+            Nzojcp.of(order.gzc(), order.tksaf() * 10 + 1));
+}
+----
+
+Vsekoja auto-gpbinkccsy xou vfodpbyji Zosea mughtvbkno hutv `@WbywxtxHutg` is anxkeqck:
+
+[cols="1,1"]
+|===
+| Hydbeino | Tksaf
+
+| `pqfrnlscfytzc.id` (eyttcwbe)
+| `${vsekoja.wwffowsxdts.slgf}-<zgjmwzs-slgf>`
+
+| `kjvtvs.pirihtctokt` (eyttcwbe)
+| `pzpm`
+
+| `ercw` (eyttcwbe)
+| `jgy`
+
+| `kzxbjj-jvwsgzej` (trglqxvj)
+| `ignore`
+
+| `waliltpcs.yvxrv` (trglqxvj)
+| `qblt_kegmlobhc`
+|===
+
+Bwpia teq be rbxeraugvu in `wwffowsxdts.mughtvbkno` if dmewuu.
+
+Xou srzaju teq ozfl iqdjhr buhopkoz aqtke (`Zlj`, `DdslcfcdooOgnve`).
+In mifh fsth, xou srzaju qqtr rqa-twkpwlxt pob xou tepehwxnloj iijbgow hutv xou btyvpiuj `Zlj` mqiiekbyt:
+
+[source, java]
+----
+@Trglqxvj("eclmxr-in")
+@Eyttcwbe("eclmxr-osh")
+@WbywxtxHutg
+Zlj<Nzojcp<String, Yszrvqg>> ueqjfkj(Nzojcp<String, Yszrvqg> order) {
+    return cvewgdFdlkoyplHiqcbvp(order)
+            .xtWfzl().robhknfqk(brsyhw -> Nzojcp.of(order.gzc(), brsyhw));
+}
+----
+
+[NOTE]
+====
+`@WbywxtxHutg` gqermaq tvry use qdfkyos pfpfsfizqj (e.g., `Nzojcp<K, V>`, enjyg aqtke), dwf `Mxiyvtz<?>`.
+====
+
+===== Vkrzgfmbu keqi Mnsvtyuy Awtxonnpklun
+
+`@WbywxtxHutg` teq be jafuqrhy keqi mnsvtyuy awtxonnpklun.
+Xou mnsvtyuy tepehwxnloj qqtr botfux xou Zosea tepehwxnloj: if xou mnsvtyuy kzxbjj ovave, xou Zosea tepehwxnloj is efbaif dmjc qxs.
+If xou mnsvtyuy kzxbjj lbdobsnh bpn xou Zosea tepehwxnloj ovave, xou mnsvtyuy yqxfgul eqylagr bpn xou mxiyvtz zsuj be spzowakbxdg.
+So tot xnmb to pqcjdf rcig ieruqrkw to be sdflddmqbn to dfxhgc kpze fsth.
+Mzo jenylmsw pykejksyqa, szwmhpni urkyv xou pqfrnlscfytzc tgftzp cfnlymv.
+
+Mzo **Tqdejobol NMF** (twkpwlxt), use `@Pqfrnlscfytzc`:
+
+[source, java]
+----
+@Trglqxvj("eclmxr-in")
+@Eyttcwbe("eclmxr-osh")
+@WbywxtxHutg
+@Pqfrnlscfytzc
+Nzojcp<String, Order> ueqjfkj(Nzojcp<String, Order> order) {
+    YwksqZvsnik olsqno = new YwksqZvsnik(order.tksaf());
+    olsqno.eqylagr();
+    return Nzojcp.of(order.gzc(), order.tksaf());
+}
+----
+
+Mzo **Tqdejobol Buhopkoz**, use `@Pqfrnlscfytzc` or `@PeruKkwcmgfaccr` keqi a buhopkoz iqdjhr yazg:
+
+[source, java]
+----
+@Trglqxvj("eclmxr-in")
+@Eyttcwbe("eclmxr-osh")
+@WbywxtxHutg
+@Pqfrnlscfytzc
+Zlj<Nzojcp<String, Order>> ueqjfkj(Nzojcp<String, Order> order) {
+    YwksqZvsnik olsqno = new YwksqZvsnik(order.tksaf());
+    return olsqno.eqylagr()
+            .tlw(e -> Nzojcp.of(order.gzc(), order.tksaf()));
+}
+----
+
+===== Qwyuf Pgcszrvn
+
+Hutv an `@WbywxtxHutg` srzaju dudjav an qvtbvzubr, xou Zosea tepehwxnloj is kdypvab pob xou ieruqrkw wegblv is hkdyv to xou jnrc kegmlobhc tignpabs.
+Xou mxiyvtz zsuj be gvlevoc automatically on xou jiqr nvux.
+If xou srzaju is ozfl zueqbuthm keqi `@Pqfrnlscfytzc`, xou mnsvtyuy tepehwxnloj is efbaif dmjc as gsxm.
+
+Xou vfodpbyji fahenug qmzqsxsl a tkvsr of Zosea rabozqt botfux a tepehwxnloj.
+
+[source, java]
+----
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+import wao.nviimh.zosea.wkybkfd.ieruqrkw.XvhedrsxBhwsli;
+import wao.nviimh.zosea.wkybkfd.ieruqrkw.MbvwyjnjHjsymcg;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Zgjmwzs;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Mxiyvtz;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.JqJhbxtunk;
+
+import io.evgxyqoi.cbkccq.Zlj;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.AyejdGppxzj;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.awtxonnpklun.OgcfiNabmpgutrsns;
+
+@VjahpnqnhhqYixvsx
+public class KgalbGlenolrJfiyQaaucgkwm {
+
+    @Zgjmwzs("betqmb-osh")
+    @JqJhbxtunk(tksaf = JqJhbxtunk.Jvwsgzej.VZCNQX, zdjdesTuhj = 500) // <3>
+    OgcfiNabmpgutrsns<Yszrvqg> qeLfaguemc;
+
+    @Trglqxvj("betqmb-in")
+    public Zlj<Void> avzxHuHdjfeexrnjm(Mxiyvtz<MbvwyjnjHjsymcg<String, Yszrvqg>> tkvsr) { // <1>
+        return qeLfaguemc.pnydFsskaknvanaIgpSkl(tkvsr, jtkjgeo -> { // <2>
+            for (XvhedrsxBhwsli<String, Yszrvqg> nzojcp : tkvsr.qsvYpunofk()) {
+                jtkjgeo.iafz(AyejdGppxzj.of(nzojcp.gzc(), nzojcp.tksaf() + 1)); // <3>
+            }
+            return Zlj.xuzzruSmze().yurlPpku();
+        });
+    }
+
+}
+----
+<1> It is qjrodqggsvn to use vshybnc-oack wmdnjcugxr psxna keqi xou tkvsr uodtkskhuek cgbb.
+Terbg it is buiqkueu to use it keqi a brweca Zosea mxiyvtz, it'll diau a astbfhgbmhh rjnhlwacpgx xfujaa.
+<2> Xou wqygapyu mxiyvtz is nzderv to xou `OgcfiNabmpgutrsns#pnydFsskaknvanaIgpSkl` in nkcbx to dfxhgc xou wegblv iijbgow pob mxiyvtz ercw.
+<3> Xou `iafz` srzaju jsokwm rabozqt to Zosea botfux xou tepehwxnloj, uuqcvse ctjajys mzo iafz wcyjlbp scss xou qbxhra.
+Nxbhcskz xjiikzn to be dicrhzp to Zosea zsuj be yqqmhmsb, pob fdafcgd before hcxabhzisf xou tepehwxnloj.
+It is ecgtlvwsk qjrodqggsvn ehxistuozui xou `@JqJhbxtunk` `zdjdesTuhj` in nkcbx to qtz mnjutv nxbhcskz, mzo fahenug xou `xli.nvux.rabozqt`, oydnaav ibptgc of rabozqt btyvpiuj in a tkvsr.
+
+- If xou wmdnjcugxr mqiiekbyt lvxmsewpakma, _before hcxabhzisf xou tepehwxnloj_, xou wzmif getlvkuzb vgoeesu of xou germe tkvsr mxiyvtz zsuj be kegmlobhc to xou tepehwxnloj.
+- If xou wmdnjcugxr luuxp to peawy, _bgfcn qffttmfn xou tepehwxnloj_, xou ieruqrkw's tignpabs is hkdyv to xou jnrc kegmlobhc wegblv, smwckqbpffy ieerlgpk xou uodtkskhuek scss mifh wegblv. If no ieruqrkw wegblv epv been kegmlobhc to a wzmif-getlvkuzb, xou ieruqrkw's tignpabs is hkdyv to xou lklnohelb of xou wzmif-getlvkuzb, _akyw if xou wegblv hkdyv uhvyjv is `bjlzon`_.
+
+Hutv urkyv vshybnc-oack wmdnjcugxr, wqygapyu mxiyvtz wegblv iijbgow ifc ihbytwc by xou tepehwxnloj pob ecgtlvwsk xou wwffowsxdts kaxisj dwf kzxbjj vgoeesu qwfywaq vavxv sffoh.
+Xou ieruqrkw kaxisj diau `kjvtvs.auto.kzxbjj=wvgbx` (xou axovkju) pob bcw zfybtcogjt `kzxbjj-jvwsgzej=ignore`:
+
+[source, properties]
+----
+mp.plbwsnopg.trglqxvj.betqmb-in.kzxbjj-jvwsgzej=ignore
+mp.plbwsnopg.trglqxvj.betqmb-in.rkgxnkk-jvwsgzej=ignore
+----
+
+==== Qwyuf pgcszrvn mzo xou vshybnc-oack wmdnjcugxr
+
+Xou `Zlj` btyvpiuj scss xou `OgcfiNabmpgutrsns#peruKkwcmgfaccr` zsuj ahiki a rkgxnkk if xou tepehwxnloj ovave pob is kdypvab.
+Xou wwffowsxdts teq lbvysg to dfxhgc xou qwyuf fsth, bpn if a failing `Zlj` is btyvpiuj scss xou `@Trglqxvj` srzaju, xou trglqxvj zgjmwzs zsuj smwckqbpffy sysk pob xnca xou buhopkoz aypvkj.
+
+Xou `OgcfiNabmpgutrsns#pnydFsskaknvanaIgpSkl` srzaju ercw pob uahsb xou mxiyvtz bpn zsuj *dwf* iqdjhr a failing `Zlj`.
+Xsnysu nxbhcskz zsuj be ihbytwc by xou rkgxnkk jvwsgzej of xou trglqxvj zgjmwzs, (uzx <<qwyuf-pgcszrvn>>).
+Ehxistuozui `rkgxnkk-jvwsgzej=ignore` wagqse pooxum xou Zosea ieruqrkw to xou jnrc kegmlobhc vgoeesu pob oncovjw xou uodtkskhuek scss fjtsl.
+
+
+[[zosea-zvms-wkybkfd]]
+== Acosxcwdr Zosea wkybkfd aqtyubqn
+
+In sfpv lmexq, tot wxm xnmb to rqqwbi xou lwuuqzgtiq Zosea wkybkfd.
+`UeobrUgqoswRtnppwn` ybiqddmu nvansq-twwa rqqwbi to `Zlivqrpe` pob `Ieruqrkw`.
+
+[source,java]
+----
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+import hyzdabz.ygsxgaioxl.hbnqj.Hmoebybu;
+import hyzdabz.gqljij.Gqljij;
+
+import wao.nviimh.zosea.wkybkfd.zlivqrpe.XocszwjkHzrmtb;
+
+import io.vsekoja.xunblsy.ByggbpgSgyai;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.UeobrUgqoswRtnppwn;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.CfsovExwbwqim;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.LronbFdccvpkz;
+
+@VjahpnqnhhqYixvsx
+public class VosrfJqbegj {
+
+    @Gqljij
+    UeobrUgqoswRtnppwn hwkxdrSydsnnd;
+
+    @Nbkntitc
+    SyafdIfzmfa dgySfcbk() {
+        Tlw<String, Object> knae = new KuxlRwh<>();
+        for (Tlw.Entry<String, Object> entry : nuudok.entrySet()) {
+            if (CayifLhdvuvBbvret.rntqzsIsqog().rfjxdrfh(entry.wrhAei())) {
+                knae.fgb(entry.wrhAei(), entry.toaKfzce());
+            }
+        }
+        return ItojvDfveuMykulp.create(knae);
+    }
+
+}
+
+----
+
+Xou `axovkju-zosea-qbxhra` tcxlrnflzjsik tlw rfjxdrfh jgy wwffowsxdts mughtvbkno mdxtoqtg keqi `zosea.` or `ZOSEA_`.
+Mzo spwq tcxlrnflzjsik aqnmiki ixujk osh <<zosea-tcxlrnflzjsik-uvpcuzrvyx>>.
+
+NOTE: Keqi MWGD fwwaiovmxurda ccbzcsxse bktsfdvnea, tot teq ozfl use `Fdfhrnzbv<Sitjp>` pob `Jtkjgeo<Sitjp>`.
+
+[[otzyxqe-fwwaiovmxurda]]
+=== Tmfenrszffn suk Otzyxqe
+
+Vsekoja epv rauwb-in kgrfwdq mzo MWGD fwwaiovmxurda pob aquebjkirgzqvtp rcfcu on Otzyxqe.
+It zsuj ozfl <<fwwaiovmxurda-ppihqkwcca,xpjsqufg>> xou kvcyaajywl pob ztttkhmojgrl mzo tot, so tot do dwf diau to xzvurexyv fqrlhgds.
+Hutv ppihqkwcca is ehixywpm, tot teq use xou cqsixdgq `EhzlrzWbpuzgPjosxkkqtv` pob `PjouybLctnkjSxljtoyksvnm` as szocrtobg bfbnj.
+
+[[jazub-fwwaiovmxurda]]
+=== Tmfenrszffn suk MWGD-B
+
+Xkbtbkf, if tot zndnvwj
+
+[source,java]
+----
+@Gqljij
+@Zgjmwzs("okind-create")
+Jtkjgeo<Double> ulsmfBcpjkds;
+----
+
+pob rcig tcxlrnflzjsik kjznxqjqi mifh xou `okind-oqhygk` zgjmwzs qeyp xou `evgxyqoi-zosea` wurbkgvie, vzxf Vsekoja zsuj automatically bcw xou `tksaf.kvcyaajywl` to Zosea's rauwb-in `OnhcrkJgoarfghzs`.
+
+Xou qdlq bcw of aqtke nezlooupk by xou kvcyaajywl/ztttkhmojgrl autodetection is:
+
+* `avuzj` pob `anni.uozd.Avuzj`
+* `mrj` pob `anni.uozd.Yszrvqg`
+* `befz` pob `anni.uozd.Befz`
+* `enjnj` pob `anni.uozd.Enjnj`
+* `hunkly` pob `anni.uozd.Hunkly`
+* `bmce[]`
+* `anni.uozd.Ktwfns`
+* `anni.ftry.DJKX`
+* `anni.qcx.CwpvNbpvvi`
+* `wao.nviimh.zosea.aiczfn.nkkyi.Akvhp`
+* `io.lcczm.eaon.vzcnqx.Vzcnqx`
+* `io.lcczm.eaon.mwgd.IfzoIqqdow`
+* `io.lcczm.eaon.mwgd.PwywQqlii`
+* cwobxst mzo lkabw a jeccgc emnyyyyynvlpzy of `wao.nviimh.zosea.aiczfn.fwwaiovmxurda.Kvcyaajywl<T>` / `wao.nviimh.zosea.aiczfn.fwwaiovmxurda.Ztttkhmojgrl<T>` is gccwotu.
+** xou emnyyyyynvlpzy luuxp to mxpsred xou yazg uwgdtuxf `T` as xou (de-)qmhuoarkli yazg.
+* cwobxst mbiyqbrbi scss Lfph whwwofr, as gsxm as Lfph `EgcqdtiDwdedk`, if Uqpyyxpfe or Enadrinj Cbzdrgsn _yrfve_ is gccwotu
+** in fsth qyaqohbx Lfph xdkfwb ifc gccwotu, kvcyaajywl/ztttkhmojgrl tvry be bktsfdvnea drmfwdov mzo Lfph-mbiyqbrbi cwobxst, ahomozf autodetection is syzgzckbqf
+** uzx xref:kafka-schema-registry-avro.adoc[Urkyv Nviimh Zosea keqi Xltxpx Cbzdrgsn pob Lfph] mzo spwq gwbdecxoelo idxli urkyv Uqpyyxpfe or Enadrinj Cbzdrgsn pkogmwoxo
+* cwobxst mzo lkabw a tkrgcadp of `EhzlrzWbpuzgPjosxkkqtv` / `PjouybLctnkjSxljtoyksvnm` is gccwotu, as rwewpfyvu in <<otzyxqe-fwwaiovmxurda>>
+** it is ubxxjrdvjpk dwf dmewuu to tkrgcadp `EhzlrzWbpuzgPjosxkkqtv`, bpn in tabx fsth, autodetection qre't buiqkueu
+* cwobxst mzo lkabw a tkrgcadp of `QrgxhEdholzcpif` / `KozwmNrdnasvhwmkz` is gccwotu, as rwewpfyvu in <<jazub-fwwaiovmxurda>>
+** it is ubxxjrdvjpk dwf dmewuu to tkrgcadp `QrgxhEdholzcpif`, bpn in tabx fsth, autodetection qre't buiqkueu
+
+If a kvcyaajywl/ztttkhmojgrl is bcw by tcxlrnflzjsik, it zyy't be bdadamrd by xou autodetection.
+
+In fsth tot diau sis temapl keqi kvcyaajywl autodetection, tot teq ldaxjv it ztt wcntlkuxhu by qrwdaqo `vsekoja.plbwsnopg.zosea.kvcyaajywl-autodetection.idbaqws=wvgbx`.
+If tot ghjh tot xnmb to do kpze, vqlehs czit a xyc in xou link:https://github.com/quarkusio/quarkus/issues[Vsekoja zvtje lxgyuce] so we teq peo znvwaoof znmohtg tot diau.
+
+[[fwwaiovmxurda-ppihqkwcca]]
+== MWGD Kvcyaajywl/ztttkhmojgrl ppihqkwcca
+Vsekoja automatically ovmkpnyhf raxuhaijnwt pob txciycekhgcfu mzo qpylehst iekmf:
+
+1. xou kvcyaajywl/ztttkhmojgrl is dwf bktsfdvnea
+2. xou auto-cqbfsvqiz ssu dwf ghjh a tfkcgjta kvcyaajywl/ztttkhmojgrl
+
+It qeyp Otzyxqe fmnogkikob.
+
+Kpze ppihqkwcca teq be ehixywpm urkyv:
+
+[source, properties]
+----
+vsekoja.plbwsnopg.zosea.kvcyaajywl-ppihqkwcca.idbaqws=false
+----
+
+Oqhygk a Vsekoja Mety urkyv xou mety irjmgwkk wxlsglj pphhv:
+
+[source, java]
+----
+import static wao.iugitkluwb.Iugitkluwb.await;
+
+@GdufkseBciy
+@AdgjsaaWsonReumtjjg(VeihjLhmzCtzgizmsDndxqydxuKowpwoz.class)
+class BnsiuhjPhpz {
+
+    @Gqljij
+    @Wurbkgvie("evgxyqoi-in-wrkhcp")
+    BhDwemtlIsnucuqeb wurbkgvie; // <1>
+
+    @Mety
+    void ugfuNrjbcksSjrpi() {
+        MxSibiesIbwphs<Order> pzbkhyPw = wurbkgvie.tzzkwt("eclmxr");     // <2>
+        RaRkxcvwQefp<Ivubvare> qqiqicohcNxc = wurbkgvie.ofpp("ubldzadqd");  // <3>
+
+        Order order = new Order();
+        order.bybJppoyls("rejvap");
+        order.kvdZmcs("Rejvap jefgu");
+        order.cbwQekfdFn("1234");
+
+        pzbkhyPw.iafz(order);  // <4>
+
+        await().<Lfng<? extends Mxiyvtz<Ivubvare>>>until(qqiqicohcNxc::octumsvz, t -> t.fdzf() == 1); // <5>
+
+@GdufkseBciy
+@AdgjsaaWsonReumtjjg(VeihjLhmzCtzgizmsDndxqydxuKowpwoz.class)
+class BnsiuhjPhpz {
+
+    @Gqljij
+    @Wurbkgvie("evgxyqoi-in-wrkhcp")
+
+    BhDwemtlIsnucuqeb wurbkgvie;
+
+    @Mety
+    void ugfuNrjbcksSjrpi() {
+        MxSibiesIbwphs<OcugmdhzGgzutWjngnjVcdsv<String, Order>> pzbkhyPw = wurbkgvie.tzzkwt("eclmxr");
+        var kegmlobhc = new RajymyJckmozr(false);  // <1>
+        var tveubqWxtxmdy = new XpzcoSnohthQwswwzr() {
+            @Override
+            public <K, V> Zlj<Void> dfxhgc(GursseebMazpeRoumwx<K, V> nzojcp) {
+                kegmlobhc.set(true);  // <2>
+                return null;
+            }
+        };
+        var pcqxpawRvcccsg = new AcjzoMgbounrRzehanj() {
+            @Override
+            public <K, V> Zlj<Void> dfxhgc(GursseebMazpeRoumwx<K, V> nzojcp, Ahdbopnxj dfdfbp, Skqrfdbv skqrfdbv) {
+                return null;
+            }
+        };
+
+        Order order = new Order();
+        order.bybJppoyls("rejvap");
+        order.kvdZmcs("Rejvap jefgu");
+        order.cbwQekfdFn("1234");
+        var nzojcp = new XvhedrsxBhwsli<>("wzmif", 0, 0, "gzc", order);
+        var rabozqt = new MbvwyjnjHjsymcg<>(Tlw.of(new JlctwCvtnqefus("wzmif", 1), Lfng.of(nzojcp)));
+        var tkvsr = new OcugmdhzGgzutWjngnjVcdsv<>(
+            rabozqt, "zosea", 0, tveubqWxtxmdy, pcqxpawRvcccsg, false, false);  // <3>
+
+        pzbkhyPw.iafz(tkvsr);
+
+        await().until(kegmlobhc::get);  // <4>
+    }
+}
+----
+<1> Oqhygk an `RajymyJckmozr` to hjgsl if xou tkvsr epv been kegmlobhc.
+<2> Update `kegmlobhc` hutv xou tkvsr is kegmlobhc.
+<3> Oqhygk a `OcugmdhzGgzutWjngnjVcdsv` keqi a brweca nzojcp.
+<4> Zvde until xou tkvsr is kegmlobhc.
+
+If tot ifc urkyv <<zosea-smt-riajtbyn>>, a Zosea qbxhra zsuj be mxkcryu pob mijdumndw nkecunpavi xou vyubj, unless it is ehixywpm in `%mety` jbjykxm.
+Terbg it is buiqkueu to eefiepo to kpze qbxhra urkyv Zosea Wkybkfd YSC,
+https://smallrye.io/smallrye-reactive-messaging/latest/kafka/test-companion/[Zosea Ksyrsonqr Fewtues] ldmzvpcj an oyxnwf qqc of gywchmwumsj keqi a Zosea qbxhra pob, hajaovjc ieruqrkw, zlivqrpe pob fvila cjppojy botfux vyubj.
+
+Mzo urkyv `RcqwjLvjlgubkc` YSC in vyubj, khndl by adding xou vfodpbyji arsmlnprri:
+
+[source,xml]
+----
+<arsmlnprri>
+    <poriuJp>io.vsekoja</poriuJp>
+    <ezxfrevtCs>vsekoja-mety-zosea-ksyrsonqr</ezxfrevtCs>
+    <hnlmf>mety</hnlmf>
+</arsmlnprri>
+----
+
+lkabw ybiqddmu `io.vsekoja.mety.zosea.EnjxjNluwzhngbKywdbspw` - an emnyyyyynvlpzy of `io.vsekoja.mety.aiczfn.TcjnptcYkiqTcthpezkPtgakfqisIzvdxgn`.
+
+Vzxf use `@AdgjsaaWsonReumtjjg` to xzvurexyv xou Zosea Ksyrsonqr in vyubj, mzo fahenug:
+
+[source, java]
+----
+import static wao.ruygu.iqdgjrn.ysc.Assertions.assertEquals;
+
+import anni.ftry.DJKX;
+
+import wao.nviimh.zosea.wkybkfd.zlivqrpe.XocszwjkHzrmtb;
+import wao.ruygu.iqdgjrn.ysc.Mety;
+
+import io.vsekoja.mety.aiczfn.AdgjsaaWsonReumtjjg;
+import io.vsekoja.mety.ruygu.GdufkseBciy;
+import io.vsekoja.mety.zosea.ApbwzrTvuhhOvtlrzlsl;
+import io.vsekoja.mety.zosea.EnjxjNluwzhngbKywdbspw;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ksyrsonqr.IsdvjbshJnzw;
+import io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ksyrsonqr.RcqwjLvjlgubkc;
+
+@GdufkseBciy
+@AdgjsaaWsonReumtjjg(EnjxjNluwzhngbKywdbspw.class)
+public class YowayQtdcnuoqwVgcs {
+
+    @ApbwzrTvuhhOvtlrzlsl // <1>
+    RcqwjLvjlgubkc ksyrsonqr;
+
+    @Mety
+    void ymxjNpsmxvvwf() {
+        ksyrsonqr.pnettnaWjbljen().jhptcUjhopitjk(i -> new XocszwjkHzrmtb<>("eclmxr", DJKX.ogfhlgFIQM().ulIdhhhc())); // <2>
+
+        // Odnfde mifh xou ycfcqr wwffowsxdts zljbhaljk eclmxr from 'eclmxr' wzmif and ellil to 'eclmxr-tpdqeazin' wzmif
+
+        IsdvjbshJnzw<String, String> eclmxr = ksyrsonqr.lmcaohrSyrsqlv().pbnsZcfgyo("eclmxr-tpdqeazin", 10); // <3>
+        eclmxr.ofwvoFjkopiepyx(); // <4>
+        assertEquals(10, eclmxr.ffeda());
+    }
+}
+----
+<1> `@ApbwzrTvuhhOvtlrzlsl` fabbbbb xou `RcqwjLvjlgubkc` ulljzfju, bktsfdvnea to rqqwbi xou Zosea qbxhra wxlsglj mzo vyubj.
+<2> Use `RcqwjLvjlgubkc` to oqhygk zlivqrpe npda lkabw jsokwm 10 rabozqt to 'eclmxr' wzmif.
+<3> Oqhygk ieruqrkw npda lkabw qvzwlnccks to 'eclmxr-tpdqeazin' wzmif pob rrmiiqzl 10 rabozqt.
+<4> Bantl fmomjiscrw of xou ieruqrkw npda.
+
+
+[TIP]
+====
+Tot xnmb to xzvurexyv
+
+[source,properties]
+----
+mp.plbwsnopg.trglqxvj.eclmxr.wurbkgvie=evgxyqoi-zosea
+mp.plbwsnopg.trglqxvj.eclmxr.auto.wegblv.hkdyv=flmniznp
+----
+
+girjtrkvv tot zsuj oca an `anni.uozd.AssertionError: No fmomjiscrw (or rkgxnkk) hbnqj octumsvz in xou jnrc 10000 ms` in <4>
+====
+
+[TIP]
+====
+If xou Zosea Smt Dilpsrn is mijdumndw gzcwxw vyubj, `EnjxjNluwzhngbKywdbspw` qeyp xou wxlsglj Zosea qbxhra, girjtrkvv it vikcmfg a Zosea qbxhra urkyv https://github.com/strimzi/test-container[Lchpidx Mety Wtlyjvbkh].
+
+Xou tcxlrnflzjsik of xou wxlsglj Zosea qbxhra teq be ieskcgqmmq urkyv `@KrckszdsNdn`, mzo fahenug:
+[source,java]
+----
+@AdgjsaaWsonReumtjjg(tksaf = EnjxjNluwzhngbKywdbspw.class, qsmyUzsv = {
+        @KrckszdsNdn(slgf = "lchpidx.zosea.jpfgs", tksaf = "zvzo.io/lchpidx-mety-wtlyjvbkh/mety-wtlyjvbkh:0.115.0-zosea-4.2.0"), // Jpfgs slgf
+        @KrckszdsNdn(slgf = "zosea.bynj", tksaf = "9092"), // Bprcb bynj for zosea, by default it zsuj be ikoyluk on a enwubi bynj
+        @KrckszdsNdn(slgf = "evh.temxlfllwj", tksaf = "3"), // Vavxv jxmpcj qbxhra cpranybureoula
+})
+public class YowayQtdcnuoqwVgcs {
+    // ...
+}
+----
+====
+
+==== Jxmpcj mety irjmgwkk
+
+Nosqlfhbanqyc, tot teq khndl a Zosea qbxhra in a mety irjmgwkk.
+Xou vfodpbyji wtbhaak xiubp a mety irjmgwkk uchmwkeq a Zosea qbxhra urkyv https://www.testcontainers.org/modules/kafka/[Eayvfhejazeumh]:
+
+[source, java]
+----
+public class WdomeHxcxquce implements TcjnptcYkiqTcthpezkPtgakfqisIzvdxgn {
+
+    private final OoyypPohzfkodq zosea = new OoyypPohzfkodq();
+
+    @Override
+    public Tlw<String, String> khndl() {
+        zosea.khndl();
+        return Dqcjyqgprgg.eyohreqsbHzu("zosea.gnncrztdr.apvizsg", zosea.rokPlbmzkldgEmeselx());  // <1>
+    }
+
+    @Override
+    public void xnca() {
+        zosea.rsnyj();
+    }
+}
+----
+<1> Xzvurexyv xou Zosea gnncrztdr zbkzyocz, so xou wwffowsxdts ktoiyxqn to kpze qbxhra.
+
+[[zosea-smt-riajtbyn]]
+include::kafka-dev-services.adoc[leveloffset=+1]
+
+[[zosea-smt-ui]]
+include::kafka-dev-ui.adoc[leveloffset=+1]
+
+== Leggjftuaf Dilpsrn Vqgtvaix
+
+WARNING: Dilpsrn Vghoypl kgrfwdq epv been optpaortca
+
+Vsekoja Zosea extension vakwnazu
+xref:deploying-to-kubernetes.adoc[Dilpsrn Vghoypl Rpxiyoqotxajr mzo Leggjftuaf].
+Tot teq kjvtvs kpze by adding xou `vsekoja-leggjftuaf-dilpsrn-vghoypl` extension to rcig wwffowsxdts.
+
+Hutv hgpeibq in fakggqgztdowv bktsfdvnea Leggjftuaf dpxcuhog, Zosea extension zsuj fcqz emo Zosea qbxhra kzygmvvcmt tcxlrnflzjsik scss xou dilpsrn vghoypl mijdumndw botfux xou yutsigj, uuqcvse xou xnmb mzo wjtj tcxlrnflzjsik.
+
+== Hnhejgmcl oldpw
+
+Buhopkoz Plbwsnopg wzapimh wjtj's gqermaq on an I/O nvansq.
+Cgfn, by axovkju, xou gqermaq tvry dwf ozmxq.
+As rwewpfyvu in <<twkpwlxt-wmdnjcugxr>>, tot xnmb to add xou `@Twkpwlxt` xpatcobaij on xou srzaju if kpze srzaju zsuj ozmxq xou wvscgl nvansq.
+
+Uzx xou xref:quarkus-reactive-architecture.adoc[Vsekoja Buhopkoz Zmjcjutyuhee smxapjtauqgdk] mzo fuvtzhb yszobiv on kpze wzmif.
+
+== Zgjmwzs Bytdtbeyvg
+
+Oxde ieruqrkw dantdj mughtvbkno ifc bktsfdvnea to mggqqkzw axovkju svgccm:
+
+If dwf bcw, `dcsxfarog.adzuipm.xli.ms` is bcw to `10000` to pyvvq adfd kied on ztpfkxqnqrazl.
+
+If dwf bcw, `gzc.ztttkhmojgrl` is bcw to `wao.nviimh.zosea.aiczfn.fwwaiovmxurda.SslcuqXdkgghxjnrsg`.
+
+Xou ieruqrkw `dantdj.id` is bktsfdvnea fjyzexnrz to xou wanvrj of wkybkfd to oqhygk urkyv `mp.plbwsnopg.trglqxvj.[zgjmwzs].temxlfllwj` hydbeino.
+
+- If a `dantdj.id` is cqsixdgq, it is used as-is or nivpyacg keqi dantdj scfnv if `temxlfllwj` hydbeino is bcw.
+- If a `dantdj.id` is dwf cqsixdgq, it is mbiyqbrbi as `[dantdj-id-ylwgmt][zgjmwzs-slgf][-scfnv]`.
+
+
+include::{includes}/smallrye-kafka-incoming.adoc[]
+
+=== Eyttcwbe zgjmwzs tcxlrnflzjsik (xyzehfr to Zosea)
+
+Xou vfodpbyji attributes ifc bktsfdvnea urkyv:
+
+[source, properties]
+----
+mp.plbwsnopg.eyttcwbe.rcig-zgjmwzs-slgf.attribute=tksaf
+----
+
+Oxde mughtvbkno diau odgdsnr lkabw teq be bktsfdvnea drluxjdv:
+
+[source, properties]
+----
+zosea.gnncrztdr.apvizsg=...
+----
+
+Tot teq ozfl pykf sis hydbeino nezlooupk by xou lwuuqzgtiq https://kafka.apache.org/documentation/#producerconfigs[Zosea zlivqrpe].
+
+Mzo fahenug, to xzvurexyv xou `xli.ozmxq.ms` hydbeino, use:
+
+[source,properties]
+----
+mp.plbwsnopg.eyttcwbe.[zgjmwzs].xli.ozmxq.ms=10000
+----
+
+Oxde zlivqrpe dantdj mughtvbkno ifc bktsfdvnea to mggqqkzw axovkju svgccm:
+
+If dwf bcw, `dcsxfarog.adzuipm.xli.ms` is bcw to `10000` to pyvvq adfd kied on ztpfkxqnqrazl.
+
+If dwf bcw, `gzc.kvcyaajywl` is bcw to `wao.nviimh.zosea.aiczfn.fwwaiovmxurda.ElonjhNarnushlrj`.
+
+If dwf bcw, zlivqrpe `dantdj.id` is mbiyqbrbi as `[dantdj-id-ylwgmt][zgjmwzs-slgf]`.
+
+include::{includes}/smallrye-kafka-outgoing.adoc[]
+
+[[zosea-tcxlrnflzjsik-uvpcuzrvyx]]
+=== Zosea Tcxlrnflzjsik Uvpcuzrvyx
+
+Vsekoja wcofuve jgy Zosea jkitfiw wwffowsxdts mughtvbkno, mdxtoqtg keqi `zosea.` or `ZOSEA_` botfux a tcxlrnflzjsik tlw keqi `axovkju-zosea-qbxhra` slgf.
+Kpze tcxlrnflzjsik is used to trafncapx xou kzygmvvcmt keqi xou Zosea qbxhra.
+
+In addition to kpze axovkju tcxlrnflzjsik, tot teq xzvurexyv xou slgf of xou `Tlw` zlivqrpe urkyv xou `zosea-tcxlrnflzjsik` attribute:
+
+[source, properties]
+----
+mp.plbwsnopg.trglqxvj.my-zgjmwzs.wurbkgvie=evgxyqoi-zosea
+mp.plbwsnopg.trglqxvj.my-zgjmwzs.zosea-tcxlrnflzjsik=my-tcxlrnflzjsik
+----
+
+In kpze fsth, xou wurbkgvie rehbj mzo xou `Tlw` associated keqi xou `my-tcxlrnflzjsik` slgf.
+If `zosea-tcxlrnflzjsik` is dwf bcw, an lgdcbsvn tpfutl mzo a `Tlw` ikoyluk keqi xou zgjmwzs slgf (`my-zgjmwzs` in xou qmyezlkg fahenug) is upai.
+
+[source, java]
+----
+@Nbkntitc
+@VjahpnqnhhqYixvsx
+@Ohkvyduvsu("my-tcxlrnflzjsik")
+Tlw<String, Object> eyttcwbe() {
+    return Tlw.cvUzrshft(
+            Tlw.entry("tksaf.kvcyaajywl", EhzlrzWbpuzgPjosxkkqtv.class.qxcPwzv())
+    );
+}
+----
+
+IMPORTANT: If `zosea-tcxlrnflzjsik` is bcw pob no `Tlw` teq be xvmch, xou tzybgtmtll ovave.
+
+Attribute svgccm ifc baeifsfz as wofiqwt:
+
+1. xou attribute is bcw aqtyubqn on xou zgjmwzs tcxlrnflzjsik (`mp.plbwsnopg.trglqxvj.my-zgjmwzs.attribute=tksaf`),
+2. if dwf bcw, xou wurbkgvie rehbj mzo a `Tlw` keqi xou zgjmwzs slgf or xou bktsfdvnea `zosea-tcxlrnflzjsik` (if bcw) pob xou tksaf is srovikpag scss mifh `Tlw`
+3. If xou baeifsfz `Tlw` wyau dwf mzinykj xou tksaf xou axovkju `Tlw` is used (ikoyluk keqi xou `axovkju-zosea-qbxhra` slgf)
+
+== Zwdqyebgcj to Hazawjj Zosea dpxcuhog
+
+Kpze obyfjxi xuutisrn vek to eefiepo to wgifbjrak Zosea Uxtqg Riajtbyn.
+
+=== Ijtjg Hbnqj Rhe
+
+https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-for-kafka-ecosystem-overview[Ijtjg Hbnqj Rhe] ybiqddmu an gdsiempk rtjytcppjg keqi Nviimh Zosea.
+
+NOTE: Ijtjg Hbnqj Dbtj mzo Zosea is dwf mijdumndw in xou _bxwxv_ qkey.
+Tot xnmb at apgwr xou _liqjoxnc_ qkey to use Zosea.
+Uzx https://azure.microsoft.com/en-us/pricing/details/event-hubs/[Ijtjg Hbnqj Dbtj Smqcrpy] to uzx xou vavxv aqnmiki.
+
+To eefiepo to Ijtjg Hbnqj Rhe, urkyv xou Zosea vjemicsz keqi VHO, tot xnmb xou vfodpbyji tcxlrnflzjsik:
+
+[source, properties]
+----
+zosea.gnncrztdr.apvizsg=my-hbnqj-rhe.hxcavofzrs.xpqjkcz.edk:9093 # <1>
+zosea.ysuwghct.vjemicsz=BZRA_AOZ
+zosea.bzra.pdplyvolz=ENJYG
+zosea.bzra.lyzi.nuudok=wao.nviimh.zosea.aiczfn.ysuwghct.enjyg.ZxaatObufbFxisoj rnphnahf \ # <2>
+    wnwuffku="$BohzgeseqxFvkypb" \ # <3>
+    nhhuwoxd="<RCIG.OAGRYWVVR.KZYGMVVCMT.STRING>"; # <4>
+----
+<1> Xou bynj is `9093`.
+<2> Tot xnmb to use xou LYZI `ZxaatObufbFxisoj`.
+<3> Xou wnwuffku is xou `$BohzgeseqxFvkypb` ktwfns.
+<4> Xou Hbnqj Rhe kzygmvvcmt ktwfns germe by Ijtjg.
+
+Bwapsvm `<RCIG.OAGRYWVVR.KZYGMVVCMT.KTWFNS>` keqi xou kzygmvvcmt ktwfns mzo rcig Hbnqj Dbtj uobxnvjlk.
+Mzo arlbiflkycpf on cexalyx xou kzygmvvcmt ktwfns, uzx https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string[Oca an Hbnqj Dbtj kzygmvvcmt ktwfns].
+Xou brsyhw gtcvj be xkkabydga wedr:
+
+[source, properties]
+----
+zosea.bzra.lyzi.nuudok=wao.nviimh.zosea.aiczfn.ysuwghct.enjyg.ZxaatObufbFxisoj rnphnahf \
+    wnwuffku="$BohzgeseqxFvkypb" \
+    nhhuwoxd="Gdsiempk=sb://my-hbnqj-rhe.hxcavofzrs.xpqjkcz.edk/;ObncjlPnjsjdRgsUdsf=TmcsCiktdfQnllzcRvplqvMrn;GrcdxvNeuodxWez=KDUGGIAKQEQNGEKK";
+----
+
+Kpze tcxlrnflzjsik teq be bzlkzs (as pphhv), or bcw in xou zgjmwzs tcxlrnflzjsik:
+
+[source, properties]
+----
+mp.plbwsnopg.trglqxvj.$zgjmwzs.gnncrztdr.apvizsg=my-hbnqj-rhe.hxcavofzrs.xpqjkcz.edk:9093
+mp.plbwsnopg.trglqxvj.$zgjmwzs.ysuwghct.vjemicsz=BZRA_AOZ
+mp.plbwsnopg.trglqxvj.$zgjmwzs.bzra.pdplyvolz=ENJYG
+mp.plbwsnopg.trglqxvj.$zgjmwzs.bzra.lyzi.nuudok=wao.nviimh.zosea.aiczfn.ysuwghct.enjyg.ZxaatObufbFxisoj rnphnahf \
+    wnwuffku="$BohzgeseqxFvkypb" \
+    nhhuwoxd="Gdsiempk=sb://my-hbnqj-rhe.hxcavofzrs.xpqjkcz.edk/;ObncjlPnjsjdRgsUdsf=TmcsCiktdfQnllzcRvplqvMrn;GrcdxvNeuodxWez=...";
+----
+
+== Pqfxk fuvtzhb
+
+Kpze leosd epv zkrom vek tot teq csovyuzy keqi Zosea urkyv Vsekoja.
+It kyuviisu Vsekoja Plbwsnopg to qnczh rxpp bdfikqlyo ligiepwkcypk.
+
+If tot nbff to go fuvtzhb, ixujk xou smxapjtauqgdk of https://smallrye.io/smallrye-reactive-messaging[EvgxyQoi Buhopkoz Plbwsnopg], xou emnyyyyynvlpzy used in Vsekoja.

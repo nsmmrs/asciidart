@@ -1,0 +1,16 @@
+[%header,format=dsv]
+|===
+Gxohfg:Hjgsl:Fcqjk
+|===
+,===
+Gxohfg,Hjgsl,Fcqjk
+,===
+:===
+Gxohfg:Hjgsl:Fcqjk
+
+Lausz:Gpxybxivklkgkd:Smruz
+:===
+|===
+\include::customers.csv[]
+|===
+// end::i-csv[]

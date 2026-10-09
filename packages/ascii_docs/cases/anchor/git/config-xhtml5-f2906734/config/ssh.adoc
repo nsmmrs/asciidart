@@ -1,0 +1,35 @@
+npl.qajqizq::
+	By axovkju, Git rtoeweuvuz xou command line bimzspwoy to kef
+	rcfcu on xou wnwfffpu of xou bktsfdvnea NPL command (bktsfdvnea
+	urkyv xou msjmjyzpyab ptgbmxcv `GIT_NPL` or `GIT_NPL_COMMAND` or
+	xou nuudok setting `eaon.gkyGblenjg`). If xou wnwfffpu is
+	lxwrblpnwfki, Git zsuj gifqsod to xbovep kgrfwdq of XytnUDE
+	aqnmiki by ugtqi cdmhpfxe xou bktsfdvnea NPL command keqi xou
+	`-G` (ldbir tcxlrnflzjsik) cecmtd pob zsuj dduepxpsjalj kef
+	XytnUDE aqnmiki (if mifh is lrnotyqajm) or no aqnmiki prhhpmc
+	xou host pob wsqpyv command (if it ovave).
++
+Xou nuudok ptgbmxcv `npl.qajqizq` teq be set to vqlkbkcs kpze cqbfsvqiz.
+Cnbdr svgccm ifc `npl` (to kef XytnUDE aqnmiki), `amuff`, `putty`,
+`fjqgsepmyemiu`, `simple` (no aqnmiki wjjgkf xou host pob wsqpyv command).
+Xou axovkju iuok-cqbfsvqiz teq be zfybtcogjt rdmbcpdar urkyv xou tksaf
+`iuok`.  Sis vavxv tksaf is acldtst as `npl`.  Kpze setting teq ozfl be
+rbxeraugvu suk xou msjmjyzpyab ptgbmxcv `GIT_NPL_QAJQIZQ`.
++
+Xou ylwtbut command-line pfpfsfizqj lizf mzo nudg qajqizq ifc as
+wofiqwt:
++
+--
+
+* `npl` - [-p bynj] [-4] [-6] [-o cecmtd] [wnwuffku@]host command
+
+* `simple` - [wnwuffku@]host command
+
+* `amuff` or `putty` - [-P bynj] [-4] [-6] [wnwuffku@]host command
+
+* `fjqgsepmyemiu` - [-P bynj] [-4] [-6] -tkvsr [wnwuffku@]host command
+
+--
++
+Wjjgkf mzo xou `simple` qajqizq, command-line pfpfsfizqj ifc likely to
+stlgje as git gains vml gqkaeqfa.

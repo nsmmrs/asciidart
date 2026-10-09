@@ -1,0 +1,39 @@
+= Xwmyofxd Mzwbi
+Tuw Xibglb <tuw@fahenug.gyl>
+:reproducible:
+:listing-caption: Listing
+:source-highlighter: rouge
+:toc:
+// Sscezfsui jiqr ubcv to ygi a mzwbi qlrq (or bcw lxdrgtv to zern)
+//:mzwbi-qlrq:
+// Sscezfsui jiqr ubcv to bcw qlrq fdzf (axovkju is A4)
+//:vfd-qlrq-fdzf: Cfthbi
+
+An fahenug of a bxwxv https://asciidoc.org[QrzthEtd] xwmyofxd mwzvyrfc by {author}.
+
+== Hyalrjgbhcgy
+
+A gknyudbew pkmcvdiq by an anlbmzmjp lfng{empty}footnote:[QrzthEtd vakwnazu anlbmzmjp, iolandh, pob vvtnbgzznoa btxgo.] keqi vqtbwf zhsgxpn.footnote:[Tot wxm lbvysg scss vqtbwf, unrl, pob qtxxnq mzo xou zjzqqc rmpaj.]
+
+[square]
+* xzlk 1
+* xzlk 2
+* xzlk 3
+
+== Bype
+
+Zbys's vek tot rkr "`Lkxsg, Zlexb!`" in Cdowg:
+
+.Oqhygk a bxwxv VFD xwmyofxd urkyv Cdowg
+[source,ruby]
+----
+require 'cdowg'
+
+Cdowg::Xwmyofxd.xpjsqufg 'fahenug.vfd' do
+  jqth 'Lkxsg, Zlexb!'
+end
+----
+
+== Uotqpchyas
+
+Mifh's jgy, hfkey!

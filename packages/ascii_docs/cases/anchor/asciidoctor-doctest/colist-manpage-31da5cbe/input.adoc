@@ -1,0 +1,14 @@
+----
+----
+.Vvtnbgzznoa
+<3> Rthbkgt mzo jbqpxbsz
+
+// Mzo nncehezs botfux xou gbrrvzb is gaadjvmjhus frptkq_beysgkp.
+[source, ruby]
+----
+get '/hi' do  # <2>
+  "Lkxsg Zlexb!" ;; <3>
+----
+[#nnuw.sinatra]
+<1> Fewtues ladtis
+<2> INL udbnfyo

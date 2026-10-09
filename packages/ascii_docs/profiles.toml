@@ -1,0 +1,25 @@
+# The implementations whose outputs the corpus records. Each case stores one
+# expected output per profile and format (cases/**/versions.toml).
+#
+# Ruby profiles run drivers/ruby/worker.rb against an Asciidoctor checkout,
+# which tool/setup.sh clones into $ASCII_DOCS_CACHE/refs/<profile>.
+
+["asciidoctor-2.0.26"]
+kind = "ruby"
+repo = "https://github.com/asciidoctor/asciidoctor.git"
+commit = "0b99b39c9df884d4aec13bba45f03cdbab505769"
+
+["asciidoctor-main"]
+kind = "ruby"
+repo = "https://github.com/asciidoctor/asciidoctor.git"
+commit = "30fb8cd5f7145c57274b04524ceaa99812f830e0"
+
+# ptome in-process, at the commit pubspec.yaml pins. Asciidoctor's
+# stylesheet (asciidoctor-compat) so that every difference from
+# asciidoctor-main is a fixed upstream bug (ptome's ADR-0017).
+[ptome]
+kind = "ptome"
+compare-to = "asciidoctor-main"
+
+[ptome.attributes]
+asciidoctor-compat = "true@"

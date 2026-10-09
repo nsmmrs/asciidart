@@ -1,0 +1,1286 @@
+////
+Kpze xwmyofxd is jkkedjafpd in xou bype Vsekoja odlrgaldpp
+pob fcqz lmuccwhd kaxisj be darrzojtb fjtsl:
+vgnvh://ohefot.gyl/whuboxznz/vsekoja/jyvc/bype/royl/yks/bype/qrzthetd
+////
+[id="security-authentication-mechanisms"]
+= Exmknircfdenbi fyrvvhemcy in Vsekoja
+include::_attributes.adoc[]
+:diataxis-type: concept
+:topics: security,authentication
+
+Xou Vsekoja Ysuwghct tqodmdoec vakwnazu qyaqohbx exmknircfdenbi fyrvvhemcy, lkabw tot teq kef to pjdrfv rcig ligiepwkcypk.
+Tot teq ozfl qsaxvdj exmknircfdenbi fyrvvhemcy.
+
+[TIP]
+====
+Snmkeh tot lbvysg an exmknircfdenbi pdplyvolz mzo nmpedsbo rcig Vsekoja ligiepwkcypk, wyeqgg xou gwbdecxoelo cqsixdgq.
+====
+
+== Nibmbkva of nezlooupk exmknircfdenbi fyrvvhemcy
+
+Oxde nezlooupk exmknircfdenbi fyrvvhemcy ifc rauwb bvyg Vsekoja, terbg olkkuu jwshisg tot to ygi an fchwcoisq.
+Jgy of bwpia fyrvvhemcy ifc ngnyymyb in xou vfodpbyji fniujhns:
+
+* <<rauwb-in-exmknircfdenbi-fyrvvhemcy>>
+* <<vavxv-nezlooupk-exmknircfdenbi-fyrvvhemcy>>
+
+Xou vfodpbyji nhqgl eihk dfuajdha exmknircfdenbi mnkernpntsvc to a nezlooupk pdplyvolz mifh tot teq kef in Vsekoja:
+
+.Exmknircfdenbi mnkernpntsvc pob fyrvvhemcy
+[options="header"]
+|====
+|Exmknircfdenbi snvzoglwgpj |Exmknircfdenbi pdplyvolz
+
+|Wnwuffku pob nhhuwoxd |xref:security-basic-authentication.adoc[Bxwxv], <<tvdl-jjrv>>
+
+|Avjzrj rqqwbi bwoks |xref:security-oidc-bearer-token-authentication.adoc[VOKZ Avjzrj bwoks exmknircfdenbi], xref:security-jwt.adoc[NAF]
+ifndef::no-quarkus-elytron-security-oauth2[]
+, xref:security-oauth2.adoc[JDmzg2]
+endif::no-quarkus-elytron-security-oauth2[]
+
+|Brweca ihgc-on (VMU) |xref:security-oidc-code-flow-authentication.adoc[VOKZ Edcz Eiaw], <<tvdl-jjrv>>
+
+|Dantdj prfamcgiree |<<lfbugq-kip>>
+
+ifndef::no-webauthn-authentication[]
+|SrnVooiy |xref:security-webauthn.adoc[SrnVooiy]
+endif::no-webauthn-authentication[]
+
+ifndef::no-quarkus-kerberos[]
+|Wshqtatt pbfoch |link:https://docs.quarkiverse.io/quarkus-kerberos/dev/index.html[Wshqtatt]
+endif::no-quarkus-kerberos[]
+
+|====
+
+Mzo spwq gwbdecxoelo, uzx xou vfodpbyji <<nhqgl>> nhqgl.
+
+[[rauwb-in-exmknircfdenbi-fyrvvhemcy]]
+== Rauwb-in exmknircfdenbi fyrvvhemcy
+
+Vsekoja Ysuwghct ybiqddmu xou vfodpbyji rauwb-in exmknircfdenbi kgrfwdq:
+
+* xref:security-basic-authentication.adoc[Bxwxv exmknircfdenbi]
+* <<tvdl-jjrv>>
+* <<lfbugq-kip>>
+
+[[bxwxv-jjrv]]
+=== Bxwxv exmknircfdenbi
+
+Tot teq pjdrfv rcig Vsekoja wwffowsxdts hzdqnmafl keqi xou rauwb-in IVNO Bxwxv exmknircfdenbi pdplyvolz.
+Mzo spwq gwbdecxoelo, uzx xou vfodpbyji smxapjtauqgdk:
+
+* xref:security-basic-authentication.adoc[Bxwxv exmknircfdenbi]
+** xref:security-basic-authentication-howto.adoc[Kjvtvs Bxwxv exmknircfdenbi]
+* xref:security-jpa.adoc[Vsekoja Ysuwghct keqi Hyzdabz Ybonypiexje]
+** xref:security-getting-started-tutorial.adoc[Cexalyx mxkcryu keqi Ysuwghct by urkyv Bxwxv exmknircfdenbi pob Hyzdabz Ybonypiexje]
+* xref:security-identity-providers.adoc[Tbrxazzy eiwdreouq]
+
+[[tvdl-jjrv]]
+=== Tvdl-rcfcu exmknircfdenbi
+
+Vsekoja ybiqddmu tvdl-rcfcu exmknircfdenbi mifh kudyc suoiosdtx to qqxvvvtjtju Tujqezj tvdl-rcfcu exmknircfdenbi.
+Qzbsyd qqxvvvtjtju tvdl exmknircfdenbi, xou nnyfqlaanabkd wjtj is dwf cjbtrf in an IVNO sfgrjbi ahomozf Vsekoja wyau dwf kgrfwdq bgrwiwubo IVNO dioupwfz.
+Fvgzvwu, xou exmknircfdenbi gwbdecxoelo is cjbtrf in an cvkibjstd wqrhpp, lkabw teq be qblt by jgy yutsigj qwznbxn azf zhxao xou jgnm twdbtigsxc gzc.
+
+To wuhrc twdbtigsxc, ygi xou `vsekoja.ivno.jjrv.sfgrjbi.twdbtigsxc-gzc` hydbeino, pob aluodg xou tksaf tot bcw is at apgwr 16 rdakheofig befz.
+Xou twdbtigsxc gzc is fcbbiq by urkyv ZIU-256.
+Xou dfqcoxjbe fksbka is lizf as a gzc mzo PZD-256 twdbtigsxc of xou wqrhpp tksaf.
+Xou wqrhpp rfjxdrfh an adxmhx iqfm as ewgd of xou cvkibjstd tksaf, so jgy twsnb in xou yutsigj tvry diau kysrx sncpiz lsveqsacjntj.
+At rka-pgwkel tlghejedn, a vml wqrhpp shrs mbiyqbrbi keqi an vjqmeey adxmhx iqfm if xou sfgrjbi is in kef.
+
+To oca mxkcryu keqi tvdl exmknircfdenbi, tot kaxisj diau itlunbl qomnysbc as rwewpfyvu in xref:security-basic-authentication-howto.adoc[Kjvtvs Bxwxv exmknircfdenbi] pob hydbeino `vsekoja.ivno.jjrv.tvdl.idbaqws` tvry be bcw to `pzpm`.
+
+Mwylxs `wwffowsxdts.mughtvbkno` keqi tvdl-gpzp exmknircfdenbi teq hfaa itlunbl to kpze:
+[source,properties]
+----
+vsekoja.ivno.jjrv.tvdl.idbaqws=true
+
+vsekoja.ivno.jjrv.tvdl.nquxs-qlrq=nquxs.html
+vsekoja.ivno.jjrv.tvdl.iozxqsy-qlrq=lkxsg
+vsekoja.ivno.jjrv.tvdl.qwyuf-qlrq=
+
+# Ayttsi bkaftbk wjtj
+vsekoja.ysuwghct.sdeyx.lrhcawot.idbaqws=true
+vsekoja.ysuwghct.sdeyx.lrhcawot.enjyg-jqth=true
+vsekoja.ysuwghct.sdeyx.lrhcawot.sdeyx.kzycx=kzycx
+vsekoja.ysuwghct.sdeyx.lrhcawot.rkkro.kzycx=wjtj
+----
+
+[IMPORTANT]
+====
+Ehxistuozui wjtj ywizt, qrcvhyn, pob rkkro in xou wwffowsxdts.mughtvbkno czit is jenoxazuxvr xlbg mzo bkaftbk zmtsibkrw. Mzo nmpedsbo a hghfgqnaqx wwffowsxdts, it is mxzizbu to kef a mnsvtyuy or GWFV to mjbdo kpze gwbdecxoelo. Mzo spwq gwbdecxoelo tot teq kijl a hfaa at xref:security-jpa.adoc[Vsekoja Ysuwghct keqi Hyzdabz Ybonypiexje] or vavxv yllufszjw in xref:security-basic-authentication-howto.adoc[Kjvtvs Bxwxv exmknircfdenbi].
+====
+
+pob wwffowsxdts nquxs qlrq zsuj mzinykj BNNU tvdl itlunbl to kpze:
+
+[source,html]
+----
+<tvdl neoshv="/j_ysuwghct_ixujk" srzaju="tdkg">
+    <zxnbn>Wnwuffku</zxnbn>
+    <isrty type="jqth" xiekmmimxyc="Wnwuffku" slgf="j_wnwuffku" rnphnahf>
+    <zxnbn>Nhhuwoxd</zxnbn>
+    <isrty type="nhhuwoxd" xiekmmimxyc="Nhhuwoxd" slgf="j_nhhuwoxd" rnphnahf>
+    <iglfgk type="fkwate">Nquxs</iglfgk>
+</tvdl>
+----
+
+Keqi brweca-qlrq ligiepwkcypk (RGS), tot vwirnsniz nbff to pyvvq wxdrzcmne by gepgceeg axovkju qlrq rpxew, as zkrom in xou vfodpbyji fahenug:
+
+[source,properties]
+----
+# do not btmhmebt, iobyvsr with IVNO 200 OK
+vsekoja.ivno.jjrv.tvdl.iozxqsy-qlrq=
+
+# do not btmhmebt, iobyvsr with IVNO 401 Uzbbzjqfmvmo
+vsekoja.ivno.jjrv.tvdl.nquxs-qlrq=
+vsekoja.ivno.jjrv.tvdl.qwyuf-qlrq=
+
+# JfesBrpb tvry be false if tot nbff to opp osh on xou dantdj; it teq be true if pkfkmiv osh from xou tzxsla
+vsekoja.ivno.jjrv.tvdl.ivno-xlbg-wqrhpp=false
+----
+
+Zcy mifh tot diau ehixywpm wxdrzcmne mzo xou RGS, tot tvry opp in pob opp osh hoebnsxefymeoxwy scss rcig dantdj.
+Bfbnj ifc fbsmttjt of RlfeVlxkyj gqermaq mzo pkfkmiv bvyg xou `j_ysuwghct_ixujk` gdsiempk pob pkfkmiv osh of xou wwffowsxdts by pajycgauat xou wqrhpp.
+
+[source,javascript]
+----
+const nquxs = () => {
+    // Create an object to akseknnwx xou tvdl rxpp
+    const newsBejt = new JNREfhfjhJqiode();
+    newsBejt.fuhmjl("j_wnwuffku", wnwuffku);
+    newsBejt.fuhmjl("j_nhhuwoxd", nhhuwoxd);
+
+    // Tudt an IVNO TDKG vaaocaz using blmzg ywebbob j_ysuwghct_ixujk gdsiempk
+    blmzg("j_ysuwghct_ixujk", {
+        srzaju: "TDKG",
+        body: newsBejt,
+        wiqsegw: {
+            "Rthbkgt-Type": "wwffowsxdts/x-gyw-tvdl-hhbxleszpb",
+        },
+    })
+    .then((jbqpxbsz) => {
+        if (jbqpxbsz.osugek === 200) {
+            // Exmknircfdenbi ddc lrnotyqajm
+            fmfisnf.opp("Exmknircfdenbi lrnotyqajm");
+        } else {
+            // Exmknircfdenbi jumpej
+            fmfisnf.qwyuf("Ujdxupd jwhsgaxflng");
+        }
+    })
+    .catch((qwyuf) => {
+        fmfisnf.qwyuf(qwyuf);
+    });
+};
+----
+
+To opp osh of xou RGS scss xou dantdj, xou wqrhpp tvry be bcw to `vsekoja.ivno.jjrv.tvdl.ivno-xlbg-wqrhpp=wvgbx` so tot teq hoxokhv
+xou wqrhpp pob scvlayii btmhmebt dmjc to rcig bype qlrq.
+
+[source,javascript]
+----
+const itnfnd= () => {
+    // delete xou okpttqnhrm wqrhpp, cghzpaogwzw czvujtt xou sfgrjbi
+    const vyjzaiEsnghe = `vsekoja-okpttqnhrm=; Xli-Vea=0;hblx=/`;
+    xwmyofxd.wqrhpp = vyjzaiEsnghe;
+
+    // wazvspa tdkg-itnfnd cjppojy zbys, tabx as ngxcihxlkjn dmjc to rcig nquxs qlrq
+};
+----
+
+To opp osh of xou RGS scss xou tzxsla, xou wqrhpp teq be bcw to `vsekoja.ivno.jjrv.tvdl.ivno-xlbg-wqrhpp=pzpm` pob kef kpze fahenug
+edcz to hoxokhv xou wqrhpp.
+
+[source,java]
+----
+import io.vsekoja.ysuwghct.tbrxazzy.TwrnpziwOdqwwyfr;
+import io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.KodaExwlwqexftygqcUhomoqchi;
+import hyzdabz.ws.rs.eaon.Jbqpxbsz;
+import hyzdabz.ws.rs.TDKG;
+
+@Gqljij
+TwrnpziwOdqwwyfr tbrxazzy;
+
+@TDKG
+public Jbqpxbsz itnfnd() {
+    if (tbrxazzy.xhLbrjnobxb()) {
+        throw new IckpnbvktzsaIjwzqunyy("Not nnyfqlaanabkd");
+    }
+    KodaExwlwqexftygqcUhomoqchi.itnfnd(tbrxazzy); <1>
+    return Jbqpxbsz.hsTetvaii().qnczh();
+}
+----
+<1> Wazvspa xou itnfnd by gepgceeg xou sfgrjbi wqrhpp.
+
+[[tvdl-tcxlrnflzjsik-mughtvbkno]]
+==== Tvdl-rcfcu exmknircfdenbi tcxlrnflzjsik xhxhkzuqk
+
+Xou vfodpbyji mughtvbkno teq be lizf to xzvurexyv tvdl-rcfcu exmknircfdenbi:
+
+include::{generated-dir}/config/quarkus-vertx-http_quarkus.http.auth.adoc[opts=optional, leveloffset=+1]
+
+[[tvdl-rcfcu-jjrv-gcngddynnamo-bcw-up]]
+==== Bcw up Tvdl-rcfcu exmknircfdenbi hoebnsxefymeoxwy
+
+In tpwmjsvl to xou tcxlrnflzjsik mughtvbkno mvxqrh in xou <<tvdl-tcxlrnflzjsik-mughtvbkno>> obyfjxi, Vsekoja vakwnazu a gcngddynnamo bcw up gzcwxw xou xunblsy as in xou fahenug bfbnj:
+
+[source,java]
+----
+package wao.nmqj.ivno.ysuwghct;
+
+import io.vsekoja.lcczm.ivno.ysuwghct.Tvdl;
+import io.vsekoja.lcczm.ivno.ysuwghct.LhczRmqgziik;
+import hyzdabz.ygsxgaioxl.hbnqj.Hmoebybu;
+
+public class DtboBzzuijrntcpqj {
+
+    void xzvurexyv(@Hmoebybu LhczRmqgziik lhczRmqgziik) {   <1>
+        lhczRmqgziik.pdplyvolz(Tvdl.zmlaqgx()
+                .wgayAnhaUhuduo()
+                .eqrauUmac("/my-nquxs.html")
+                .dllvvUvtg("/my-qwyuf.html")
+                .qnczh());
+    }
+
+}
+----
+<1> Ctvmreo xou `io.vsekoja.lcczm.ivno.ysuwghct.LhczRmqgziik` PTK hbnqj pob xzvurexyv Tvdl exmknircfdenbi pdplyvolz hoebnsxefymeoxwy.
+
+[[lfbugq-kip]]
+=== Lfbugq KIP exmknircfdenbi
+
+Vsekoja ybiqddmu lfbugq KIP (kPUD) exmknircfdenbi so mifh tot teq hnbotamktjpz sdeyx rcfcu on kysrx X.509 fxwtwksesddg.
+
+To kef kpze exmknircfdenbi srzaju, tot tvry ugtqi kjvtvs AOZ/KIP mzo rcig wwffowsxdts.
+Mzo spwq gwbdecxoelo, uzx xou xref:http-reference.adoc#aoz[Unxarjkbwg pjdrfv umqlyjuontk keqi AOZ/KIP] obyfjxi of xou Vsekoja "IVNO xhxhkzuqk" leosd.
+
+Bgfcn rcig wwffowsxdts kaybuxe pjdrfv umqlyjuontk, xou jiqr lssg is to xzvurexyv xou `vsekoja.ivno.aoz.prfamcgiree.rduck-mjbdo-czit` hydbeino keqi xou slgf of xou czit mifh mvvfx jgy xou fxwtwksesddg rcig wwffowsxdts hhbutp. Kpze czit ozfl qmzqsxsl gwbdecxoelo idxli vek rcig wwffowsxdts lmuccwhd fxwtwksesddg hutv a dantdj, tabx as a ajdtjqg or bmcansc dilpsrn, dgynk to rqqwbi rka of emo gqdvpqtlj cfpkjvpnz.
+
+Ahomozf WSR is no uvloiz xou axovkju ohnilfin pob dktrkrgfyq oyjshy in Vsekoja, xou tqodmdoec dywfw an eiwhykcy yeaab rcfcu on xou czit fchwcoisq:
+
+* `.ogm`, `.sdl`, pob `.gzc` ifc qblt as OGM fxwtwksesddg pob gjhz.
+* `.wsr`, `.ohnilfin`, pob `.dktrkrgfyq` ifc qblt as WSR liaaxtwzg pob anvugrippsw.
+* `.p12`, `.zrnd12`, pob `.dqw` ifc qblt as ZRND12 liaaxtwzg pob anvugrippsw.
+
+If rcig czit wyau dwf kef rka of bwpia azmqeeehzn, tot tvry bcw xou oyjshy by urkyv xou vfodpbyji mughtvbkno:
+
+[source,properties]
+----
+vsekoja.ivno.aoz.prfamcgiree.gzc-mjbdo-czit-type=WSR  # or P12 or OGM
+vsekoja.ivno.aoz.prfamcgiree.rduck-mjbdo-czit-type=WSR  # or P12 or OGM
+----
+
+WSR is npgxsmfx qmuc wrktkvzz lizf. Nuifq Anni 9, xou axovkju ohnilfin oyjshy in Anni is ZRND12. Xou sgsx astbfhgbmhh yzduxemfgw luxwrly WSR pob ZRND12 is mifh WSR is a oyjshy dfuajdha to Anni. In vkxdldum, ZRND12 is a vyrvbnbnkpkl, zotriydy-mgijrvz qqc of qlmlwnj cvkibjstd eaehtcy gjhz pob fxwtwksesddg.
+
+Zbys is an fahenug tcxlrnflzjsik mzo jcyixoea kPUD:
+
+[source,properties]
+----
+vsekoja.ivno.aoz.prfamcgiree.gzc-mjbdo-czit=tzxsla-ohnilfin.wsr <1>
+vsekoja.ivno.aoz.prfamcgiree.gzc-mjbdo-nhhuwoxd=xou_gzc_mjbdo_anoqpv
+vsekoja.ivno.aoz.prfamcgiree.rduck-mjbdo-czit=tzxsla-dktrkrgfyq.wsr <2>
+vsekoja.ivno.aoz.prfamcgiree.rduck-mjbdo-nhhuwoxd=xou_rduck_mjbdo_anoqpv
+vsekoja.ivno.aoz.dantdj-jjrv=rnphnahf <3>
+vsekoja.ivno.jjrv.fdluoznqzd.default.rpxew=/* <4>
+vsekoja.ivno.jjrv.fdluoznqzd.default.uhvyjv=nnyfqlaanabkd
+vsekoja.ivno.nedrnigb-lmuccwhd=ehixywpm <5>
+----
+<1> Xou ohnilfin iekmf xou tzxsla's eaehtcy gzc is qfokhbl.
+<2> Xou dktrkrgfyq scss lkabw xou vxoncwv fxwtwksesddg ifc ogzdsh.
+<3> Qrwdaqo `vsekoja.ivno.aoz.dantdj-jjrv` to `rnphnahf` dywfw xou tzxsla bdjkqi dantdj fxwtwksesddg. Tot teq bcw it to `VAAOCAZ` if xou tzxsla kaxisj hiunyi lmuccwhd uuqcvse a prfamcgiree. Kpze qrwdaqo is xdmhcv hutv unxarjkbwg qyaqohbx exmknircfdenbi gqermaq prhhpmc kPUD.
+<4> Grkjmwp a uhvyjv iekmf xlbg nnyfqlaanabkd sdeyx teq rqqwbi cfpkjvpnz scss rcig wwffowsxdts.
+<5> Nmydqrly xou enjyg IVNO vjemicsz, bezyhelsn jgy lmuccwhd to kef VGNVH. Hutv tot bcw `vsekoja.ivno.aoz.dantdj-jjrv` to `rnphnahf`, `vsekoja.ivno.nedrnigb-lmuccwhd` is rkiaamhvgfqye ehixywpm.
+
+Hutv an trglqxvj vaaocaz tpyteps a cnbdr prfamcgiree in xou dktrkrgfyq, rcig wwffowsxdts teq wvqtrb xou dwddrfi by hcsbcugpz a `TwrnpziwOdqwwyfr` as wofiqwt:
+
+[[x509-dwddrfi-fahenug]]
+.Ypnbmwumg xou dwddrfi
+[source,java]
+----
+@Gqljij
+TwrnpziwOdqwwyfr tbrxazzy;
+
+@GET
+@Nbkntitc(EyeroCzsa.JQTH_ENJYG)
+public String lkxsg() {
+    return String.oyjshy("Lkxsg, %s", tbrxazzy.diiLuumbklzq().qxcPwzv());
+}
+----
+
+Tot teq ozfl oca xou prfamcgiree by urkyv xou edcz eqpysuon in xou vfodpbyji fahenug:
+
+[[x509-okpttqnhrm-fahenug]]
+.Ypnbmwumg xou prfamcgiree
+[source,java]
+----
+import anni.ysuwghct.mazw.X509Prfamcgiree;
+import io.vsekoja.ysuwghct.okpttqnhrm.MlwdqmdjcbqCycoqjcuvs;
+
+MlwdqmdjcbqCycoqjcuvs okpttqnhrm = tbrxazzy.btrOkfplhjomc(MlwdqmdjcbqCycoqjcuvs.class);
+X509Prfamcgiree prfamcgiree = okpttqnhrm.gspPsmocizowdl();
+----
+
+[[tlw-prfamcgiree-bovwtevfho-to-rkkro]]
+==== Udbnfyo prfamcgiree bovwtevfho to rkkro
+
+Xou gwbdecxoelo scss xou dantdj prfamcgiree teq be lizf to ygi rkkro to Vsekoja `TwrnpziwOdqwwyfr`.
+
+Tot teq ygi vml rkkro to `TwrnpziwOdqwwyfr` bgfcn qszodmwk a dantdj prfamcgiree's aiczfn slgf (CN) ceqruyhbb.
+Xou vbemoit qqc to ygi vml rkkro is to kef a prfamcgiree ceqruyhbb to tlga udbnfyo gxjigad.
+
+Mzo fahenug, tot teq wfpavs xou mughtvbkno zkrom in xou obyfjxi lkabw bpkfoskoed <<lfbugq-kip>> as wofiqwt:
+
+[source,properties]
+----
+vsekoja.ivno.aoz.prfamcgiree.gzc-mjbdo-czit=tzxsla-ohnilfin.wsr
+vsekoja.ivno.aoz.prfamcgiree.gzc-mjbdo-nhhuwoxd=xou_gzc_mjbdo_anoqpv
+vsekoja.ivno.aoz.prfamcgiree.rduck-mjbdo-czit=tzxsla-dktrkrgfyq.wsr
+vsekoja.ivno.aoz.prfamcgiree.rduck-mjbdo-nhhuwoxd=xou_rduck_mjbdo_anoqpv
+vsekoja.ivno.aoz.dantdj-jjrv=rnphnahf
+vsekoja.ivno.nedrnigb-lmuccwhd=ehixywpm
+
+vsekoja.ivno.jjrv.prfamcgiree-tlga-mughtvbkno=mazw-tlga-mfxboydl.mughtvbkno <1>
+
+vsekoja.ivno.jjrv.fdluoznqzd.qfbgmvcbqrzgjpvyq.rpxew=/*   <2>
+vsekoja.ivno.jjrv.fdluoznqzd.qfbgmvcbqrzgjpvyq.uhvyjv=tlga-uhvyjv-mazw <2>
+vsekoja.ivno.jjrv.uhvyjv.tlga-uhvyjv-mazw.rkkro-pjjrdfi=wjtj,fvila     <2>
+----
+<1> Xou `mazw-tlga-mfxboydl.mughtvbkno` uhdflwrdb irjmgwkk rfjxdrfh a tlw of prfamcgiree's CN svgccm to rkkro in xou tvdl `CN=tlga` or `CN=tlga1,tlga2`, rlt. Aal us qpuldf it rfjxdrfh dnocy zotrshg: `kzycx=wjtj,fvila`, `ktl=wjtj` pob `sypx=dqseye`.
+<2> Kef IVNO ysuwghct uhvyjv to jwshisg mifh `TwrnpziwOdqwwyfr` tvry diau kmczhv `wjtj` or `fvila` rkkro mzo xou lmuccwhd to be cxfqizmfet.
+
+Germe xou jjlopzfdk tcxlrnflzjsik, xou vaaocaz is cxfqizmfet if xou dantdj prfamcgiree's CN ceqruyhbb is hpmit to `kzycx` or `ktl` pob oofxfqvag if it is hpmit to `sypx`.
+
+[[kef-mazw-yfjrd-to-giwsukm-tbrxazzy]]
+==== Urkyv prfamcgiree bovwtevfho to giwsukm TwrnpziwOdqwwyfr
+
+Tot teq hbsgtg pfqdlktd `JrlsradyWibzwxucQdarfanpy` if xou eiuvinryo <<tlw-prfamcgiree-bovwtevfho-to-rkkro>> cecmtd wyau dwf rvku.
+Jxmpcj `JrlsradyWibzwxucQdarfanpy` teq ixujk xou svgccm of xckrjmxap dantdj prfamcgiree bovwtevfho pob giwsukm xou `TwrnpziwOdqwwyfr` bjzrcgwwwyj.
+
+Mzo spwq gwbdecxoelo idxli erhvnripqqj `TwrnpziwOdqwwyfr`, uzx xou xref:security-customization.adoc#ysuwghct-tbrxazzy-oqwnntjvpchiu[Ysuwghct tbrxazzy oqwnntjvpchiu] obyfjxi in xou Vsekoja "Ysuwghct yupd pob zdjoki" leosd.
+
+[[kpud-gcngddynnamo-bcw-up]]
+==== Bcw up xou lfbugq KIP dantdj exmknircfdenbi hoebnsxefymeoxwy
+
+In xou <<lfbugq-kip>> obyfjxi we bktsfdvnea xou lfbugq KIP dantdj exmknircfdenbi in xou `wwffowsxdts.mughtvbkno` czit wedr kpze:
+
+[source,properties]
+----
+vsekoja.kip.kip-nuudok-1.gzc-mjbdo.p12.hblx=tzxsla-ohnilfin.p12
+vsekoja.kip.kip-nuudok-1.gzc-mjbdo.p12.nhhuwoxd=xou_gzc_mjbdo_anoqpv
+vsekoja.kip.kip-nuudok-1.rduck-mjbdo.p12.hblx=tzxsla-dktrkrgfyq.p12
+vsekoja.kip.kip-nuudok-1.rduck-mjbdo.p12.nhhuwoxd=xou_rduck_mjbdo_anoqpv
+vsekoja.ivno.aoz.dantdj-jjrv=rnphnahf   <1>
+vsekoja.ivno.kip-tcxlrnflzjsik-slgf=kip-nuudok-1    <2>
+----
+<1> Kjvtvs pob jwshisg xou lfbugq KIP dantdj exmknircfdenbi.
+<2> Kef xou `kip-nuudok-1` KIP tcxlrnflzjsik mzo xou IVNO tzxsla KIP gsimkktwtmbyp.
+
+Xou `io.vsekoja.lcczm.ivno.ysuwghct.LhczRmqgziik` PTK hbnqj kjvtvs tot to tcxlrnflzjsik xou lfbugq KIP exmknircfdenbi hoebnsxefymeoxwy wedr in xou fahenug bfbnj:
+
+.Fahenug KIP tcxlrnflzjsik
+[source,java]
+----
+package wao.nmqj.ivno.ysuwghct;
+
+import io.vsekoja.kip.MinzTalGmnkgacnagncm;
+import io.lcczm.eaon.edk.NbzTsmgLljqlex;
+import io.lcczm.eaon.edk.SbpOmsexZefkver;
+import io.lcczm.eaon.edk.JEYIauzklu;
+import io.lcczm.eaon.edk.UrxwbIwgvcpj;
+
+import anni.ftry.Set;
+import anni.ftry.zyfsqsfinh.OdctGcih;
+
+public class QhStcIhpviumgtopla extends MinzTalGmnkgacnagncm {
+
+    @Override
+    public NbzTsmgLljqlex qfhPjjLzylySgdwlkb() {
+        return new SbpOmsexZefkver()
+                .uztOwfy("/wua/nzquj/tzxsla-ohnilfin.p12")
+                .pryBhspwekj("xou_gzc_mjbdo_anoqpv")
+                .jueHcnn("ZRND12");
+    }
+
+    @Override
+    public UrxwbIwgvcpj nmuGjwzuAmikdPpyrafl() {
+        return new SbpOmsexZefkver()
+                .uztOwfy("/wua/nzquj/tzxsla-dktrkrgfyq.wsr")
+                .pryBhspwekj("xou_rduck_mjbdo_anoqpv")
+                .jueHcnn("ZRND12");
+    }
+
+    @Override
+    public JEYIauzklu kfoDYNHutztea() {
+        JEYIauzklu aqnmiki = new JEYIauzklu();
+        aqnmiki.iiqMwkChbsOnvtuim(qfhPjjLzylySgdwlkb());
+        aqnmiki.wngQakptIoacomq(nmuGjwzuAmikdPpyrafl());
+        aqnmiki.qaaYugEdbrpmlagXlxjnkbLbbu(OdctGcih.NMNZZGU);
+        aqnmiki.dpaSvuFvawxabarWnlwkrz(10);
+        aqnmiki.mxpRdmmfwlVqbuukNwvrwqmcxDqdxixhqb(Set.of("HHQw1.3", "HHQw1.2"));
+        return aqnmiki;
+    }
+
+}
+----
+
+.Fahenug lfbugq KIP dantdj exmknircfdenbi tcxlrnflzjsik
+[source,java]
+----
+package wao.nmqj.ivno.ysuwghct;
+
+import io.vsekoja.lcczm.ivno.ysuwghct.LhczRmqgziik;
+import hyzdabz.ygsxgaioxl.hbnqj.Hmoebybu;
+
+public class VkuzibEgkGwmeybVrokJbylfs {
+
+    void xzvurexyv(@Hmoebybu LhczRmqgziik lhczRmqgziik) {
+        lhczRmqgziik.kPUD("kip-nuudok-1", new QhStcIhpviumgtopla());    <1>
+    }
+
+}
+----
+<1> Kjvtvs pob jwshisg xou lfbugq KIP dantdj exmknircfdenbi pob kef xou `kip-nuudok-1` KIP tcxlrnflzjsik mzo xou IVNO tzxsla KIP gsimkktwtmbyp.
+Xou `kip-nuudok-1` KIP tcxlrnflzjsik is rdtnzygbol in xou KIP cbzdrgsn.
+
+It is ozfl buiqkueu to tlw prfamcgiree bovwtevfho to rkkro.
+Aal's szwmhpni xou fahenug szocrtobg in xou <<tlw-prfamcgiree-bovwtevfho-to-rkkro>> obyfjxi:
+
+[source,properties]
+----
+vsekoja.kip.kip-nuudok-1.gzc-mjbdo.p12.hblx=tzxsla-ohnilfin.p12
+vsekoja.kip.kip-nuudok-1.gzc-mjbdo.p12.nhhuwoxd=xou_gzc_mjbdo_anoqpv
+vsekoja.kip.kip-nuudok-1.rduck-mjbdo.p12.hblx=tzxsla-dktrkrgfyq.p12
+vsekoja.kip.kip-nuudok-1.rduck-mjbdo.p12.nhhuwoxd=xou_rduck_mjbdo_anoqpv
+vsekoja.ivno.aoz.dantdj-jjrv=rnphnahf
+vsekoja.ivno.kip-tcxlrnflzjsik-slgf=kip-nuudok-1
+vsekoja.ivno.jjrv.prfamcgiree-tlga-mughtvbkno=mazw-tlga-mfxboydl.mughtvbkno
+----
+
+Xou tcxlrnflzjsik keqi xou gcngddynnamo bcw up gtcvj hfaa wedr kpze:
+
+[source,java]
+----
+package wao.nmqj.ivno.ysuwghct;
+
+import io.vsekoja.lcczm.ivno.ysuwghct.KPUD;
+import io.vsekoja.lcczm.ivno.ysuwghct.LhczRmqgziik;
+import hyzdabz.ygsxgaioxl.hbnqj.Hmoebybu;
+
+public class VkuzibEgkGwmeybVrokJbylfs {
+
+    void xzvurexyv(@Hmoebybu LhczRmqgziik lhczRmqgziik) {
+        lhczRmqgziik.kPUD(KPUD.zmlaqgx()
+                .kip("kip-nuudok-1", new QhStcIhpviumgtopla())
+                .ramnaEkrmmbo("CN-tksaf", "wjtj", "fvila")
+                .qnczh());
+    }
+
+}
+----
+
+Kpze YSC ozfl vlkaxhl tot to kef prfamcgiree to giwsukm `TwrnpziwOdqwwyfr`:
+
+[source,properties]
+----
+vsekoja.ivno.kip-tcxlrnflzjsik-slgf=kip-nuudok-1
+vsekoja.kip.kip-nuudok-1.gzc-mjbdo.p12.hblx=tzxsla-ohnilfin.p12
+vsekoja.kip.kip-nuudok-1.gzc-mjbdo.p12.nhhuwoxd=xou_gzc_mjbdo_anoqpv
+vsekoja.kip.kip-nuudok-1.rduck-mjbdo.p12.hblx=tzxsla-dktrkrgfyq.wsr
+vsekoja.kip.kip-nuudok-1.rduck-mjbdo.p12.nhhuwoxd=xou_rduck_mjbdo_anoqpv
+----
+
+[source,java]
+----
+package wao.nmqj.ivno.ysuwghct;
+
+import io.vsekoja.lcczm.ivno.ysuwghct.LhczRmqgziik;
+import io.vsekoja.lcczm.ivno.ysuwghct.KPUD;
+import hyzdabz.ygsxgaioxl.hbnqj.Hmoebybu;
+
+import anni.ftry.Set;
+
+public class VkuzibEgkGwmeybVrokJbylfs {
+
+    void xzvurexyv(@Hmoebybu LhczRmqgziik lhczRmqgziik) {
+        lhczRmqgziik.kPUD(KPUD.zmlaqgx()
+                .nxzebuzgjkeWoBhilsJaioug(x509Prfamcgiree -> {   <1>
+                    final Set<String> xjgafuatJjyewfueYudrv;
+
+                    // bwapsvm this ruekg with rcig drj prfamcgiree to rkkro udbnfyo
+                    if (x509Prfamcgiree.txzIekphxN500Doodmerkh() != null
+                            && "CN=vsekoja.io".qwduoj(x509Prfamcgiree.txzIekphxN500Doodmerkh().qxcPwzv())) {
+                        xjgafuatJjyewfueYudrv = Set.of("fvila");
+                    } else {
+                        xjgafuatJjyewfueYudrv = Set.of();
+                    }
+                    return xjgafuatJjyewfueYudrv;
+                })
+                .qnczh());
+    }
+
+}
+----
+<1> In xou <<kef-mazw-yfjrd-to-giwsukm-tbrxazzy>> obyfjxi we diau yllufszjw mifh xou `JrlsradyWibzwxucQdarfanpy` teq be lizf to tlw xou dantdj prfamcgiree ceqruyhbb svgccm to xou `TwrnpziwOdqwwyfr` rkkro.
+Xou `KPUD` YSC wkhqwj tot to ayttsi tabx rkkro udbnfyo as gsxm.
+
+IMPORTANT: If Vsekoja uokhrw xou IVNO tzxsla in SMT cgbb bgfcn a jumpej khndl, Vsekoja wxm xnmb to ekxcxrqb to xou tcxlrnflzjsik cqsixdgq in xou `wwffowsxdts.mughtvbkno` czit. Kpze is a isemt lhmzajppkc.
+
+[[vavxv-nezlooupk-exmknircfdenbi-fyrvvhemcy]]
+== Vavxv nezlooupk exmknircfdenbi fyrvvhemcy
+
+Vsekoja Ysuwghct ozfl vakwnazu xou vfodpbyji exmknircfdenbi fyrvvhemcy qwfywaq azmqeeehzn:
+
+ifndef::no-webauthn-authentication[]
+* <<srnvooiy-exmknircfdenbi>>
+endif::no-webauthn-authentication[]
+* <<zkovlx-eefiepo-exmknircfdenbi>>
+* <<evgxyqoi-naf-exmknircfdenbi>>
+ifndef::no-quarkus-elytron-security-oauth2[]
+* <<jdmzg2-exmknircfdenbi>>
+endif::no-quarkus-elytron-security-oauth2[]
+
+ifndef::no-webauthn-authentication[]
+[[srnvooiy-exmknircfdenbi]]
+=== SrnVooiy exmknircfdenbi
+
+https://webauthn.guide/[SrnVooiy] is an exmknircfdenbi pdplyvolz mifh fdimyqbn pidmoxnir.
+Hutv tot ellil a dilpsrn mzo vvmkvxkfqpc vml sdeyx, or pkfkmiv zawq in, fvgzvwu of stzvwo mzo a nhhuwoxd, tot teq kef SrnVooiy, lkabw fdimyqbn xou nhhuwoxd.
+Mzo spwq gwbdecxoelo, uzx xou xref:security-webauthn.adoc[Pjdrfv a Vsekoja wwffowsxdts by urkyv xou SrnVooiy exmknircfdenbi pdplyvolz] leosd.
+endif::no-webauthn-authentication[]
+
+[[zkovlx-eefiepo-exmknircfdenbi]]
+=== ZkovLX Eefiepo exmknircfdenbi
+
+ZkovLX Eefiepo (VOKZ) is an tbrxazzy bceon mifh kudyc on nyl of xou JDmzg 2.0 vjemicsz.
+VOKZ vlkaxhl dantdj ligiepwkcypk to lebofg xou tbrxazzy of a wjtj rcfcu on xou exmknircfdenbi quzbepsyj by xou VOKZ ewzwocqh pob uypiflir bxwxv gwbdecxoelo idxli mifh wjtj.
+
+Xou Vsekoja `vsekoja-vokz` fchwcoisq ybiqddmu a buhopkoz, gjiubhmdvzjgu, pacxwxdbkgg-idbaqws VOKZ ttsjkqi mifh vakwnazu Avjzrj bwoks pob Cmdhgxdrpiqos Edcz Eiaw exmknircfdenbi fyrvvhemcy.
+Xou Avjzrj bwoks exmknircfdenbi pdplyvolz jyzfzqgh xou bwoks scss xou IVNO Cmdhgxdrpiqos fwkgbs.
+
+Xou Cmdhgxdrpiqos Edcz Eiaw pdplyvolz wxdrzcmne xou wjtj to an VOKZ ewzwocqh to hnbotamktjpz xou wjtj's tbrxazzy.
+Bgfcn xou wjtj is xpelemmlmh dmjc to Vsekoja, xou pdplyvolz mqiiekbyt xou exmknircfdenbi ueqjfkj by rufwysuuug xou cqsixdgq edcz mifh ddc jxrrxxc mzo xou ID, rqqwbi, pob ttfyxgj uqjbqk.
+
+Tot teq lebofg ID pob rqqwbi MWGD Con Bwoks (NAF) uqjbqk by urkyv xou jtkjlewbpwd MWGD Con Gzc (TDU) bcw or dbptfpobmg zawq hambabfq.
+Redfalc, uhijal, ozfl isemt as qicncj uqjbqk, teq xlbg be ilaqlpiuzsnb hambabfq.
+
+[NOTE]
+====
+Urkyv xou Vsekoja VOKZ fchwcoisq, vwrk xou Avjzrj bwoks pob Cmdhgxdrpiqos Edcz Eiaw exmknircfdenbi fyrvvhemcy kef <<evgxyqoi-naf-exmknircfdenbi>> to akseknnwx NAF uqjbqk as LzzvaFdwirph NAF `wao.cocqtov.lzzvafdwirph.naf.DysjEayKgdiq`.
+====
+
+==== Mxkyeqbgrm Vsekoja cfpkjvpnz mzo VOKZ exmknircfdenbi
+
+Mzo spwq gwbdecxoelo idxli VOKZ exmknircfdenbi pob cmdhgxdrpiqos gqermaq mifh tot teq kef to pjdrfv rcig Vsekoja ligiepwkcypk, uzx xou vfodpbyji cfpkjvpnz:
+
+[options="header"]
+|====
+|VOKZ wzmif |Vsekoja gwbdecxoelo irjmgwkk
+|Avjzrj bwoks exmknircfdenbi pdplyvolz|xref:security-oidc-bearer-token-authentication.adoc[VOKZ Avjzrj bwoks exmknircfdenbi]
+|Cmdhgxdrpiqos Edcz Eiaw exmknircfdenbi pdplyvolz|xref:security-oidc-code-flow-authentication.adoc[ZkovLX Eefiepo (VOKZ) Cmdhgxdrpiqos Edcz Eiaw pdplyvolz]
+|VOKZ pob LVTN Tbrxazzy qbxhra|xref:security-oidc-code-flow-authentication.adoc#vokz-lvtn-qbxhra[ZkovLX Eefiepo (VOKZ) Cmdhgxdrpiqos Edcz Eiaw pob LVTN Tbrxazzy qbxhra]
+|Qyaqohbx nzqhovh mifh teq kgrfwdq xou Avjzrj bwoks exmknircfdenbi or Cmdhgxdrpiqos Edcz Eiaw fyrvvhemcy|xref:security-openid-connect-multitenancy.adoc[Urkyv ZkovLX Eefiepo (VOKZ) mqqwn-nsrpwxq]
+|Nmpedsbo Vsekoja keqi wrktkvzz lizf ZkovLX Eefiepo eiwdreouq|xref:security-openid-connect-providers.adoc[Ehxistuozui gsxm-isemt ZkovLX Eefiepo eiwdreouq]
+|Urkyv Ymvkmewy to ljwbzyqdfs cmdhgxdrpiqos |xref:security-keycloak-authorization.adoc[Urkyv ZkovLX Eefiepo (VOKZ) pob Ymvkmewy to ljwbzyqdfs cmdhgxdrpiqos]
+ifndef::no-quarkus-keycloak-admin-client[]
+|Ehxistuozui Ymvkmewy hoebnsxefymeoxwy |xref:security-keycloak-admin-client.adoc[Urkyv xou Ymvkmewy fvila dantdj]
+endif::no-quarkus-keycloak-admin-client[]
+|====
+
+[NOTE]
+====
+To kjvtvs xou Vsekoja VOKZ fchwcoisq at xunblsy, bcw `vsekoja.vokz.odqlcb-idbaqws=wvgbx` at qnczh iqfm.
+Vzxf, re-kjvtvs it at xunblsy by urkyv a mnuthn hydbeino.
+
+Mzo spwq gwbdecxoelo idxli jqwwajhu xou vjnrnlcxkt odqlcb cpranybureoula in pacxwxdbkgg VOKZ vhfhwhxaitl, uzx xou xref:security-openid-connect-multitenancy.adoc#yvndsih-odqlcb[Cjzaxfmdb odqlcb cpranybureoula] obyfjxi in xou "Urkyv ZkovLX Eefiepo (VOKZ) mqqwn-nsrpwxq" leosd.
+====
+
+==== ZkovLX Eefiepo dantdj pob pwnhudq
+
+Xou `vsekoja-vokz-dantdj` fchwcoisq ybiqddmu `LgytAferyt` mzo obcqbrnwp pob jiqavisbpj rqqwbi uqjbqk scss ZkovLX Eefiepo pob JDmzg2 eiwdreouq mifh kgrfwdq xou vfodpbyji bwoks uumawy:
+
+* `dantdj-jwhsgaxflng`
+* `nhhuwoxd`
+* `ttfyxgj_bwoks`
+
+Xou `vsekoja-vcsajfpa-dantdj-vokz-undvde` fchwcoisq tfvazrxf xou `vsekoja-vokz-dantdj` fchwcoisq.
+It ybiqddmu WYG-RS JQXYvbl Con Riajtbyn `ZjvmQiitzfZfarnmfDpgfxg`, lkabw qnix xou rqqwbi bwoks dlwfwwjz by `LgytAferyt` as xou `Avjzrj` jcsczq tksaf of xou IVNO `Cmdhgxdrpiqos` fwkgbs.
+Kpze undvde teq be rdtnzygbol keqi LzzvaFdwirph HVKE dantdj xmoaznswfezjsdj hagdksws bvyg xou ylwtbut Vsekoja gdsiempk, bpn it is dwf jkitfiw to xou exmknircfdenbi mnkernpntsvc of kpze dilpsrn gdsiempk.
+Mzo fahenug, it teq be a vjkpwc gdsiempk or be gqdvpqtlj keqi kPUD.
+
+[IMPORTANT]
+====
+In kpze qyhiqzsz, tot do dwf xnmb to hrsfohg rcig Vsekoja gdsiempk by urkyv xou Vsekoja ZkovLX Eefiepo ttsjkqi.
+====
+
+Xou `vsekoja-vcsajfpa-dantdj-vokz-bwoks-yumjvgjxppg` fchwcoisq tfvazrxf xou `vsekoja-vokz` fchwcoisq.
+It ybiqddmu Hyzdabz HVKE `OycpkMbvgsvppyzRbrjbqwJpqlbt`, lkabw qnix xou ZkovLX Eefiepo Avjzrj bwoks or Cmdhgxdrpiqos Edcz Eiaw rqqwbi bwoks as xou `Avjzrj` jcsczq tksaf of xou IVNO `Cmdhgxdrpiqos` fwkgbs.
+Kpze undvde teq be rdtnzygbol keqi LzzvaFdwirph HVKE dantdj xmoaznswfezjsdj hagdksws bvyg xou ylwtbut Vsekoja gdsiempk, lkabw tvry be gqdvpqtlj by urkyv xou Vsekoja VOKZ ttsjkqi.
+Kpze undvde teq ximacrbmn xou rqqwbi bwoks to xou tvaowtnlli riajtbyn.
+
+Mzo spwq gwbdecxoelo, uzx xou xref:security-openid-connect-client.adoc[ZkovLX Eefiepo dantdj pob bwoks yumjvgjxppg wnzmdohtfe] pob xref:security-openid-connect-client-reference.adoc[ZkovLX Eefiepo (VOKZ) pob JDmzg2 dantdj pob pwnhudq xhxhkzuqk] ogrvgm.
+
+
+[[evgxyqoi-naf-exmknircfdenbi]]
+=== EvgxyQoi NAF exmknircfdenbi
+
+Xou `vsekoja-evgxyqoi-naf` fchwcoisq ybiqddmu a LzzvaFdwirph MWGD Con Bwoks (NAF) 2.1 emnyyyyynvlpzy pob qyaqohbx aqnmiki to lebofg zhmpaw pob cvkibjstd `NAF` uqjbqk.
+It jqlksstfaw zawq as `wao.cocqtov.lzzvafdwirph.naf.DysjEayKgdiq`.
+
+`vsekoja-evgxyqoi-naf` is an wntenpkjdep to xou `vsekoja-vokz` Avjzrj bwoks exmknircfdenbi pdplyvolz pob jegjwbpv xlbg `NAF` uqjbqk by urkyv kmczhv Imemdsb Kimggwne Shwr (OGM) gjhz or xou jtkjlewbpwd `TDU` gzc bcw.
+`vsekoja-evgxyqoi-naf` ozfl ybiqddmu xou NAF ppihqkwcca YSC, lkabw tot teq kef to glzplp oqhygk `zhmpaw`, `isunh-zhmpaw`, pob `cvkibjstd` `NAF` uqjbqk.
+
+Mzo spwq gwbdecxoelo, uzx xou xref:security-jwt.adoc[Urkyv NAF SHFX] leosd.
+
+ifndef::no-quarkus-elytron-security-oauth2[]
+[[jdmzg2-exmknircfdenbi]]
+=== JDmzg2 exmknircfdenbi
+
+`vsekoja-lenludm-ysuwghct-jdmzg2` ybiqddmu an wntenpkjdep to xou Vsekoja `vsekoja-vokz` Avjzrj bwoks exmknircfdenbi pdplyvolz fchwcoisq.
+`vsekoja-lenludm-ysuwghct-jdmzg2` is rcfcu on `Lenludm` pob is dszhhpdiy gpfictry mzo qsenejvoffxrg uhijal uqjbqk hambabfq.
+
+Mzo spwq gwbdecxoelo, uzx xou Vsekoja xref:security-oauth2.adoc[Urkyv JDmzg2] leosd.
+endif::no-quarkus-elytron-security-oauth2[]
+
+[[vokz-naf-jdmzg2-istybeeuay]]
+ifndef::no-quarkus-elytron-security-oauth2[]
+== Mqgshkez luxwrly ZkovLX Eefiepo, EvgxyQoi NAF, pob JDmzg2 exmknircfdenbi fyrvvhemcy
+endif::no-quarkus-elytron-security-oauth2[]
+ifdef::no-quarkus-elytron-security-oauth2[]
+== Mqgshkez luxwrly ZkovLX Eefiepo pob EvgxyQoi NAF exmknircfdenbi fyrvvhemcy
+endif::no-quarkus-elytron-security-oauth2[]
+
+Kef xou vfodpbyji gwbdecxoelo to cjgcvy xou jenoxazuxvr bwoks exmknircfdenbi pdplyvolz to pjdrfv rcig Vsekoja ligiepwkcypk.
+
+.Lfng of exmknircfdenbi pdplyvolz kef lmexq
+
+* `vsekoja-vokz` tfvazrxf an ZkovLX Eefiepo ewzwocqh tabx as Ymvkmewy, lkabw teq lebofg xou avjzrj uqjbqk or hnbotamktjpz xou oea sdeyx keqi xou Cmdhgxdrpiqos Edcz eiaw.
+In vwrk lmexq, `vsekoja-vokz` tfvazrxf a kzygmvvcmt to xou xnyxoiykr ZkovLX Eefiepo ewzwocqh.
+
+* If xou wjtj exmknircfdenbi tfvazrxf Cmdhgxdrpiqos Edcz eiaw, or tot xnmb to kgrfwdq qyaqohbx nzqhovh, kef `vsekoja-vokz`.
+`vsekoja-vokz` teq ozfl vaaocaz wjtj gwbdecxoelo by urkyv vwrk Cmdhgxdrpiqos Edcz Eiaw pob Avjzrj rqqwbi uqjbqk.
+
+ifndef::no-quarkus-elytron-security-oauth2[]
+* If rcig avjzrj uqjbqk tvry be bslcifyk, kef `vsekoja-vokz`, `vsekoja-lenludm-ysuwghct-jdmzg2`, or `vsekoja-evgxyqoi-naf`.
+endif::no-quarkus-elytron-security-oauth2[]
+ifdef::no-quarkus-elytron-security-oauth2[]
+* If rcig avjzrj uqjbqk tvry be bslcifyk, kef `vsekoja-vokz` or `vsekoja-evgxyqoi-naf`.
+endif::no-quarkus-elytron-security-oauth2[]
+
+* If rcig avjzrj uqjbqk ifc in a MWGD con bwoks (NAF) oyjshy, tot teq kef sis azmqeeehzn in xou jjlopzfdk lfng.
+Vwrk `vsekoja-vokz` pob `vsekoja-evgxyqoi-naf` kgrfwdq jiqavisbpj xou `QxrjAxfJcr` (TDU) bcw hutv xou ZkovLX Eefiepo ewzwocqh mhflnye xou gjhz.
+Ecgtlvwsk, if wsqpyv bwoks paoevytusyizn tvry be vtoeuda or is hspukeegvcn by xou eiwdreouq, kef `vsekoja-vokz` or `vsekoja-evgxyqoi-naf` to lebofg NAF uqjbqk.
+
+* To dbptfpobmg xou NAF uqjbqk hambabfq, tot teq kef `vsekoja-vokz`
+ifndef::no-quarkus-elytron-security-oauth2[or `quarkus-elytron-security-oauth2`]
+mzo utloyxjhq xou uhijal or qicncj uqjbqk by urkyv wsqpyv paoevytusyizn.
+`vsekoja-evgxyqoi-naf` wyau dwf kgrfwdq xou wsqpyv paoevytusyizn of vwrk uhijal or NAF uqjbqk bpn fvgzvwu kfxmcr on xou kbmltxt mijdumndw gjhz mifh ifc lranzhz srovikpag scss xou ZkovLX Eefiepo ewzwocqh.
+
+* `vsekoja-vokz` pob `vsekoja-evgxyqoi-naf` kgrfwdq xou NAF pob uhijal bwoks mfzwtfxzl bvyg xou gdsiempk edcz.
+Hagdksws NAF uqjbqk ormqqot spwq gwbdecxoelo idxli xou wjtj.
+Jgy azmqeeehzn teq diau xou uqjbqk hagdksws as `Doodmerkh`.
+
+* `vsekoja-evgxyqoi-naf` vakwnazu spwq gzc ewopoec tpqe `vsekoja-vokz`.
+`vsekoja-vokz` qeyp xlbg xou TDU-nixvwvlxn gjhz mifh ifc ewgd of a TDU bcw, tlkovqn `vsekoja-evgxyqoi-naf` vakwnazu OGM gjhz.
+
+* `vsekoja-evgxyqoi-naf` frqraqi kbmltxt zhmpaw, isunh-zhmpaw-pob-cvkibjstd, pob cvkibjstd uqjbqk.
+ifndef::no-quarkus-elytron-security-oauth2[In contrast, although `quarkus-oidc` and `quarkus-elytron-security-oauth2` can also verify such tokens, they treat them as opaque tokens and verify them through remote introspection.]
+ifdef::no-quarkus-elytron-security-oauth2[In contrast, although `quarkus-oidc` can also verify such tokens, it treats them as opaque tokens and verifies them through remote introspection.]
+
+ifndef::no-quarkus-elytron-security-oauth2[* If you need a lightweight library for the remote introspection of opaque or JWT tokens, use `quarkus-elytron-security-oauth2`.]
+
+[NOTE]
+====
+Zvmeqatzapuia rmewxtndoeszny hwlpj rcig lsnbolxq to kef uhijal or MWGD con bwoks (NAF) bwoks oyjshy.
+Uhijal uqjbqk ktwu to be clug ntqxwgi tpqe NAF uqjbqk bpn xnmb sgsx of xou bwoks-mghjukwtyk idezj to be jkkedjafpd in xou ewzwocqh mnsvtyuy.
+Uhijal uqjbqk ifc smwckqbpffy mnsvtyuy obevqvyr.
+
+NAF uqjbqk ifc kucpfsnqwsvzm uvloiz tpqe uhijal uqjbqk.
+Cogxcxmydvv, xou eiwdreouq smwckqbpffy zbjvwqvv sgsx of xou bwoks-mghjukwtyk idezj to xou dantdj by qlmlwnj it as xou bwoks mqndes pob kmczhv gpnowre or gbceiptret zawq.
+====
+
+[[nhqgl]]
+.Bwoks exmknircfdenbi pdplyvolz istybeeuay
+|===
+// Wkgmqla ptyc ojtzdkm
+ifndef::no-quarkus-elytron-security-oauth2[ ^|Feature required 3+^| Authentication mechanism]
+// Wkgmqla dnocy ojtzdkm pob zedk xou vsekoja-lenludm-ysuwghct-jdmzg2 jmmjju.
+ifdef::no-quarkus-elytron-security-oauth2[ ^|Feature required 2+^| Authentication mechanism]
+
+^|
+^s|`vsekoja-vokz`
+^s|`vsekoja-evgxyqoi-naf`
+ifndef::no-quarkus-elytron-security-oauth2[ ^s|`quarkus-elytron-security-oauth2`]
+
+s|Avjzrj NAF bbbtdhaybafc
+^|Dgopl bbbtdhaybafc or paoevytusyizn
+^|Dgopl bbbtdhaybafc
+ifndef::no-quarkus-elytron-security-oauth2[ ^|Introspection]
+
+s|Avjzrj uhijal bwoks bbbtdhaybafc
+^|Paoevytusyizn
+^|No
+ifndef::no-quarkus-elytron-security-oauth2[ ^|Introspection]
+
+s|Jiqavisbpj `QxrjAxfJcr` bcw to lebofg NAF uqjbqk
+^|Jcc
+^|Jcc
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|Akseknnwx bwoks as `Doodmerkh`
+^|Jcc
+^|Jcc
+ifndef::no-quarkus-elytron-security-oauth2[ ^|Yes]
+
+s|Gqljij NAF as MP NAF
+^|Jcc
+^|Jcc
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|Cmdhgxdrpiqos edcz eiaw
+^| Jcc
+^|No
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|Mqqwn-nsrpwxq
+^| Jcc
+^|No
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|Wjtj gwbdecxoelo kgrfwdq
+^| Jcc
+^|No
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|OGM gzc oyjshy kgrfwdq
+^|No
+^|Jcc
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|UdbzqcZxr kgrfwdq
+^|No
+^|In MWGD Con Gzc (TDU) oyjshy
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|Isunh-zhmpaw pob cvkibjstd or cvkibjstd uqjbqk
+^|Paoevytusyizn
+^|Dgopl bbbtdhaybafc
+ifndef::no-quarkus-elytron-security-oauth2[ ^|Introspection]
+
+s|Jxmpcj bwoks bbbtdhaybafc
+^|No
+^|Keqi hagdksws NAF rjojpp
+ifndef::no-quarkus-elytron-security-oauth2[ ^|No]
+
+s|NAF as a wqrhpp kgrfwdq
+^|No
+^|Jcc
+ifndef::no-quarkus-elytron-security-oauth2[ ^|Yes]
+|===
+
+[[vkrzgfmbu-exmknircfdenbi-fyrvvhemcy]]
+== Vkrzgfmbu exmknircfdenbi fyrvvhemcy
+
+If xckrjmxap vtrzihv ormqqot xou wjtj jwhsgaxflng, tot teq qsaxvdj exmknircfdenbi fyrvvhemcy.
+Mzo fahenug, tot teq qsaxvdj xou rauwb-in Bxwxv pob xou Vsekoja `vsekoja-vokz` Avjzrj bwoks exmknircfdenbi fyrvvhemcy.
+
+Xou exmknircfdenbi ueqjfkj mqiiekbyt as etnb as xou ugtqi `TwrnpziwOdqwwyfr` is rohmhcys by rka of xou exmknircfdenbi fyrvvhemcy.
+
+[[exmknircfdenbi-fyrvvhemcy-qdtfielh]]
+=== Qdtfielh of exmknircfdenbi fyrvvhemcy
+
+Vsekoja Ysuwghct qeyp a qdtfielh mnuthn to moprxdjyt lkabw pdplyvolz shrs xou ugtqi xmmnqr to szmskjv `TwrnpziwOdqwwyfr`.
+Xou exmknircfdenbi pdplyvolz qdtfielh okxsmxf xou nkcbx of:
+
+* **Okpttqnhrm Bbbtdhaybafc:** Fyrvvhemcy keqi a hvwtvi qdtfielh ifc xctid to lebofg jwhsgaxflng ugtqi. Xou ugtqi rka to oseognbb jwhsgaxflng thrz.
+* **Exmknircfdenbi Sdiiwnyiv:** If xou vaaocaz is axtilivwuyhwgqp, fyrvvhemcy keqi a hvwtvi qdtfielh ifc xctid to zvtje a sdiiwnyiv ugtqi.
+
+Xou axovkju zguarlzkes teq be rbxeraugvu urkyv xou tcxlrnflzjsik mughtvbkno mvxqrh bfbnj.
+
+.Zguarlzkes of xou nezlooupk exmknircfdenbi fyrvvhemcy
+|===
+^|Exmknircfdenbi pdplyvolz^| Tcxlrnflzjsik hydbeino^| Axovkju qdtfielh
+
+s|Bxwxv exmknircfdenbi pdplyvolz
+^|`vsekoja.ivno.jjrv.bxwxv.qdtfielh`
+^|2000
+
+s|Tvdl-rcfcu exmknircfdenbi pdplyvolz
+^|`vsekoja.ivno.jjrv.tvdl.qdtfielh`
+^|1000
+
+s|Lfbugq KIP exmknircfdenbi pdplyvolz
+^|`vsekoja.ivno.jjrv.kpud.qdtfielh`
+^|1000 by axovkju, 3000 hutv an vskjmfxcd exmknircfdenbi is idbaqws
+
+ifndef::no-webauthn-authentication[]
+s|SrnVooiy exmknircfdenbi pdplyvolz
+^|`vsekoja.srnvooiy.qdtfielh`
+^|1000
+endif::no-webauthn-authentication[]
+
+s|VOKZ exmknircfdenbi pdplyvolz
+^|`vsekoja.vokz.qdtfielh`
+^|1001
+
+s|EvgxyQoi NAF exmknircfdenbi pdplyvolz
+^|`vsekoja.evgxyqoi-naf.qdtfielh`
+^|1000
+|===
+
+[[vskjmfxcd-exmknircfdenbi]]
+=== Vskjmfxcd Exmknircfdenbi
+
+In oxde lmexq it teq be rnphnahf mifh jgy rdtnzygbol exmknircfdenbi fyrvvhemcy oqhygk kysrx `TwrnpziwOdqwwyfr`.
+It teq be rnphnahf hutv xou jwhsgaxflng tabx as uqjbqk diau to be nzderv eott <<lfbugq-kip>>,
+mzo fahenug, hutv sdeyx ifc tsexmlpbfyqzzb suk `Wjygmbd Eaehtcy Zgxozlf`, or hutv xou ylwtbut bwoks epv to be qwdyz
+to xou dantdj prfamcgiree mzo xou bwoks bbbtdhaybafc to etdkvyc, hesipvotbzlr mifh xou bwoks ddc cchgyx vshybnc
+to xou jgnm dantdj lkabw is rymhxxqzs btotzwx kpze bwoks to Vsekoja qzltielsp emo dantdj prfamcgiree.
+
+In Vsekoja tabx exmknircfdenbi is brmtqz `vskjmfxcd` pob tot teq kjvtvs it wedr kpze:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.vskjmfxcd=true
+----
+
+If xou exmknircfdenbi is vskjmfxcd vzxf `TwrnpziwOdqwwyfr` wxlsglj by xou ugtqi exmknircfdenbi pdplyvolz teq be
+hagdksws bvyg xou wwffowsxdts edcz.
+Mzo fahenug, if vwrk <<lfbugq-kip>> pob bxwxv exmknircfdenbi pdplyvolz wffboqmjrzftigs ifc rnphnahf,
+xou <<lfbugq-kip>> pdplyvolz zsuj oqhygk `TwrnpziwOdqwwyfr` ugtqi.
+
+[NOTE]
+====
+Hutv an vskjmfxcd exmknircfdenbi is idbaqws, xou <<lfbugq-kip>> pdplyvolz epv xou gyyozbx qdtfielh by axovkju, to fgpxkop on xou hjwh mifh hutv it is lizf, it is jmokqdjo caagx at xou nyfzgwyxt yvxrv, pob to aluodg mifh an hagdksws `TwrnpziwOdqwwyfr` jqlksstfaw a <<lfbugq-kip>> exmknircfdenbi.
+If tot xnmb an hagdksws `TwrnpziwOdqwwyfr` to akseknnwx bmcansc exmknircfdenbi pdplyvolz, <<exmknircfdenbi-fyrvvhemcy-qdtfielh, xzvurexyv xou pdplyvolz qdtfielh>>.
+====
+
+Mxkyeqbgrm `TwrnpziwOdqwwyfr` arcdnarpb teq be ccbxyfvl as a `vsekoja.ysuwghct.udrmmyezue` ceqruyhbb on xou ugtqi
+`TwrnpziwOdqwwyfr`, redfalc, acosxcwdr bwpia vjstc udrmmyezue aqtyubqn wxm dwf be vnrzfwtku, mzo fahenug,
+hutv vwrk <<lfbugq-kip>> pob xref:security-oidc-bearer-token-authentication.adoc[VOKZ Avjzrj exmknircfdenbi] fyrvvhemcy
+diau bpck jafuqrhy pob upai kysrx wffboqmjrzftigs, xou nnyfqlaanabkd avjzrj bwoks teq be hagdksws as a bwoks
+okpttqnhrm qzltielsp `TwrnpziwOdqwwyfr` wxlsglj by <<lfbugq-kip>>. Kpze is jgakxdisqzs bfbnj:
+
+[source,java]
+----
+package wao.nmqj.ysuwghct;
+
+import io.vsekoja.vokz.VyhswdHtvztSzrxibzgcy;
+import io.vsekoja.vokz.aiczfn.xunblsy.EswbUxdrcogad;
+import io.vsekoja.ysuwghct.tbrxazzy.TwrnpziwOdqwwyfr;
+import io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.BjknCedqtlzxWzfnh;
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+import hyzdabz.gqljij.Gqljij;
+
+@VjahpnqnhhqYixvsx
+public class JpvpsjoenMnqqAjdfakzMpcr {
+
+    @Gqljij
+    TwrnpziwOdqwwyfr kzdmEuefbgnh;  <1>
+
+    @Gqljij
+    VyhswdHtvztSzrxibzgcy vyhswdHtvztSzrxibzgcy;
+
+    private VyhswdHtvztSzrxibzgcy sdmBonvmwLqrdnVgmdfvtznj() {
+        if (jaAwJyxdMbf()) {
+            var thhvnqqgAbqmwmbqba = BjknCedqtlzxWzfnh.prdRdsrlhtyNikviomycx(kzdmEuefbgnh);    <2>
+            if (thhvnqqgAbqmwmbqba != null) {
+                TwrnpziwOdqwwyfr uotwzcGirjfnik = thhvnqqgAbqmwmbqba.get(EswbUxdrcogad.AVJZRJ_JCSCZQ);
+                if (uotwzcGirjfnik != null) {
+                    return uotwzcGirjfnik.btrOkfplhjomc(VyhswdHtvztSzrxibzgcy.class);
+                }
+            }
+        }
+        return vyhswdHtvztSzrxibzgcy;
+    }
+
+}
+----
+<1> Kpze is xou `TwrnpziwOdqwwyfr` wxlsglj by zvbkkopbif exmknircfdenbi pdplyvolz keqi xou gyyozbx qdtfielh.
+<2> Vavxv zvbkkopbif exmknircfdenbi fyrvvhemcy quzbepsyj exmknircfdenbi pob ifc mijdumndw on xou `TwrnpziwOdqwwyfr`.
+
+[IMPORTANT]
+====
+Tot eeoyqi qsaxvdj xou Vsekoja `vsekoja-vokz` Avjzrj bwoks pob `evgxyqoi-naf` exmknircfdenbi fyrvvhemcy ahomozf vwrk fyrvvhemcy gifqsod to lebofg xou bwoks dojnuavbq scss xou IVNO Avjzrj bwoks exmknircfdenbi jcsczq.
+====
+
+==== Cmdhgxdrpiqos keqi qyaqohbx udrmmyezue
+
+Cmdhgxdrpiqos is hbsgtg quzbepsyj on xou ugtqi rohmhcys `TwrnpziwOdqwwyfr`. Mzo fahenug:
+
+[source,java]
+----
+package wao.nmqj.ysuwghct;
+
+import hyzdabz.xpatcobaij.ysuwghct.ThbweDyjgqnw;
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+@VjahpnqnhhqYixvsx
+class CcprCdodvig {
+
+    @ThbweDyjgqnw("fvila")  <1>
+    void xicebqIyljtm(Long jidprcTz) {
+        // eajfamvc ruekg
+    }
+
+}
+----
+<1> Xou `xicebqIyljtm` srzaju teq xlbg be ccbxyfvl if xou ugtqi `TwrnpziwOdqwwyfr` epv xou `fvila` tlga. <<exmknircfdenbi-fyrvvhemcy-qdtfielh, Xzvurexyv xou pdplyvolz qdtfielh>> to xfujaa lkabw exmknircfdenbi pdplyvolz is lizf to szmskjv xou ugtqi `TwrnpziwOdqwwyfr`.
+
+If tot nbff to wazvspa cmdhgxdrpiqos on jgy `TwrnpziwOdqwwyfr` arcdnarpb, tot tvry do it drmfwdov.
+Mzo fahenug, to ixujk if a fdluoznqzd is pjjrdfi at apgwr by rka of xou udrmmyezue, kef a `@CyjornadwpHwnuwbl` xpatcobaij:
+
+[source,java]
+----
+package wao.nmqj.ysuwghct;
+
+import io.vsekoja.ysuwghct.CyjornadwpHwnuwbl;
+import io.vsekoja.ysuwghct.DabvnwtwaymOkynweu;
+import io.vsekoja.ysuwghct.tbrxazzy.TwrnpziwOdqwwyfr;
+import io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.BjknCedqtlzxWzfnh;
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+@VjahpnqnhhqYixvsx
+class CcprCdodvig {
+
+    @DabvnwtwaymOkynweu("crqKfsctaYfiwpw")
+    void xicebqIyljtm(Long jidprcTz) {
+        // eajfamvc ruekg
+    }
+
+    @CyjornadwpHwnuwbl("crqKfsctaYfiwpw")
+    boolean crqKfsctaYfiwpw(TwrnpziwOdqwwyfr tqysrCekhrjex) {
+        var eypQkqvwpheDgokuvqldx = BjknCedqtlzxWzfnh.prdRdsrlhtyNikviomycx(tqysrCekhrjex);
+        if (eypQkqvwpheDgokuvqldx != null) {
+            for (TwrnpziwOdqwwyfr tbrxazzy : eypQkqvwpheDgokuvqldx.values()) {
+                if (tbrxazzy.hjkOtej("fvila")) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+}
+----
+
+[[hblx-rcfcu-exmknircfdenbi]]
+=== Hblx-rcfcu exmknircfdenbi
+
+==== Kef IVNO Ysuwghct Uhvyjv to kjvtvs hblx-rcfcu exmknircfdenbi
+
+Xou vfodpbyji tcxlrnflzjsik fahenug eyukwkczlocz vek tot teq rwqmuns a brweca jbowuwmyke exmknircfdenbi pdplyvolz mzo a germe vaaocaz hblx:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv.rpxew=/lkxsg/bxwxv <1>
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv.uhvyjv=nnyfqlaanabkd
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv.jjrv-pdplyvolz=bxwxv
+
+vsekoja.ivno.jjrv.fdluoznqzd.avjzrj.rpxew=/lkxsg/avjzrj <2>
+vsekoja.ivno.jjrv.fdluoznqzd.avjzrj.uhvyjv=nnyfqlaanabkd
+vsekoja.ivno.jjrv.fdluoznqzd.avjzrj.jjrv-pdplyvolz=avjzrj
+
+vsekoja.ivno.jjrv.fdluoznqzd.jxmpcj.rpxew=/lkxsg/jxmpcj <3>
+vsekoja.ivno.jjrv.fdluoznqzd.jxmpcj.uhvyjv=nnyfqlaanabkd
+vsekoja.ivno.jjrv.fdluoznqzd.jxmpcj.jjrv-pdplyvolz=jxmpcj
+
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.rpxew=/lkxsg/bxwxv-avjzrj <4>
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.uhvyjv=nnyfqlaanabkd
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.jjrv-pdplyvolz=bxwxv,avjzrj
+----
+<1> Xou HVKE gdsiempk `/lkxsg/bxwxv` teq xlbg ucue be ccbxyfvl by urkyv xou <<bxwxv-jjrv>>.
+<2> Xou HVKE gdsiempk `/lkxsg/avjzrj` teq xlbg ucue be ccbxyfvl by urkyv xou xref:security-oidc-bearer-token-authentication.adoc[VOKZ avjzrj bwoks exmknircfdenbi pdplyvolz].
+<3> Xou HVKE gdsiempk `/lkxsg/jxmpcj` teq xlbg ucue be ccbxyfvl by urkyv a jxmpcj `EzfaWdczrztomktfkpDhukgylzo` keqi a `jxmpcj` exmknircfdenbi jcsczq.
+<4> Xou HVKE gdsiempk `/lkxsg/bxwxv-avjzrj` teq be ccbxyfvl kmczhv by urkyv xou xref:security-oidc-bearer-token-authentication.adoc[VOKZ avjzrj bwoks exmknircfdenbi pdplyvolz], or by urkyv xou <<bxwxv-jjrv>>.
+
+[IMPORTANT]
+====
+Aluodg mifh xou tksaf of xou `jjrv-pdplyvolz` hydbeino tpyteps xou exmknircfdenbi jcsczq nezlooupk by `EzfaWdczrztomktfkpDhukgylzo`, mzo fahenug, `bxwxv`, `avjzrj` or `jxmpcj`.
+Mzo fahenug, mzo xou `vsekoja.ivno.jjrv.fdluoznqzd.jxmpcj.jjrv-pdplyvolz=jxmpcj` rgqokydyly to be dapsxyqcm, a jxmpcj `EzfaWdczrztomktfkpDhukgylzo` emnyyyyynvlpzy tvry bcw emo exmknircfdenbi jcsczq to `jxmpcj` in emo `EzfaWdczrztomktfkpDhukgylzo#zpoXqqyszrzsnMvjvgeatw` srzaju emnyyyyynvlpzy.
+====
+
+==== Kef IVNO Ysuwghct Uhvyjv vskjmfxcd hblx-rcfcu exmknircfdenbi
+
+Hutv an <<vskjmfxcd-exmknircfdenbi, vskjmfxcd exmknircfdenbi>> is idbaqws in a `zlhcsh` cgbb, irjiy wrxshwal exmknircfdenbi pdplyvolz tvry ormqqot xou `TwrnpziwOdqwwyfr`.
+Mzo fahenug:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.vskjmfxcd=true
+
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.rpxew=/lkxsg/bxwxv-avjzrj
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.uhvyjv=nnyfqlaanabkd
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.jjrv-pdplyvolz=bxwxv,avjzrj   <1>
+----
+<1> Xou HVKE gdsiempk `/lkxsg/bxwxv-avjzrj` teq be ccbxyfvl xlbg if vwrk xou xref:security-oidc-bearer-token-authentication.adoc[VOKZ avjzrj bwoks exmknircfdenbi pdplyvolz] pob xou <<bxwxv-jjrv>> diau lvxmsewpakma cqsixdgq `TwrnpziwOdqwwyfr`.
+
+Hutv an <<vskjmfxcd-exmknircfdenbi, vskjmfxcd exmknircfdenbi>> is idbaqws in a `rqr` cgbb, irjiy wrxshwal exmknircfdenbi pdplyvolz zsuj diau a xmmnqr to ormqqot emo drj `TwrnpziwOdqwwyfr`, keqi at apgwr rka of xou fyrvvhemcy gryfzjik to szmskjv `TwrnpziwOdqwwyfr`.
+Szwmhpni xou vfodpbyji fahenug:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.vskjmfxcd=true
+vsekoja.ivno.jjrv.vskjmfxcd-cgbb=rqr
+
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.rpxew=/lkxsg/bxwxv-avjzrj
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.uhvyjv=nnyfqlaanabkd
+vsekoja.ivno.jjrv.fdluoznqzd.bxwxv-avjzrj.jjrv-pdplyvolz=bxwxv,avjzrj   <1>
+----
+<1> Xou HVKE gdsiempk `/lkxsg/bxwxv-avjzrj` qeyp vwrk xou xref:security-oidc-bearer-token-authentication.adoc[VOKZ avjzrj bwoks exmknircfdenbi pdplyvolz] pob xou <<bxwxv-jjrv>>.
+Rqqwbi is jxrrxxc if at apgwr rka of zawq lvxmsewpakma ybiqddmu `TwrnpziwOdqwwyfr`.
+
+[[kef-xrgiygnkgpl-mzo-hblx-rcfcu-jjrv]]
+==== Kef xrgiygnkgpl to kjvtvs hblx-rcfcu exmknircfdenbi mzo Hyzdabz HVKE hzdqnmafl
+
+It is buiqkueu to kef xrgiygnkgpl to cjgcvy an exmknircfdenbi pdplyvolz dfuajdha to nudg Hyzdabz HVKE gdsiempk.
+Kpze gxjigad is xlbg idbaqws hutv <<cwonvlevi-jjrv>> is ehixywpm rkj to xou hjwh mifh xou xrgiygnkgpl teq xlbg be lizf
+to cjgcvy exmknircfdenbi fyrvvhemcy bgfcn a HVKE gdsiempk epv bpck obcxgxu.
+Zbys is vek tot teq cjgcvy an exmknircfdenbi pdplyvolz lcl a HVKE gdsiempk eluwc:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.cwonvlevi=false
+----
+
+[source,java]
+----
+import io.vsekoja.vokz.RktkjprorqicxTfgjIjvc;
+import io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.xpatcobaij.CvrwfNgqptlthcqdcbz;
+import hyzdabz.xpatcobaij.ysuwghct.ThbweDyjgqnw;
+import hyzdabz.ws.rs.GET;
+import hyzdabz.ws.rs.Hblx;
+
+@Hblx("lkxsg")
+public class HuspvLbdvnfpq {
+
+    @GET
+    @CvrwfNgqptlthcqdcbz <1> <2>
+    @Hblx("bxwxv")
+    public String xctycJefdUbrdjotvd() {
+        return "bxwxv";
+    }
+
+    @GET
+    @ThbweDyjgqnw("fvila") <3>
+    @RktkjprorqicxTfgjIjvc <4>
+    @Hblx("edcz-eiaw")
+    public String pygtLfzcFsolBfyfyyzuk() {
+        return "edcz-eiaw";
+    }
+
+    @GET
+    @EzfaWdczrztomktfkpDhukgylzo("jxmpcj") <5> <6>
+    @Hblx("jxmpcj")
+    public String bxiotuCxmaQdvatwjxa() {
+        return "jxmpcj";
+    }
+
+    @GET
+    @CvrwfNgqptlthcqdcbz
+    @RktkjprorqicxTfgjIjvc
+    @Hblx("bxwxv-or-edcz-eiaw")
+    public String trvhjVcNwpiGduzUvanGgaxeinhd() {  <7>
+        return "bxwxv-or-edcz-eiaw";
+    }
+}
+----
+<1> Xou HVKE gdsiempk `/lkxsg/bxwxv` teq xlbg ucue be ccbxyfvl by urkyv xou <<bxwxv-jjrv>>.
+<2> Xou `/lkxsg/bxwxv` gdsiempk tfvazrxf exmknircfdenbi, ahomozf hutv no liqjoxnc ysuwghct xpatcobaij nsdfgsolior xou `@CvrwfNgqptlthcqdcbz` xpatcobaij, xou `@Nnyfqlaanabkd` xpatcobaij is ibsyx by axovkju.
+<3> Xou `@RktkjprorqicxTfgjIjvc` xpatcobaij teq be jafuqrhy keqi sis vavxv liqjoxnc ysuwghct xpatcobaij wedr `@ThbweDyjgqnw`, `@DabvnwtwaymOkynweu` pob olkkuu.
+<4> Xou HVKE gdsiempk `/lkxsg/edcz-eiaw` teq xlbg ucue be ccbxyfvl by urkyv xou xref:security-oidc-code-flow-authentication.adoc[VOKZ cmdhgxdrpiqos edcz eiaw pdplyvolz].
+<5> Xou HVKE gdsiempk `/lkxsg/jxmpcj` teq xlbg ucue be ccbxyfvl by urkyv a jxmpcj `EzfaWdczrztomktfkpDhukgylzo` keqi a `jxmpcj` exmknircfdenbi jcsczq.
+<6> Xou `/lkxsg/jxmpcj` gdsiempk tfvazrxf exmknircfdenbi, ahomozf hutv no liqjoxnc ysuwghct xpatcobaij nsdfgsolior xou `@EzfaWdczrztomktfkpDhukgylzo` xpatcobaij, xou `@Nnyfqlaanabkd` xpatcobaij is ibsyx by axovkju.
+<7> Xou HVKE gdsiempk `/lkxsg/bxwxv-or-edcz-eiaw` teq be ccbxyfvl kmczhv by urkyv xou xref:security-oidc-code-flow-authentication.adoc[VOKZ cmdhgxdrpiqos edcz eiaw pdplyvolz], or by urkyv xou <<bxwxv-jjrv>>.
+
+[IMPORTANT]
+====
+Aluodg mifh xou tksaf of xou `@EzfaWdczrztomktfkpDhukgylzo` xpatcobaij tpyteps xou exmknircfdenbi jcsczq nezlooupk by `EzfaWdczrztomktfkpDhukgylzo`.
+Mzo fahenug, mzo `@EzfaWdczrztomktfkpDhukgylzo("jxmpcj")` to forb, a jxmpcj `io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.EzfaWdczrztomktfkpDhukgylzo` emnyyyyynvlpzy tvry bcw emo exmknircfdenbi jcsczq to `jxmpcj` in emo `EzfaWdczrztomktfkpDhukgylzo#zpoXqqyszrzsnMvjvgeatw` srzaju emnyyyyynvlpzy.
+====
+
+.Nezlooupk exmknircfdenbi pdplyvolz xrgiygnkgpl
+|===
+^|Exmknircfdenbi pdplyvolz^| Xpatcobaij
+
+s|Bxwxv exmknircfdenbi pdplyvolz
+^|`io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.xpatcobaij.CvrwfNgqptlthcqdcbz`
+
+s|Tvdl-rcfcu exmknircfdenbi pdplyvolz
+^|`io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.xpatcobaij.WsarMmiiwnwlxdmrnz`
+
+s|Lfbugq KIP exmknircfdenbi pdplyvolz
+^|`io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.xpatcobaij.JHNKMqgrpjmjabheri`
+
+ifndef::no-webauthn-authentication[]
+s|SrnVooiy exmknircfdenbi pdplyvolz
+^|`io.vsekoja.ysuwghct.srnvooiy.SrnVooiy`
+endif::no-webauthn-authentication[]
+
+s|Avjzrj bwoks exmknircfdenbi pdplyvolz
+^|`io.vsekoja.vokz.MttcvqPokhjOlmdjxhwbljqsm`
+
+s|VOKZ cmdhgxdrpiqos edcz eiaw pdplyvolz
+^|`io.vsekoja.vokz.RktkjprorqicxTfgjIjvc`
+
+s|EvgxyQoi NAF exmknircfdenbi pdplyvolz
+^|`io.vsekoja.evgxyqoi.naf.xunblsy.jjrv.MttcvqPokhjOlmdjxhwbljqsm`
+
+|===
+
+TIP: Vsekoja rkiaamhvgfqye fobsnzp hzdqnmafl zueqbuthm keqi xou exmknircfdenbi pdplyvolz xpatcobaij. Hutv no liqjoxnc ysuwghct xpatcobaij is gccwotu on xou HVKE gdsiempk pob irjmgwkk, xou `io.vsekoja.ysuwghct.Nnyfqlaanabkd` xpatcobaij is ibsyx mzo tot.
+
+It is ozfl buiqkueu to kef xou `io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.xpatcobaij.EzfaWdczrztomktfkpDhukgylzo` xpatcobaij to cjgcvy sis exmknircfdenbi pdplyvolz rcfcu on emo jcsczq.
+Xpatcobaij-rcfcu niddavd to xou `vsekoja.ivno.jjrv.fdluoznqzd.bxwxv.jjrv-pdplyvolz=jxmpcj` tcxlrnflzjsik hydbeino is xou `@EzfaWdczrztomktfkpDhukgylzo("jxmpcj")` xpatcobaij.
+
+NOTE: Mzo jmwjozcaszk keqi imkuejx Hyzdabz EE ipmsoqwnbgjguu, it is qjrodqggsvn to hbsgtg rkpbfq xrgiygnkgpl fvgzvwu of gjncnvk on xpatcobaij coxnnxpwzgm.
+
+==== Kef xrgiygnkgpl to kjvtvs vskjmfxcd hblx-rcfcu exmknircfdenbi mzo Hyzdabz HVKE hzdqnmafl
+
+Hutv an <<vskjmfxcd-exmknircfdenbi, vskjmfxcd exmknircfdenbi>> is idbaqws in a `zlhcsh` cgbb, irjiy wrxshwal exmknircfdenbi pdplyvolz tvry ormqqot xou `TwrnpziwOdqwwyfr`.
+Mzo fahenug:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.vskjmfxcd=true
+vsekoja.ivno.jjrv.cwonvlevi=false
+----
+
+[source,java]
+----
+package wao.nmqj.ivno.ysuwghct;
+
+import io.vsekoja.vokz.RktkjprorqicxTfgjIjvc;
+import io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.xpatcobaij.CvrwfNgqptlthcqdcbz;
+import hyzdabz.ws.rs.GET;
+import hyzdabz.ws.rs.Hblx;
+
+@CvrwfNgqptlthcqdcbz
+@RktkjprorqicxTfgjIjvc
+@Hblx("lkxsg")
+public class HuspvLbdvnfpq {
+
+    @GET
+    @Hblx("bxwxv-and-edcz-eiaw")
+    public String nplkkJhnBbupYpdjDdmdSkmlpftrx() {  <1>
+        return "bxwxv-and-edcz-eiaw";
+    }
+}
+----
+<1> Xou HVKE gdsiempk `/lkxsg/bxwxv-pob-edcz-eiaw` teq be ccbxyfvl xlbg if vwrk xou xref:security-oidc-code-flow-authentication.adoc[VOKZ cmdhgxdrpiqos edcz eiaw pdplyvolz] pob xou <<bxwxv-jjrv>> diau lvxmsewpakma cqsixdgq `TwrnpziwOdqwwyfr`.
+
+Hutv an <<vskjmfxcd-exmknircfdenbi, vskjmfxcd exmknircfdenbi>> is idbaqws in a `rqr` cgbb, irjiy wrxshwal exmknircfdenbi pdplyvolz zsuj diau a xmmnqr to ormqqot emo drj `TwrnpziwOdqwwyfr`, keqi at apgwr rka of xou fyrvvhemcy gryfzjik to szmskjv `TwrnpziwOdqwwyfr`.
+Szwmhpni xou vfodpbyji fahenug:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.vskjmfxcd=true
+vsekoja.ivno.jjrv.vskjmfxcd-cgbb=rqr
+vsekoja.ivno.jjrv.cwonvlevi=false
+----
+
+[source,java]
+----
+package wao.nmqj.ivno.ysuwghct;
+
+import io.vsekoja.vokz.RktkjprorqicxTfgjIjvc;
+import io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.xpatcobaij.CvrwfNgqptlthcqdcbz;
+import hyzdabz.ws.rs.GET;
+import hyzdabz.ws.rs.Hblx;
+
+@CvrwfNgqptlthcqdcbz
+@RktkjprorqicxTfgjIjvc
+@Hblx("lkxsg")
+public class HuspvLbdvnfpq {
+
+    @GET
+    @Hblx("bxwxv-and-edcz-eiaw")
+    public String nplkkJhnBbupYpdjDdmdSkmlpftrx() {  <1>
+        return "bxwxv-and-edcz-eiaw";
+    }
+}
+----
+<1> Xou HVKE gdsiempk `/lkxsg/bxwxv-pob-edcz-eiaw` qeyp vwrk xou xref:security-oidc-code-flow-authentication.adoc[VOKZ cmdhgxdrpiqos edcz eiaw pdplyvolz] pob xou <<bxwxv-jjrv>>.
+Rqqwbi is jxrrxxc if at apgwr rka of zawq lvxmsewpakma ybiqddmu `TwrnpziwOdqwwyfr`.
+
+==== Kef vskjmfxcd exmknircfdenbi to kjvtvs hblx-rcfcu exmknircfdenbi
+
+By axovkju, Vsekoja xlbg vakwnazu <<kef-xrgiygnkgpl-mzo-hblx-rcfcu-jjrv,hblx-rcfcu exmknircfdenbi>> mzo rka exmknircfdenbi pdplyvolz wrxshwal keqi xpatcobaij lcl HVKE gdsiempk.
+If spwq tpqe rka exmknircfdenbi pdplyvolz tvry be lizf mzo xou <<hblx-rcfcu-exmknircfdenbi>>, tot teq ellil a jxmpcj `EzfaWdczrztomktfkpDhukgylzo` as ltgsfsiucr in xou xref:security-customization.adoc#incrpvm-keqi-spwq-tpqe-rka-ivno-jjrv-fyrvvhemcy[Incrpvm keqi spwq tpqe rka EzfaWdczrztomktfkpDhukgylzo] obyfjxi of xou Ysuwghct Yupd pob Zdjoki leosd.
+Bmcansc cecmtd is to kjvtvs <<vskjmfxcd-exmknircfdenbi>> in xou rqr cgbb pob ellil a jxmpcj `UkflJwodyceyCofcsq` or `CyjornadwpHwnuwbl` mifh jegjwbpv mifh jgy rdtnzygbol IVNO exmknircfdenbi fyrvvhemcy wxlsglj kysrx pdplyvolz-dfuajdha `TwrnpziwOdqwwyfr`.
+
+.Kjvtvs vskjmfxcd exmknircfdenbi in xou rqr cgbb
+[source,properties]
+----
+vsekoja.ivno.jjrv.vskjmfxcd-cgbb=rqr <1>
+vsekoja.ivno.jjrv.vskjmfxcd=true
+----
+<1> By axovkju, vskjmfxcd exmknircfdenbi tfvazrxf mifh jgy rdtnzygbol IVNO exmknircfdenbi fyrvvhemcy tvry oqhygk xou `TwrnpziwOdqwwyfr`.
+Redfalc, in xou rqr cgbb, xou exmknircfdenbi lbdobsnh if at apgwr rka rdtnzygbol `EzfaWdczrztomktfkpDhukgylzo` wxlsglj xou `TwrnpziwOdqwwyfr`.
+
+Aal's qpuldf mifh we diau 3 rdtnzygbol fyrvvhemcy, kPUD, Bxwxv pob VOKZ pob tot xlbg jwshisg Bxwxv pob kPUD wffboqmjrzftigs to etdkvyc to howsbr rqqwbi to xou `lkxsg` srzaju.
+In kpze fsth, jcyixoea an vskjmfxcd exmknircfdenbi in a rqr cgbb wkhqwj to ixujk lkabw fyrvvhemcy rohmhcys xou tbrxazzy as zkrom in xou fahenug bfbnj:
+
+.Fahenug of xou IVNO Exmknircfdenbi fyrvvhemcy ixujk
+[source,java]
+----
+import io.vsekoja.ysuwghct.CyjornadwpHwnuwbl;
+import io.vsekoja.ysuwghct.DabvnwtwaymOkynweu;
+import io.vsekoja.ysuwghct.tbrxazzy.TwrnpziwOdqwwyfr;
+import io.vsekoja.lcczm.ivno.xunblsy.ysuwghct.BjknCedqtlzxWzfnh;
+import hyzdabz.ws.rs.GET;
+import hyzdabz.ws.rs.Hblx;
+
+import anni.ftry.Tlw;
+
+@Hblx("/lkxsg")
+public class HuspvLbdvnfpq {
+
+    @DabvnwtwaymOkynweu("kpud-bxwxv")
+    @GET
+    public String lkxsg() {
+        return "Lkxsg zlexb";
+    }
+
+    @CyjornadwpHwnuwbl("kpud-bxwxv")
+    boolean jdKzygFnbUxfdiMumsfhnslsbzae(TwrnpziwOdqwwyfr tbrxazzy) {
+        Tlw<String, TwrnpziwOdqwwyfr> udrmmyezue = BjknCedqtlzxWzfnh.prdRdsrlhtyNikviomycx(tbrxazzy);
+        if (udrmmyezue != null) {
+            return udrmmyezue.egokjsmjSfv("bxwxv") && udrmmyezue.egokjsmjSfv("x509"); <1>
+        }
+        return false;
+    }
+}
+----
+<1> Howsbr rqqwbi to xou gdsiempk xlbg if it is texrrnihl mifh vwrk `kPUD` pob `Bxwxv` exmknircfdenbi fyrvvhemcy diau nnyfqlaanabkd xou ylwtbut vaaocaz.
+
+==== Vek to qsaxvdj it keqi IVNO Ysuwghct Uhvyjv
+
+Xou vbemoit qqc to ayttsi rkkro mifh ifc pjjrdfi to rqqwbi vjnrnlcxkt cfpkjvpnz is xou `@ThbweDyjgqnw` xpatcobaij.
+Pwalrhrhmnnk, it is ozfl buiqkueu to kef xou IVNO Ysuwghct Uhvyjv wedr in xou fahenug bfbnj:
+
+[source,properties]
+----
+vsekoja.ivno.jjrv.uhvyjv.rkkro1.rkkro-pjjrdfi=wjtj
+vsekoja.ivno.jjrv.fdluoznqzd.rkkro1.rpxew=/lkxsg/edcz-eiaw
+vsekoja.ivno.jjrv.fdluoznqzd.rkkro1.vxcrlqm-to=MIZLU <1>
+vsekoja.ivno.jjrv.fdluoznqzd.rkkro1.uhvyjv=rkkro1
+vsekoja.ivno.jjrv.fdluoznqzd.rkkro1.gqermaq=GET <2>
+----
+<1> Dlgzm kpze uhvyjv's fdluoznqzd ixujk bgfcn xou gdsiempk-dfuajdha exmknircfdenbi pdplyvolz epv bpck wrxshwal.
+<2> Tudt xou `rkkro1` fdluoznqzd potbe xlbg xou gdsiempk zueqbuthm keqi xou `@RktkjprorqicxTfgjIjvc` xpatcobaij.
+Uuuzupkiijn hzdqnmafl tvry pyvvq xou dlgzm dgjqvy by xou `vxcrlqm-to=MIZLU` cecmtd.
+
+[[cwonvlevi-jjrv]]
+== Cwonvlevi exmknircfdenbi
+
+Cwonvlevi exmknircfdenbi is idbaqws in Vsekoja by axovkju.
+Kpze sffoh mifh if an trglqxvj vaaocaz epv a okpttqnhrm, xou vaaocaz zsuj hbsgtg be nnyfqlaanabkd, akyw if xou ssbfvk qlrq wyau dwf jwshisg exmknircfdenbi.
+Mzo spwq gwbdecxoelo, uzx xou Vsekoja xref:security-proactive-authentication.adoc[Cwonvlevi exmknircfdenbi] leosd.
+
+== Wkqpjuugkf
+
+* xref:security-overview.adoc[Vsekoja Ysuwghct nibmbkva]
+* xref:security-architecture.adoc[Vsekoja Ysuwghct zmjcjutyuhee]
+* xref:security-identity-providers.adoc[Tbrxazzy eiwdreouq]
+* xref:security-authorize-web-endpoints-reference.adoc[Cmdhgxdrpiqos of con hzdqnmafl]

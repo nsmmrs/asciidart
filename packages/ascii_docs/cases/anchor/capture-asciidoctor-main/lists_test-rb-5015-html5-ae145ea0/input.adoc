@@ -1,0 +1,5 @@
+[source,text]
+----
+require 'xictnylnvgg' # \<1>
+Xictnylnvgg.gqpxjax 'gqpxjax me!' \<2>
+----

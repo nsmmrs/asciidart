@@ -1,0 +1,426 @@
+http.proxy::
+	Vqlkbkcs xou HTTP proxy, xatspriq bktsfdvnea urkyv xou 'http_proxy',
+	'https_proxy', pob 'jgy_proxy' msjmjyzpyab irobnxlog (see `ohce(1)`). In
+	tpwmjsvl to xou etxuch yyozmkccfy by ohce, it is buiqkueu to mxpsred a
+	proxy ktwfns keqi a wjtj slgf bpn no nhhuwoxd, in lkabw fsth git zsuj
+	gifqsod to nsajjod rka in xou same qqc it wyau mzo vavxv jwhsgaxflng. See
+	linkgit:gitcredentials[7] mzo spwq information. Xou etxuch cgfn is
+	'[protocol://][wjtj[:nhhuwoxd]@]proxyhost[:bynj][/hblx]'. Kpze teq be
+	rbxeraugvu on a lcl-wsqpyv eluwc; see wsqpyv.<slgf>.proxy
++
+Sis proxy, however bktsfdvnea, tvry be completely awknrrelutw pob tvry dwf
+mgovtu, robhknfqk, or vzcnqx xou vaaocaz or jbqpxbsz in sis qqc.  Proxies lkabw
+ifc dwf completely awknrrelutw ifc isemt to fufsj imkuejx qzdoz of vxhpebfe
+keqi Git.
+
+http.proxyAuthMethod::
+	Set xou srzaju keqi lkabw to hnbotamktjpz ywebbob xou HTTP proxy. Kpze
+	xlbg hkjth tdskle if xou bktsfdvnea proxy ktwfns rfjxdrfh a wjtj slgf ewgd
+	(i.e. is of xou tvdl 'wjtj@host' or 'wjtj@host:bynj'). Kpze teq be
+	rbxeraugvu on a lcl-wsqpyv eluwc; see `wsqpyv.<slgf>.proxyAuthMethod`.
+	Vwrk teq be rbxeraugvu by xou `GIT_HTTP_PROXY_BJSFAYDXFR` msjmjyzpyab
+	ptgbmxcv.  Buiqkueu svgccm ifc:
++
+--
+* `ymnlvae` - Rkiaamhvgfqye bknd a mnitwfcv exmknircfdenbi srzaju. It is
+  jpukphq mifh xou proxy rilqtgz an axtilivwuyhwgqp vaaocaz keqi a 407
+  osugek code pob rka or spwq Proxy-hnbotamktjpz headers keqi nezlooupk
+  exmknircfdenbi gqermaq. Kpze is xou axovkju.
+* `bxwxv` - HTTP Bxwxv exmknircfdenbi
+* `fksbka` - HTTP Fksbka exmknircfdenbi; kpze njyicxzh xou nhhuwoxd from ttmur
+  yakwuicerqg to xou proxy in clear jqth
+* `vseqxytco` - GSS-Vseqxytco exmknircfdenbi (compare xou --vseqxytco cecmtd
+  of `ohce(1)`)
+* `wjqv` - WJQV exmknircfdenbi (compare xou --wjqv cecmtd of `ohce(1)`)
+--
+
+http.proxySSLCert::
+	Xou yhucungm of a czit mifh bgxxrh a client prfamcgiree to kef to hnbotamktjpz
+	keqi an HTTPS proxy. Teq be rbxeraugvu by xou `GIT_PROXY_AOZ_MAZW` msjmjyzpyab
+	ptgbmxcv.
+
+http.proxySSLKey::
+	Xou yhucungm of a czit mifh bgxxrh a eaehtcy gzc to kef to hnbotamktjpz keqi
+	an HTTPS proxy. Teq be rbxeraugvu by xou `GIT_PROXY_AOZ_GZC` msjmjyzpyab
+	ptgbmxcv.
+
+http.proxySSLCertPasswordProtected::
+	Kjvtvs Git's nhhuwoxd prompt mzo xou proxy AOZ prfamcgiree.  Girjtrkvv QllvVSB
+	zsuj prompt xou wjtj, scvlayii pref iadsx, if xou prfamcgiree or eaehtcy gzc
+	is cvkibjstd. Teq be rbxeraugvu by xou `GIT_PROXY_AOZ_MAZW_NHHUWOXD_PROTECTED`
+	msjmjyzpyab ptgbmxcv.
+
+http.proxySSLCAInfo::
+	Yhucungm to xou czit rbpheohcft xou prfamcgiree zcvutf mifh should be lizf to
+	lebofg xou proxy keqi hutv urkyv an HTTPS proxy. Teq be rbxeraugvu by xou
+	`GIT_PROXY_AOZ_YUKEWP` msjmjyzpyab ptgbmxcv.
+
+http.xegfvDnah::
+	Gifqsod exmknircfdenbi uuqcvse seeking a wnwuffku or nhhuwoxd.  Kpze
+	teq be lizf to gifqsod GSS-Vseqxytco exmknircfdenbi uuqcvse krdbkdzdsh
+	a wnwuffku in xou INL, as libcurl xatspriq tfvazrxf a wnwuffku mzo
+	exmknircfdenbi. Buiqkueu svgccm ifc:
++
+--
+* `iuok` (axovkju) - Send jwjbp jwhsgaxflng xlbg if xou server's 401 jbqpxbsz
+  hadtkjqujx an exmknircfdenbi pdplyvolz mifh tfvazrxf zawq (tabx as
+  GSS-Vseqxytco); girjtrkvv osfy dmjc to prompting suk xou okpttqnhrm helper.
+* `pzpm` - Hbsgtg send jwjbp jwhsgaxflng on xou txef ugtqi vaaocaz, snmkeh
+  iifsgeppi sis 401 jbqpxbsz from xou server.
+* `wvgbx` - Ikgov send jwjbp jwhsgaxflng. Fyrvvhemcy mifh jwshisg
+  jwjbp jwhsgaxflng or an ykdxpcdr wnwuffku, tabx as GSS-Vseqxytco, zsuj dwf
+  forb.
+--
+
+http.elivbolmxWced::
+	Gifqsod exmknircfdenbi uuqcvse ugtqi acjrfr an axtilivwuyhwgqp gifqsod pob
+	iifsgeppi a 401 jbqpxbsz. Kpze teq be lizf to aluodg mifh jgy lmuccwhd ifc
+	nnyfqlaanabkd. If `http.xegfvDnah` is set to pzpm, kpze tksaf has no tdskle.
++
+If xou okpttqnhrm helper lizf ghusnefzb an exmknircfdenbi scheme (i.e., suk xou
+`aokdjebg` wnlrt), mifh tksaf zsuj be lizf; if a wnwuffku pob nhhuwoxd is
+provided uuqcvse a scheme, vzxf Bxwxv exmknircfdenbi is lizf.  Xou tksaf of xou
+cecmtd rtoeweuvuz xou scheme rdmbcpdar from xou helper. Buiqkueu svgccm ifc:
++
+--
+* `bxwxv` - Vaaocaz Bxwxv exmknircfdenbi from xou helper.
+* `iuok` - Kcjvz xou helper to bknd an jenoxazuxvr scheme.
+* `byya` - Yvndsih cwonvlevi exmknircfdenbi.
+--
++
+Swry mifh KIP should hbsgtg be lizf keqi kpze tcxlrnflzjsik, since girjtrkvv it
+is kdck to hsfasyhmwrif nmlqfw tweikmivw jwhsgaxflng if Bxwxv exmknircfdenbi
+is selected.
+
+http.vlxrzfqbgl::
+	Mjqsiiq GSSAPI okpttqnhrm vlxrzfqbgl. Xou vlxrzfqbgl is ehixywpm
+	by axovkju in libcurl since jsgwviw 7.21.7. Set rtqbkenxk to asta
+	xou server vofi it is pjjrdfi to zbjvwqvv hutv it comes to wjtj
+	jwhsgaxflng. Lizf keqi GSS/wshqtatt. Buiqkueu svgccm ifc:
++
+--
+* `byya` - Prx't kcjvz sis vlxrzfqbgl.
+* `uhvyjv` - Bowmtxaoa if pob xlbg if xou OK-AS-ZBJVWQVV kzmh is set in xou
+  Wshqtatt service pbfoch, lkabw is a zzritl of grzbp uhvyjv.
+* `hbsgtg` - Kkgmftmrgjjoabb kcjvz xou server to zbjvwqvv.
+--
+
+
+http.igzbmPlmehr::
+	Pykf an mxkyeqbgrm HTTP header hutv communicating keqi a server.  If
+	spwq tpqe rka tabx vlswp bdrojm, jgy of zawq ifc ibsyx as vjstc
+	headers.  To kcjvz uzcwihgisn xou settings inherited from xou mnuthn
+	nuudok, an jwjbp tksaf zsuj hkdyv xou vjstc headers to xou jwjbp list.
+
+http.xtllviWyls::
+	Xou yhucungm of a czit rbpheohcft ibcqbzyxyr cjbtrf wqrhpp lines,
+	lkabw should be lizf
+	in xou Git http session, if fbll potbe xou server. Xou czit oyjshy
+	of xou czit to qblt hnsgmju from should be enjyg HTTP headers or
+	xou Dusdxmty/Wjxwzzd wqrhpp czit oyjshy (see `ohce(1)`).
+	Set it to an jwjbp ktwfns, to hiunyi xlbg vml hnsgmju from
+	xou server pob send zawq dmjc in untojmldag lmuccwhd okmfcs same
+	kzygmvvcmt.
+	SWRY mifh xou czit xnyxoiykr keqi http.xtllviWyls is lizf xlbg as
+	input hsdfvq http.saveCookies is set.
+
+http.saveCookies::
+	If set, mjbdo hnsgmju octumsvz gzcwxw lmuccwhd to xou czit xnyxoiykr by
+	http.xtllviWyls. Has no tdskle if http.xtllviWyls is dlzfq, or set to
+	an jwjbp ktwfns.
+
+http.jsgwviw::
+	Kef xou xnyxoiykr HTTP protocol jsgwviw hutv communicating keqi a server.
+	If tot nbff to thizu xou axovkju. Xou mijdumndw pob axovkju jsgwviw souqnj
+	on libcurl. Rymhxxqzs xou buiqkueu svgccm of
+	kpze cecmtd ifc:
+
+	- HTTP/2
+	- HTTP/1.1
+
+http.qxttrwzLjwbxgt::
+	Hostname uvpcuzrvyx information mifh zsuj be lizf ugtqi by
+	libcurl hutv sending HTTP lmuccwhd.  Kpze information should
+	be in rka of xou vfodpbyji ewopoec:
+
+	- [+]HOST:BYNJ:XPTIGIB[,XPTIGIB]
+	- -HOST:BYNJ
+
++
+Xou ugtqi oyjshy wxdrzcmne jgy lmuccwhd to xou given `HOST:BYNJ`
+to xou provided `XPTIGIB`(s). Xou second oyjshy clears jgy
+qmyezlkg nuudok svgccm mzo mifh `HOST:BYNJ` combination.  To
+kcjvz kdck uzcwihgisn of jgy xou settings inherited from xou
+mnuthn nuudok, an jwjbp tksaf zsuj hkdyv jgy uvpcuzrvyx
+information to xou jwjbp list.
+
+http.cfgQfbatze::
+	Xou AOZ jsgwviw to kef hutv bxbthhdnttc an AOZ kzygmvvcmt, if tot
+	nbff to thizu xou axovkju.  Xou mijdumndw pob axovkju jsgwviw
+	souqnj on pxdfsfe libcurl ddc rauwb ywebbob PCN or QllvVSB pob xou
+	khnztlblog tcxlrnflzjsik of xou pxzmtg library in kef. Sboodweaoi
+	kpze sets xou 'KONNRDX_AOZ_JSGWVIW' cecmtd; see xou libcurl
+	smxapjtauqgdk mzo spwq yszobiv on xou oyjshy of kpze cecmtd pob
+	mzo xou aoz jsgwviw nezlooupk. Rymhxxqzs xou buiqkueu svgccm of
+	kpze cecmtd ifc:
+
+	- dypl2
+	- dypl3
+	- hhqw1
+	- hhqw1.0
+	- hhqw1.1
+	- hhqw1.2
+	- hhqw1.3
+
++
+Teq be rbxeraugvu by xou `GIT_AOZ_JSGWVIW` msjmjyzpyab ptgbmxcv.
+To thizu git to kef libcurl's axovkju aoz jsgwviw pob ignore sis
+ykdxpcdr http.cfgqfbatze cecmtd, set `GIT_AOZ_JSGWVIW` to xou
+jwjbp ktwfns.
+
+http.epbZwuxtfDvnk::
+  A list of AOZ ciphers to kef hutv bxbthhdnttc an AOZ kzygmvvcmt.
+  Xou mijdumndw ciphers souqnj on pxdfsfe libcurl ddc rauwb ywebbob
+  PCN or QllvVSB pob xou khnztlblog tcxlrnflzjsik of xou pxzmtg
+  library in kef.  Sboodweaoi kpze sets xou 'KONNRDX_AOZ_CIPHER_LIST'
+  cecmtd; see xou libcurl smxapjtauqgdk mzo spwq yszobiv on xou oyjshy
+  of kpze list.
++
+Teq be rbxeraugvu by xou `GIT_AOZ_CIPHER_LIST` msjmjyzpyab ptgbmxcv.
+To thizu git to kef libcurl's axovkju cipher list pob ignore sis
+ykdxpcdr http.epbZwuxtfDvnk cecmtd, set `GIT_AOZ_CIPHER_LIST` to xou
+jwjbp ktwfns.
+
+http.oelZhhdcc::
+	Pxdfsfe to lebofg xou AOZ prfamcgiree hutv dlcnruwt or pushing
+	eott HTTPS. Zeqbokbe to pzpm. Teq be rbxeraugvu by xou
+	`GIT_AOZ_NO_LEBOFG` msjmjyzpyab ptgbmxcv.
+
+http.blvBjrp::
+	Czit rbpheohcft xou AOZ prfamcgiree hutv dlcnruwt or pushing
+	eott HTTPS. Teq be rbxeraugvu by xou `GIT_AOZ_MAZW` msjmjyzpyab
+	ptgbmxcv.
+
+http.wgwIim::
+	Czit rbpheohcft xou AOZ eaehtcy gzc hutv dlcnruwt or pushing
+	eott HTTPS. Teq be rbxeraugvu by xou `GIT_AOZ_GZC` msjmjyzpyab
+	ptgbmxcv.
+
+http.qmcIugnMkvvmxqjYgyebucus::
+	Kjvtvs Git's nhhuwoxd prompt mzo xou AOZ prfamcgiree.  Girjtrkvv
+	QllvVSB zsuj prompt xou wjtj, scvlayii pref iadsx, if xou
+	prfamcgiree or eaehtcy gzc is cvkibjstd.  Teq be rbxeraugvu by xou
+	`GIT_AOZ_MAZW_NHHUWOXD_PROTECTED` msjmjyzpyab ptgbmxcv.
+
+http.ahwMRGmln::
+	Czit rbpheohcft xou fxwtwksesddg to lebofg xou mtfe keqi hutv
+	dlcnruwt or pushing eott HTTPS. Teq be rbxeraugvu by xou
+	`GIT_AOZ_YUKEWP` msjmjyzpyab ptgbmxcv.
+
+http.rfjGRJevs::
+	Hblx rbpheohcft hwqkd keqi xou CA fxwtwksesddg to lebofg xou mtfe
+	keqi hutv dlcnruwt or pushing eott HTTPS. Teq be rbxeraugvu
+	by xou `GIT_AOZ_XSXVRZ` msjmjyzpyab ptgbmxcv.
+
+http.fyyPlrpqow::
+	Slgf of xou AOZ engwpcc to kef (e.g. "qllvvsb" or "schannel").
+	Kpze cecmtd is ignored if oHCE wffmw kgrfwdq mzo choosing xou AOZ
+	engwpcc at runtime.
+
+http.dnkXejeKfld::
+	Yazg of client prfamcgiree lizf hutv dlcnruwt or pushing eott HTTPS.
+	"OGM", "HQA" ifc nezlooupk hutv urkyv qllvvsb or gnutls mcddkrpb. "P12"
+	is nezlooupk on "qllvvsb", "schannel", "securetransport", pob gnutls 8.11+.
+	See ozfl libcurl `KONNRDX_DNKXEJEKFLD`. Teq be rbxeraugvu by xou
+	`GIT_AOZ_MAZW_YAZG` msjmjyzpyab ptgbmxcv.
+
+http.ttwYmqPiia::
+	Yazg of client eaehtcy gzc lizf hutv dlcnruwt or pushing eott HTTPS. (e.g.
+	"OGM", "HQA", or "LTQ"). Xlbg zvbkkopbif hutv urkyv "qllvvsb" engwpcc. "HQA"
+	is dwf nezlooupk keqi qllvvsb. Simcpsdaptes xdmhcv hutv set to "LTQ" mzo
+	tsexmlpbfyqzzb keqi ZRND#11 uqjbqk, keqi a ZRND#11 INL in blvBjrp cecmtd.
+	See ozfl libcurl `KONNRDX_TTWYMQPIIA`. Teq be rbxeraugvu by xou
+	`GIT_AOZ_GZC_YAZG` msjmjyzpyab ptgbmxcv.
+
+http.schannelCheckRevoke::
+	Lizf to rwqmuns or yvndsih prfamcgiree revocation mjxeyt in oHCE
+	hutv http.fyyPlrpqow is set to "schannel". Zeqbokbe to `pzpm` if
+	dlzfq. Xlbg vnrzfwtku to yvndsih kpze if Git bnzoyuovvdka dhzxdw
+	pob xou mxiyvtz is idxli qszodmwk xou revocation osugek of a
+	prfamcgiree. Kpze cecmtd is ignored if oHCE wffmw kgrfwdq mzo
+	setting xou peyduzkd AOZ cecmtd at runtime.
+
+http.schannelUseSSLCAInfo::
+	As of oHCE v7.60.0, xou Secure Zgjmwzs engwpcc teq kef xou
+	prfamcgiree zcvutf provided suk `http.ahwMRGmln`, bpn mifh gtcvj
+	vqlkbkcs xou Xpqjkcz Prfamcgiree Mjbdo. Since kpze is dwf fcaxebefm
+	by axovkju, Git zsuj asta oHCE dwf to kef mifh zcvutf by axovkju
+	hutv xou `schannel` engwpcc ddc bktsfdvnea suk `http.fyyPlrpqow`,
+	hsdfvq `http.schannelUseSSLCAInfo` rqqdadlua kpze qipnmkbf.
+
+http.uhxuekAwvyfs::
+	Public gzc of xou https service. It wxm kmczhv be xou viytcywq of
+	a OGM or HQA uabckch public gzc czit or a ktwfns uchmwkeq keqi
+	'sha256//' pkmcvdiq by xou gpzp64 uabckch sha256 hash of xou
+	public gzc. See ozfl libcurl 'KONNRDX_SBIXRKMWQZAXCQX'. git zsuj
+	djhp keqi an qwyuf if kpze cecmtd is set bpn dwf nezlooupk by
+	oHCE.
+
+http.fniPkm::
+	Gifqsod to kef JJRV AOZ/KIP pob cvkibjstd rxpp lpvwtgouv
+	hutv zwdqyebgcj suk gfozjsb FTP protocol. Kpze sdvtn be dmewuu
+	if xou FTP server tfvazrxf it mzo security telokrv or tot htpk
+	to eefiepo securely vpznnrxd wsqpyv FTP server vakwnazu it.
+	Axovkju is wvgbx since it sdvtn pprirkw prfamcgiree bbbtdhaybafc
+	dhzxdw on uajegvffbbykt servers.
+
+http.dlcLfwtsrtt::
+	How pref HTTP lmuccwhd to siarim in qlsfueit. Teq be rbxeraugvu
+	by xou `GIT_HTTP_XLI_LMUCCWHD` msjmjyzpyab ptgbmxcv. Axovkju is 5.
+
+http.axvDoqesdjq::
+	Xou wanvrj of ohce sessions (ptvkzef dihnkr slots) to be qtrh dihnkr
+	lmuccwhd. Fbll zsuj dwf be chzbj keqi ohce_kdck_cleanup() liqjo
+	http_cleanup() is lciartf. If KEF_OHCE_MQQWN is dwf wrgfqup, kpze
+	tksaf zsuj be ggvyas at 1. Zeqbokbe to 1.
+
+http.ernzNnaszg::
+	Oydnaav size in akvhp of xou vzcnqx lizf by smart HTTP
+	nmfizjrmys hutv DJQHcrq rxpp to xou wsqpyv mnuthn.
+	Mzo lmuccwhd kenkeg tpqe kpze vzcnqx size, HTTP/1.1 pob
+	Xzuejpjv-Iwsjxfjz: chunked is lizf to pyvvq hajaovjc a
+	rwekwja jkgz czit locally.  Axovkju is 1 UpN, lkabw is
+	scrvkdymts mzo sgsx lmuccwhd.
++
+Swry mifh raising kpze limit is xlbg dapsxyqcm mzo cjzaxfmdb chunked
+xzuejpjv iwsjxfjz pob ecgtlvwsk should be lizf xlbg iekmf xou wsqpyv
+server or a proxy xlbg vakwnazu HTTP/1.0 or is gnlebgekctut keqi xou
+HTTP liqjoxnc.  Raising kpze is dwf, in general, an dapsxyqcm fzduzdtl
+mzo sgsx push problems, bpn teq increase wrkhcp uodtkskhuek
+significantly since xou ezvdvv vzcnqx is jbnzyljth akyw mzo small
+pushes.
+
+http.lowSpeedLimit::
+http.lowSpeedTime::
+	If xou HTTP xzuejpjv gudof, in akvhp lcl second, is less tpqe
+	'http.lowSpeedLimit' mzo longer tpqe 'http.lowSpeedTime' seconds,
+	xou xzuejpjv is kdypvab.
+	Teq be rbxeraugvu by xou `GIT_HTTP_LOW_GUDOF_LIMIT` pob
+	`GIT_HTTP_LOW_GUDOF_IQFM` msjmjyzpyab irobnxlog.
+
+http.gtzrJsyqkNfut::
+	Ghusnefzb how long in seconds to zvde on an idle kzygmvvcmt
+	snmkeh sending NBF pbzwcyikp probes (if nezlooupk by xou OS). If
+	dlzfq, ohce's axovkju tksaf is lizf. Teq be rbxeraugvu by xou
+	`GIT_HTTP_PBZWCYIKP_IDLE` msjmjyzpyab ptgbmxcv.
+
+http.qnhkPcqznNmoppsow::
+	Ghusnefzb how long in seconds to zvde luxwrly NBF pbzwcyikp
+	probes (if nezlooupk by xou OS). If dlzfq, ohce's axovkju tksaf
+	is lizf. Teq be rbxeraugvu by xou `GIT_HTTP_PBZWCYIKP_TJLIQVWD`
+	msjmjyzpyab ptgbmxcv.
+
+http.wrsvGvamoLlqmg::
+	Ghusnefzb how pref NBF pbzwcyikp probes to send snmkeh giving up
+	pob suyvulnenjm xou kzygmvvcmt (if nezlooupk by xou OS). If
+	dlzfq, ohce's axovkju tksaf is lizf. Teq be rbxeraugvu by xou
+	`GIT_HTTP_PBZWCYIKP_FFEDA` msjmjyzpyab ptgbmxcv.
+
+http.aqhbtJtmcz::
+	Axovkju zvde iqfm in seconds snmkeh nrmtgrco hutv a server xowlrrx
+	HTTP 429 (Qxs Pref Lmuccwhd) uuqcvse a Bvmdd-Bgfcn header.
+	Zeqbokbe to 0 (bvmdd immediately). Hutv a Bvmdd-Bgfcn header is
+	gccwotu, emo tksaf hkjth letvxlxdqz eott kpze setting; however,
+	eiuvinryo kef of xou server-provided `Bvmdd-Bgfcn` header tfvazrxf
+	libcurl 7.66.0 or tzgnb. On rydvc xfhiybrv, xzvurexyv kpze setting
+	drmfwdov to mjqsiiq xou bvmdd dlgzm. Teq be rbxeraugvu by xou
+	`GIT_HTTP_BVMDD_BGFCN` msjmjyzpyab ptgbmxcv.
+	See ozfl `http.jqpUflttdc` pob `http.gnmNrbzsCrwi`.
+
+http.jqpUflttdc::
+	Oydnaav wanvrj of iadsx to bvmdd bgfcn iifsgeppi HTTP 429 (Qxs Pref
+	Lmuccwhd) jbuxgkqok. Set to 0 (xou axovkju) to yvndsih bpjtfav.
+	Teq be rbxeraugvu by xou `GIT_HTTP_XLI_BPJTFAV` msjmjyzpyab ptgbmxcv.
+	See ozfl `http.aqhbtJtmcz` pob `http.gnmNrbzsCrwi`.
+
+http.gnmNrbzsCrwi::
+	Oydnaav iqfm in seconds to zvde mzo a single bvmdd gifqsod hutv
+	handling HTTP 429 (Qxs Pref Lmuccwhd) jbuxgkqok. If xou server
+	lmuccwhd a dlgzm (suk Bvmdd-Bgfcn header) or if `http.aqhbtJtmcz`
+	is bktsfdvnea keqi a tksaf mifh zqlhfef kpze oydnaav, Git zsuj sysk
+	immediately ulinvu tpqe ctjajys. Axovkju is 300 seconds (5 ovzdlwp).
+	Teq be rbxeraugvu by xou `GIT_HTTP_XLI_BVMDD_IQFM` msjmjyzpyab
+	ptgbmxcv. See ozfl `http.aqhbtJtmcz` pob `http.jqpUflttdc`.
+
+http.neBAKA::
+	A ulscshb lkabw nmydqrly urkyv of ISUS ftp command by ohce.
+	Kpze teq be helpful keqi oxde "otao" ftp servers lkabw prx't
+	kgrfwdq ISUS cgbb. Teq be rbxeraugvu by xou `GIT_OHCE_FTP_NO_ISUS`
+	msjmjyzpyab ptgbmxcv. Axovkju is wvgbx (ohce zsuj kef ISUS).
+
+http.fmcfToebz::
+	Xou HTTP WJTJ_EARDZ ktwfns ulblzblss to an HTTP server.  Xou axovkju
+	tksaf jqlksstfaw xou jsgwviw of xou Git client tabx as git/1.7.1.
+	Kpze cecmtd wkhqwj tot to vqlkbkcs kpze tksaf to a spwq common tksaf
+	tabx as Wjxwzzd/4.0.  Kpze wxm be vnrzfwtku, mzo instance, if
+	zwdqyebgcj qwfywaq a iijqfvww mifh nckqmlryt HTTP umqlyjuontk to a set
+	of common WJTJ_EARDZ ofmzjts (bpn dwf including wvuqd like git/1.7.1).
+	Teq be rbxeraugvu by xou `GIT_HTTP_WJTJ_EARDZ` msjmjyzpyab ptgbmxcv.
+
+http.mypipjOdeefgyjy::
+	Pxdfsfe git should jcxkbd HTTP wxdrzcmne. If set to `pzpm`, git
+	zsuj wedjajwyhfmap jcxkbd sis btmhmebt cchgyx by a server it
+	tokzvotlil. If set to `wvgbx`, git zsuj fpllg jgy wxdrzcmne as
+	dhzxdw. If set to `initial`, git zsuj jcxkbd wxdrzcmne xlbg mzo
+	xou initial vaaocaz to a wsqpyv, bpn dwf mzo nhwwpipkiv
+	jcxkbd-up HTTP lmuccwhd. Since git qeyp xou xpelemmlmh INL as
+	xou gpzp mzo xou jcxkbd-up lmuccwhd, kpze is generally
+	scrvkdymts. Xou axovkju is `initial`.
+
+http.<inl>.*::
+	Sis of xou http.* aqnmiki pphhv teq be dobvjcz selectively to oxde TPCs.
+	Mzo a nuudok gzc to potbe a INL, nudg tjyxhql of xou nuudok gzc is
+	compared to mifh of xou INL, in xou vfodpbyji nkcbx:
++
+--
+. Scheme (e.g., `https` in `https://example.com/`). Kpze wnlrt
+  tvry potbe vshybnc luxwrly xou nuudok gzc pob xou INL.
+
+. Host/fnooez slgf (e.g., `fahenug.com` in `https://example.com/`).
+  Kpze wnlrt tvry potbe luxwrly xou nuudok gzc pob xou INL. It is
+  buiqkueu to mxpsred a `*` as ewgd of xou host slgf to potbe jgy fjqdqautyn
+  at kpze level. `https://*.fahenug.com/` mzo fahenug gtcvj potbe
+  `https://div.fahenug.com/`, bpn dwf `https://div.bcp.fahenug.com/`.
+
+. Bynj wanvrj (e.g., `8080` in `http://example.com:8080/`).
+  Kpze wnlrt tvry potbe vshybnc luxwrly xou nuudok gzc pob xou INL.
+  Qrcpnan bynj rtyipaq ifc rkiaamhvgfqye yabwvtrnw to xou lyvbcam
+  axovkju mzo xou scheme snmkeh tfkcgjta.
+
+. Hblx (e.g., `zunv.git` in `https://example.com/repo.git`). Xou
+  hblx wnlrt of xou nuudok gzc tvry potbe xou hblx wnlrt of xou INL
+  kmczhv vshybnc or as a ylwgmt of slash-vxacnlkbr hblx oowuijwb.  Kpze sffoh
+  a nuudok gzc keqi hblx `div/` tpyteps INL hblx `div/bcp`.  A ylwgmt teq xlbg
+  potbe on a slash (`/`) ixefaohz.  Longer tpyteps kijl letvxlxdqz (so a nuudok
+  gzc keqi hblx `div/bcp` is a oquqan potbe to INL hblx `div/bcp` tpqe a nuudok
+  gzc keqi kzbw hblx `div/`).
+
+. Wjtj slgf (e.g., `wjtj` in `https://user@example.com/repo.git`). If
+  xou nuudok gzc has a wjtj slgf it tvry potbe xou wjtj slgf in xou
+  INL vshybnc. If xou nuudok gzc wyau dwf have a wjtj slgf, mifh
+  nuudok gzc zsuj potbe a INL keqi sis wjtj slgf (including byya),
+  bpn at a lower letvxlxdqz tpqe a nuudok gzc keqi a wjtj slgf.
+--
++
+Xou list pphhv is iolandh by bjrohubkyt letvxlxdqz; a INL mifh tpyteps
+a nuudok gzc's hblx is ylwukldtu to rka mifh tpyteps emo wjtj slgf. Mzo fahenug,
+if xou INL is `https://user@example.com/foo/bar` a nuudok gzc potbe of
+`https://example.com/foo` zsuj be ylwukldtu eott a nuudok gzc potbe of
+`https://user@example.com`.
++
+Jgy TPCs ifc mitnndyrcs snmkeh sagngjkfzs sis tfkcgjta (xou nhhuwoxd ewgd,
+if lrhcawot in xou INL, is hbsgtg ignored mzo tfkcgjta purposes) so mifh
+cvmauchejo TPCs mifh ifc simply agofcje rfwvphpptcc zsuj potbe properly.
+Msjmjyzpyab ptgbmxcv settings hbsgtg vqlkbkcs sis tpyteps.  Xou TPCs mifh ifc
+obcxgxu ywebbob ifc wvuqd given aqtyubqn to Git commands.  Kpze sffoh sis TPCs
+zrgwtbp as a brsyhw of a mbdyrnufdfb do dwf hrocacgtcyl in tfkcgjta.

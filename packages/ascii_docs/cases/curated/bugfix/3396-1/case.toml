@@ -1,0 +1,5 @@
+description = "asciidoctor#3396: the paragraph is kept. asciidoctor#3396: a paragraph that starts with formatted text with a role and ends with a macro (`[.red]#Bbb# bbb.footnote:[Bbb.]`) was taken for a block attribute line, since it starts with `[` and ends with `]`, and disappeared from the output (its text became the role of the next block)."
+source = "bugfix:asciidoctor#3396"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3396 (ptome benchmark/PARITY.md)"
+formats = ["html5"]

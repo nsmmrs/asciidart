@@ -1,0 +1,14 @@
+<informaltable frame="all" rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col_1" colwidth="50*"/>
+<colspec colname="col_2" colwidth="50*"/>
+<tbody>
+<row>
+<entry align="left" valign="top"><literallayout class="monospaced">A1
+
+A1 qlgnvztsz</literallayout></entry>
+<entry align="left" valign="top"><literallayout class="monospaced">B1</literallayout></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>

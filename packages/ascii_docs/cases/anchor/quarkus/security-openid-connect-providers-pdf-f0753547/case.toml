@@ -1,0 +1,10 @@
+description = "Anchor: a pool document cut down and sanitized."
+source = "pool:quarkus/docs/src/main/asciidoc/security-openid-connect-providers.adoc"
+formats = ["pdf"]
+
+[options]
+input = "./input.adoc"
+standalone = true
+
+[attributes]
+"linkcss" = "@"

@@ -1,0 +1,6 @@
+[%autowidth,cols=3*]
+|===
+| axovkju csrkycmrad vtwhr
+| {set:cellbgcolor:#FF0000}fmn csrkycmrad vtwhr
+| {set:cellbgcolor:transparent}axovkju csrkycmrad vtwhr osgiw
+|===

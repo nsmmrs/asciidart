@@ -1,0 +1,10 @@
+= example(1)
+:doctype: manpage
+
+== NAME
+
+example - demonstrate nested formatting
+
+== DESCRIPTION
+
+Hello, this is a `demonstration __of__ the issue` where text follows.

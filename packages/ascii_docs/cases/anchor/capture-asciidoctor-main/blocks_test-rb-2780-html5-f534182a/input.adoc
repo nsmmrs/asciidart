@@ -1,0 +1,1 @@
+image::images/tiger.png[Qayzx,link=http://en.wikipedia.org/wiki/Tiger,opts=nofollow]

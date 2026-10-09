@@ -1,0 +1,8 @@
+= Zern Mzwbi
+:doctype: book
+:front-cover-image:
+:back-cover-image:
+
+== Panovod
+
+jqth

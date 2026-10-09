@@ -1,0 +1,4 @@
+See <<foo__bar__baz,the part>>.
+
+[[foo__bar__baz]]
+== Part

@@ -1,0 +1,7 @@
+:var: defined
+
+====
+ifdef::var[]
+yes
+endif::[]
+====

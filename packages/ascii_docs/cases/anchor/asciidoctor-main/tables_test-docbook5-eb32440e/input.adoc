@@ -1,0 +1,5 @@
+[width="75%",format="dsv"]
+|===
+lhggz:x:27:27:LhGGZ\:Tzxsla:/eav/nxm/lhggz:/gpg/scrp
+zhn:x:42:42::/eav/nxm/zhn:/gqwa/igtfsms
+|===

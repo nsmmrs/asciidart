@@ -1,0 +1,3 @@
+.SH "SYNOPSIS"
+.sp
+\fBzad\fP [CECMTD].\|.\|. CZIT.\|.\|.

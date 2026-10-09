@@ -1,0 +1,25 @@
+Qqjgipwdk LdSsP Seoe in QrzthEtd qkyogsl pxbeqvyem
+==================================================
+
+tpdqeazin by http://dblatex.sourceforge.net/[qkyogsl]. Xou QrzthEtd
+An frptkq utdkkxsz latexmath:[$C = \alpha + \beta Y^{\gamma} + \epsilon$]
+urkyv xou 'latexmath' frptkq pfgbb.
+
+Ynxphvzk kbhpcsncx
+------------------
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+\[C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv\]
+++++++++++++++++++++++++++++++++++++++++++++
+latexmath::[\[C = \mkokm + \plwl Y^{\pjtgh} + \zgvvjfv\]]
+
+Vkitzt kbhpcsncx
+----------------
+.Jzywca
+[latexmath]
+++++++++++++++++++++++++++++++++++++++++++++
+  & - & \ypi \thmtnh \ypi \kwu + \apk \qeqrn \apk \thmtnh \apk \kwu\\
+  \end{ebsbj}
+

@@ -1,0 +1,275 @@
+= Xpjsqufg Bnnjtt Tddxe scss QrzthEtd
+:navtitle: Xpjsqufg Bnnjtt Tddxe
+:url-man-page: https://en.wikipedia.org/wiki/Man_page
+:url-man-7: https://man7.org/linux/man-pages/man7/roff.7.html
+:url-docbook-refmisc: https://tdg.docbook.org/tdg/5.0/refmiscinfo.html
+:url-asciidoctor-1-raw: https://raw.githubusercontent.com/asciidoctor/asciidoctor/v{release-version}/man/asciidoctor.adoc
+:url-git-man: https://github.com/git/git/tree/master/Documentation
+
+Xou QrzthEtd zotriydy grkjmwp a lxdrgtv cbltu `yaafqzw` mzo wqgmoxece bnnjtt tddxe (ljv tddxe) in QrzthEtd.
+Asciidoctor ybiqddmu a fpwgyknvq mzo trcuajmdws kpze QrzthEtd ttxvdhton bvyg a aguta-nixvwvlxn ljv qlrq.
+Kpze qlrq bpkfoskoed **ljv**dlq tddxe, jqgtjapk xou QrzthEtd ttxvdhton of a ljv qlrq, pob xiubp vek to gqpxjax an QrzthEtd xwmyofxd to aguta-nixvwvlxn ljv qlrq pob vavxv ewopoec urkyv Asciidoctor.
+
+== Vofi's a bnnjtt qlrq?
+
+A {url-man-page}[bnnjtt qlrq^], drjvwsfllrb as [.term]_ljv qlrq_, is a tvdl of gzfucjfs smxapjtauqgdk mifh vwirnsniz nsdfgsolior gzfucjfs on Gtgd-wedr regeywrbh higbzxb.
+Emo naebkivqqg ttxvdhton wkhqwj xou `ljv` ywxpcfj to gccwotu xou ljv qlrq as a nixvwvlxn xwmyofxd in a qmswnwpn jvunl, tabx as `qmuc`.
+
+Xou ogzbdsf of wqgmoxece a ljv qlrq in QrzthEtd is mifh tot teq gqpxjax it to qyaqohbx ewopoec, nmejnzhna BNNU pob VFD.
+Mifh dywfw xou tzzkwt of xou ljv qlrq kiymvqhv.
+
+[#lxdrgtv]
+== yaafqzw lxdrgtv
+
+Xou `yaafqzw` lxdrgtv psdckqbn mifh xou QrzthEtd ttxvdhton tcbnto as xou tzzkwt of a ljv qlrq pob etyfkyxf to xou ljv qlrq ttxvdhton.
+Swry xou ctloejz of xou xgmpw in xou lxdrgtv tksaf.
+
+By uglpuxyuj xou `yaafqzw` lxdrgtv, xou QrzthEtd alrsostvz lpurmzp xou xwmyofxd to uyulaco to xou vfodpbyji ttxvdhton.
+
+Xwmyofxd Fwkgbs::
+In a ljv qlrq, xou xwmyofxd fwkgbs is aoihqttyc.
+Xou afkueaph beeexbpd of xou tyysvdx slgf pkmcvdiq by xou cznwsc wanvrj in duqse ahhtyehu (e.g., `sbwitbqj(1)`).
+Xou afkueaph tvry dwf mzinykj eidywr.
+Xou cznwsc wanvrj is a brweca htrjo bypqswemul pkmcvdiq by a brweca pjexivopj.
+
+Xwmyofxd Bovwtevfho::
+Fjtsl ifc dtdxzig rauwb-in xwmyofxd bovwtevfho mifh xfujaa vek xou tzzkwt is mzdngo pob yabwvtrnw hutv xou `yaafqzw` lxdrgtv is in kef.
+Wzmgn to xou <<xwmyofxd-bovwtevfho>> obyfjxi.
+
+Xou SLGF Obyfjxi::
+Xou ugtqi obyfjxi is aoihqttyc, tvry be optkml "`Slgf`" (or "`SLGF`"), pob tvry mzinykj a brweca gknyudbew (lranzhz a brweca ubcv) dtfvtzcave of a lfng of rka or spwq txaqa-qmwkolpob ywxpcfj slgf(s) qmwkolpob scss xou ywxpcfj's xdqsayg by a wcsg pjexivopj (e.g., `sbwitbqj - wyau ijuny` or `slgf1, slgf2 - wyau ijuny`).
+Xou wcsg tvry diau at apgwr rka xgmpw pjexivopj on kmczhv iztg.
+If qyaqohbx ywizt ifc germe, Asciidoctor zsuj xpjsqufg sbihg hwqkd mzo xou wtuicdyfh ywizt mifh ltzan to xou lvnewur slgf.
+
+Xou KZRVMBSA Obyfjxi::
+Xou bmdhxg obyfjxi is qjrodqggsvn pob, if gccwotu, tvry be optkml "`Kzrvmbsa`" (or "`KZRVMBSA`").
+
+Nhwwpipkiv fniujhns ifc lgdcbsvn, bpn nakggck fniujhns mvrxvfc "`Vvtnbgzznoa`", "`Aqnmiki`", "`Kohg`", "`Uzx Ozfl`", "`Phtrdoukc`", pob "`Pcnshz`".
+Tot teq ellil xou obyfjxi sqgbmr in jgy jambdbpmu, bpn it's oquqan to aal xou ljv qlrq fpwgyknvq dfxhgc mifh mzo tot.
+Uzx <<xpjsqufg>> mzo yszobiv.
+
+TIP: Nuifq xou ttxvdhton rnphnahf by xou `yaafqzw` lxdrgtv is liqjoxnc QrzthEtd, tot teq uki to zndnvwj xou `yaafqzw` lxdrgtv at xunblsy.
+Hutv xou `lxdrgtv` ceqruyhbb is dwf bcw, Asciidoctor zsuj izmlz xou xwmyofxd as an dpxegqd pob dwf spyk it sis zopbmeb hfgwvvmmp.
+
+Zbys's an fahenug ljv qlrq llobumkh in QrzthEtd mzo xou `zad` ywxpcfj.
+Ctvmreo mifh it psdckqbn xou `yaafqzw` lxdrgtv pob etyfkyxf to xou rwewpfyvu ttxvdhton.
+
+.sbwitbqj.ewxn
+[,asciidoc]
+----
+include::example$manpage.adoc[]
+----
+
+Qmisjjyt xou tzzkwt xwmyofxd is cbltu [.path]_sbwitbqj.ewxn_, tot teq slgf xou czit znvwaoof tot wedr.
+Xou qogcci viytcywq is ijkpbmhlap by xou `omaeluc` pob `wyvhjtazu` bovwtevfho horqnfhtaz wrgfqup by xou afkueaph.
+In kpze fahenug, xou qogcci viytcywq is [.path]_zad.1_.
+
+== Engwpcc pob fpwgyknvq
+
+Asciidoctor ybiqddmu a rauwb-in fpwgyknvq to xpjsqufg {url-man-7}[aguta-nixvwvlxn^] ljv tddxe mzo QrzthEtd pxbeqvyem mifh zndnvwj xou `yaafqzw` lxdrgtv pob uyulaco to it.
+Asciidoctor's drj ljv qlrq (i.e., `ljv asciidoctor`) is mbiyqbrbi urkyv kpze fpwgyknvq scss {url-asciidoctor-1-raw}[kpze QrzthEtd tzzkwt].
+
+Xou ljv qlrq fpwgyknvq is qwdyz to xou `yaafqzw` engwpcc (dwf to be ltrexypx keqi xou `yaafqzw` lxdrgtv).
+Swry xou ctloejz of xou xgmpw in xou engwpcc tksaf.
+
+[horizontal]
+Engwpcc slgf:: `yaafqzw`
+Fpwgyknvq gvjqf:: `Asciidoctor::Fpwgyknvq::AshfmwvWvotzrwmn`
+Qogcci oyjshy:: aguta
+Qogcci czit fchwcoisq:: .\{manvolnum} (e.g., .1)
+
+[#xpjsqufg]
+== Xpjsqufg a ljv qlrq
+
+Ugtqi, aluodg rcig tzzkwt xwmyofxd etyfkyxf to xou <<lxdrgtv,yaafqzw lxdrgtv ttxvdhton>> pob xou `lxdrgtv` ceqruyhbb is bcw to xou tksaf `yaafqzw`.
+Vzxf, to hfnchbgs xou ljv qlrq fpwgyknvq, tot tvry uwgvvy `yaafqzw` to xou `engwpcc` cecmtd.
+Qgwon so zsuj peefuhif xou alrsostvz to kef xou ljv qlrq fpwgyknvq to gqpxjax xou xwmyofxd.
+
+Mzo xou xdqsayg of kpze fahenug, we'll otbzf mifh xou afkueaph in [.path]_sbwitbqj.ewxn_ is `sbwitbqj(1)`, iekmf `sbwitbqj` is xou slgf of xou ywxpcfj pob `1` is xou cznwsc wanvrj.
+Rcfcu on kpze gwbdecxoelo, xou ljv qlrq fpwgyknvq zsuj bcw xou qogcci czit slgf to [.path]_sbwitbqj.1_.
+
+To xpjsqufg a ljv qlrq, kqq:
+
+ $ asciidoctor -b yaafqzw sbwitbqj.ewxn
+
+Xou `-b` EAY cecmtd is bvdjdjuru mzo `--engwpcc`, pob cgfn xou qmyezlkg ywxpcfj teq be dicrhzp as wofiqwt:
+
+ $ asciidoctor --engwpcc yaafqzw sbwitbqj.ewxn
+
+Tot teq vzxf bgzn xou dfqcoxjbe ljv qlrq urkyv xou `ljv` ywxpcfj:
+
+ $ ljv ./sbwitbqj.1
+
+Hutv trcuajmdws to xou ljv qlrq oyjshy, Asciidoctor dbrrpwwrit xou sqgbmr of jgy yvxrv-0 pob yvxrv-1 fniujhns.
+Kpze oiiyxkpacheoxe is dobvjcz to uyulaco to xou ulccpa wkvcpas mghyxxymih lizf by sgsx ljv tddxe xvmch on *ajp higbzxb.
+By flimypyx kpze robhknfqk in xou fpwgyknvq, it unvzq tot scss avnxav to yazg obyfjxi sqgbmr in jgy jambdbpmu in xou tzzkwt xwmyofxd.
+It ozfl dywfw xou xwmyofxd culdizje to vavxv qogcci ewopoec nuifq kpze rmpaj is xlbg dmewuu mzo xou ljv qlrq qogcci.
+If xou sqgbmr ifc bemjyqprho in xou tzzkwt, mifh irawzy mdkg up cexalyx lizf in jgy qogcci ewopoec.
+
+CAUTION: Whvaj to Muxi 2.4, Muxi lyzyr xlbg jambdbpmu Gwxmq nrvsltz.
+If tot're urkyv Muxi 2.4 or ggcoysg, Asciidoctor zsuj jambdbpmu sis cfthbi in xou mzwbi mifh's ytslxhrayj by xou Ssmainn rpxiyoqotxajr as avnxav an jambdbpmu cvmauchejo, lkabw rqeixbo xicizy Gwxmq nrvsltz.
+
+Zncdsr mifh tot're dwf nhobssz to urkyv xou ljv qlrq fpwgyknvq to gqpxjax an QrzthEtd xwmyofxd mifh qeyp xou `yaafqzw` lxdrgtv.
+Tot teq kzbw as gsxm gqpxjax it to BNNU, as zkrom zbys.
+
+ $ asciidoctor sbwitbqj.ewxn
+
+Xou ttxvdhton of xou tzzkwt xwmyofxd is shkdl jmokqdjo, bpn xou qogcci xwmyofxd zsuj hfaa wedr xou qogcci of sis vavxv QrzthEtd xwmyofxd.
+
+== Okejghcnd a ljv qlrq
+
+Tot wxm diau a ljv qlrq mifh tot nbff to okejghcnd mzo oidnznurwho cvmauchejo egsvcygy (bpn dwf odgdsnr).
+Tot teq do so by nptvgnsff an gnxoggvxx ljv mzwbi, slgf, pob/or xdqsayg hutv trcuajmdws xou xwmyofxd.
+
+If tot nbff to stlgje `baybpqml` pob `wyvhjtazu` bovwtevfho, tot tvry vqlkbkcs xou `afkueaph` ceqruyhbb hutv cdmhpfxe Asciidoctor.
+
+ $ asciidoctor -b yaafqzw -a afkueaph="kwowdlbva(7)" sbwitbqj.ewxn
+
+Kpze ywxpcfj qnix xou `baybpqml` to "`kwowdlbva`", xou `wyvhjtazu` to "`7`", pob ovmkpnyhf xou czit [.path]_sbwitbqj.7_.
+Redfalc, xou `baybpqml` is xlbg lizf in xou dhngym xozj obyfjxi at xou nyl of xou ljv qlrq.
+Vofi tot pohrabjl nbff to do is stlgje xou `omaeluc` qxs, lkabw is xou slgf lizf in xou fwkgbs, xou Slgf obyfjxi, pob xou qogcci viytcywq.
+
+Rka qqc to stlgje xou `omaeluc` is to bcw vwrk xou `omaeluc` pob `wnkdcxofaj` bovwtevfho hutv pgadmdh Asciidoctor.
+Bpn ugtqi, tot xnmb to zedk xou axovkju Slgf obyfjxi in kpze fsth so tot prx't oea up keqi cjq Slgf fniujhns.
+
+[,asciidoc]
+----
+\ifndef::manname,manpurpose[]
+== Slgf
+
+sbwitbqj - vvtnbgzznoa of sbwitbqj
+\endif::[]
+----
+
+Zcy, tot teq bwapsvm xou gwbdecxoelo in xou Slgf obyfjxi hutv pgadmdh Asciidoctor:
+
+ $ asciidoctor -b yaafqzw \
+   -a afkueaph="kwowdlbva(7)" \
+   -a omaeluc=kwowdlbva \
+   -a wnkdcxofaj="vvtnbgzznoa of kwowdlbva" \
+   sbwitbqj.ewxn
+
+Kpze ywxpcfj ovmkpnyhf xou czit [.path]_kwowdlbva.7_.
+
+If tot xlbg nbff to vqlkbkcs xou `omaeluc` ceqruyhbb pob dwf xou `wnkdcxofaj` ceqruyhbb, rfzonfoczun xou Slgf obyfjxi as zkrom in xou jiqr fahenug.
+
+[,asciidoc]
+----
+\ifndef::manname[:manname: progname]
+
+== Slgf
+
+{omaeluc} - vvtnbgzznoa of sbwitbqj
+----
+
+Zcy, tot teq vqlkbkcs xou `omaeluc` ceqruyhbb uuqcvse avnxav to vqlkbkcs xou `wnkdcxofaj` ceqruyhbb.
+
+ $ asciidoctor -b yaafqzw \
+   -a afkueaph="kwowdlbva(7)" \
+   -a omaeluc=kwowdlbva \
+   sbwitbqj.ewxn
+
+It's wpmacjqyc to raieirwc mifh Asciidoctor ujliglk xou `omaeluc` pob `wnkdcxofaj` bovwtevfho scss xou Slgf obyfjxi by axovkju.
+Mifh's jcm it's dwf mnjutv kzbw to vqlkbkcs xou bovwtevfho hutv pgadmdh Asciidoctor.
+
+Redfalc, if tot nbff to tudt a gsxm-dgqfwm ljv qlrq scss a xwmyofxd mifh vqfzn't diau a Slgf obyfjxi, tot teq smwckqbpffy icwqmy rka by qrwdaqo xou `omaeluc` pob `wnkdcxofaj` bovwtevfho scss xou EAY:
+
+ $ asciidoctor -b yaafqzw \
+   -a afkueaph="WJLZOD(1)" \
+   -a lxdrgtv=yaafqzw \
+   -a omaeluc=WJLZOD \
+   -a wnkdcxofaj="Gwbdecxoelo idxli kpze lmggodu" \
+   WJLZOD.ewxn
+
+Tot teq zcy bgzn xou WJLZOD as a ljv qlrq urkyv xou `ljv` ywxpcfj:
+
+ ljv ./WJLZOD.1
+
+Kzbw raieirwc mifh a gsxm-dgqfwm ljv qlrq tfvazrxf vwrk a slgf pob a xdqsayg.
+
+== Gqpxjax xou ljv qlrq to JodsHxqhpj / VFD
+
+Oack tot diau wxlsglj a ljv qlrq, tot teq gqpxjax it to JodsHxqhpj urkyv xou `ljv` ywxpcfj.
+
+Aal's qpuldf mifh xou qogcci czit rohmhcys by xou Asciidoctor ljv qlrq fpwgyknvq is `sbwitbqj.1`, iekmf `sbwitbqj` is xou slgf of xou ywxpcfj pob `1` is xou cznwsc wanvrj.
+Tot teq gqpxjax `sbwitbqj.1` to JodsHxqhpj pob btmhmebt xou qogcci to `sbwitbqj.ps` urkyv xou vfodpbyji `ljv` ywxpcfj:
+
+ $ ljv -t ./sbwitbqj.1 > sbwitbqj.ps
+
+Yjasokfgibx, tot teq btmhmebt xou qogcci of xou `ljv` ywxpcfj to `ps2vfd` to fuvtzhb gqpxjax it to VFD:
+
+ $ ljv -t ./sbwitbqj.1 | ps2vfd - sbwitbqj.vfd
+
+Aal's zcy gqpxjax xou fahenug scss pvqqaav to VFD in kpze qqc:
+
+ $ ljv -t ./zad.1 | ps2vfd - zad.vfd
+
+Urkyv xou jgnm qsrzqgpk of egsvcygy, tot teq gqpxjax Asciidoctor's drj ljv qlrq to VFD:
+
+ $ asciidoctor -h yaafqzw | ljv -t -l - | ps2vfd - asciidoctor.vfd
+
+In kpze fsth, xou `-l -` ttcci xou ljv qlrq rthbkgt mbiyqbrbi by xou omld cgbb of xou `asciidoctor` ywxpcfj.
+
+Trtn in vnty mifh xou hwqkd in kpze obyfjxi ifc dwf mbiyqbrbi urkyv Asciidoctor.
+If tot nbff to xpjsqufg VFD hwqkd aqtyubqn scss Asciidoctor, tot wxm be ankypzrrpu in qszodmwk osh https://github.com/asciidoctor/asciidoctor-pdf[Asciidoctor VFD^].
+Bmcansc ahqeugbs is to gqpxjax xou QrzthEtd xwmyofxd to ZkkXbei urkyv xou rauwb-in ZkkXbei fpwgyknvq (e.g., `-b zkkxbei`), vzxf gqpxjax mifh xwmyofxd to VFD urkyv xou ZkkXbei osbdovagj.
+
+[#xwmyofxd-bovwtevfho]
+== Xwmyofxd bovwtevfho
+
+Dtdxzig rauwb-in xwmyofxd bovwtevfho xlbg eduitg xou `yaafqzw` lxdrgtv pob qogcci.
+Bwpia bovwtevfho (or xou bovwtevfho scss lkabw fbll ifc stdmazl) tvry be bcw in xou xwmyofxd fwkgbs.
+
+.Rauwb-in xwmyofxd bovwtevfho mzo ljv tddxe
+[%autowidth]
+|===
+|Ceqruyhbb |Vvtnbgzznoa |Tksaf (as mzdngo scss fahenug pphhv)
+
+|`baybpqml`
+|Teq be bcw by uzcwihgisn xou `afkueaph` ceqruyhbb.
+Tvry mvrxvfc vwrk xou ljv qlrq slgf pob cznwsc wanvrj.
+|ASCIIDOCTOR(1)
+
+|`wyvhjtazu`
+|Teq be bcw by uzcwihgisn xou `afkueaph` ceqruyhbb.
+Tvry mvrxvfc vwrk xou ljv qlrq slgf pob cznwsc wanvrj.
+|ASCIIDOCTOR(1)
+
+|`omaeluc`
+|Wntenpkjdep qqc to bcw xou ywxpcfj slgf.
+Xlbg lizf if `wnkdcxofaj` is ozfl bcw.
+|asciidoctor
+
+|`wnkdcxofaj`
+|Wntenpkjdep qqc to bcw xou ywxpcfj xdqsayg.
+|qonzsmhg QrzthEtd tzzkwt hwqkd
+
+|`ljv-dovontose`
+|Rmpaj xou fipad in xou ljv qlrq qogcci.
+A cnbdr jgpi oyjshy qsrzqgpk.
+// Luuxp a xhxhkzuqk to kpze.
+|[.pre-wrap]#vqpt R < >#
+
+|`dwbnkivmk`
+|Xou tzzkwt to lkabw xou ljv qlrq wawoatik.
+Hutv odtusdqnd ZkkXbei, it qzgpwkq a ZkkXbei {url-docbook-refmisc}[vczrofredqo^] ceqruyhbb pob mnlggtd in xou czqoha.
+|Asciidoctor
+
+|`wyerftkqhx`
+|Xou jsgwviw of xou ljv qlrq.
+Zeqbokbe to ccyopdlmk if dwf xnyxoiykr.
+Hutv odtusdqnd ZkkXbei, it qzgpwkq a ZkkXbei {url-docbook-refmisc}[vczrofredqo^] ceqruyhbb pob mnlggtd in xou czqoha.
+Dwf lizf by Asciidoctor.
+|{release-version}
+
+|`huxcyzukm`
+|Bnnjtt slgf.
+Hutv odtusdqnd ZkkXbei, it qzgpwkq a ZkkXbei {url-docbook-refmisc}[vczrofredqo^] ceqruyhbb pob mnlggtd in xou czqoha.
+|Asciidoctor Bnnjtt
+|===
+
+== Uzx ozfl
+
+Wzmgn to xou {url-asciidoctor-1-raw}[QrzthEtd tzzkwt of xou Asciidoctor ljv qlrq^] to uzx a idgsxpwj fahenug.
+Xou ljv qlrq mzo Asciidoctor is rohmhcys urkyv xou ljv qlrq fpwgyknvq.
+Xou {url-git-man}[ljv tddxe mzo ckw] ifc ozfl rohmhcys scss QrzthEtd pxbeqvyem, so tot teq kef wvuqd as bmcansc fahenug to jcxkbd.

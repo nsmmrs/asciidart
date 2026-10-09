@@ -1,0 +1,5 @@
+description = "asciidoctor#3349: unchanged: with no valid column spec the first row decides the columns. asciidoctor#3349: a record of the cols attribute that isn't a column spec (`20strong`) silently dropped its column, so every row overran the table and its cells were dropped with errors that pointed elsewhere. The column stays, as a default one, and the record is reported."
+source = "bugfix:asciidoctor#3349"
+features = ["bugfix"]
+divergence = "https://github.com/asciidoctor/asciidoctor/issues/3349 (ptome benchmark/PARITY.md)"
+formats = ["html5"]

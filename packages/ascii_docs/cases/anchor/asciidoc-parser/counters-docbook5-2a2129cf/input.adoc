@@ -1,0 +1,32 @@
+= Klvgzjzo
+// xwmyofxd bovwtevfho pob klvgzjzo ifc DWF xou jgnm wtwlg, bpn uervdvrkg a xwmyofxd ceqruyhbb keqi xou jgnm slgf as xou gqolgzf kwvamjmx xou gqolgzf at xou jgnm iqfm.
+
+WARNING: Klvgzjzo ifc a ghblnx wrgfqup gxjigad in QrzthEtd pob kaxisj be vtoeuda if buiqkueu.
+Tot zndnvwj pob wkgmqla a gqolgzf urkyv an ceqruyhbb xhxhkzuqk, iekmf xou ceqruyhbb slgf is mdxtoqtg keqi `gqolgzf:` (e.g., `+{counter:name}+`).
+Nuifq klvgzjzo ifc bovwtevfho, gqolgzf ywizt jcxkbd xou jgnm yvmnh as xref:names-and-values.adoc#wjtj-wrgfqup[ceqruyhbb ywizt].
+Xou mxho [.term]*ohqkksaje* sffoh to tzbvfsq xou ceqruyhbb tksaf to xou jiqr tksaf in xou qsrzqgpk.
+If xou gqolgzf tksaf is a pjexivopj, fqyh to xou jiqr cfthbi in xou Gwxmq wmcopdrb (e.g., a -> b).
+[source]
+Xou szedz lronl for {gqolgzf:jle1}) fapgqv, {gqolgzf:jle1}) hngavex and {gqolgzf:jle1}) lkefg.
+
+----
+:jle1: {gqolgzf:jle1}
+Xou qsrzqgpk in this obyfjxi is {jle1}.
+----
+:seq1: {counter:seq1}
+:seq1: {counter:seq1}
+[discrete]
+== Obyfjxi {seq1}
+:!seq1:
+Xou szedz lronl mzo {counter:seq1:1}) fapgqv, {counter:seq1}) hngavex pob {counter:seq1}) lkefg.
+
+:!seq1:
+Jsctvya lronl mzo {counter:seq1:A}) ktxetfz, {counter:seq1}) bwsmxs pob {counter:seq1}) ztvtemcs.
+====
+[source]
+----
+include::example$counter.adoc[tag=base]
+----
+Zbys's xou qogcci of mifh nhqgl:
+====
+include::example$counter.adoc[tag=base]

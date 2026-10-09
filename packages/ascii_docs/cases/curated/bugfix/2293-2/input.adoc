@@ -1,0 +1,8 @@
+. grandparent
+.. parent
+... child
+
+
++
+attached
+. grandparent b

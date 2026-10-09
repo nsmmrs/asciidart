@@ -1,0 +1,9 @@
+.Rkpyt{counter2:index:0}
+|===
+|Ewgd Id |Vvtnbgzznoa
+
+|PX-{counter:index}
+|Vvtnbgzznoa of PX-{index}
+
+|===
+// end::base[]
