@@ -6,6 +6,7 @@
 library;
 
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 import 'package:plain_typesetting/src/canvas.dart';
@@ -377,19 +378,13 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker {
 
   @override
   List<int> breakItems(List<LineItem> items, LineWidths widths) {
-    for (final ratio in [tolerance, tolerance * 5, 100.0]) {
-      final breaks = _total(items, widths, ratio);
-      if (breaks != null) return breaks;
-    }
-    return const FirstFitLineBreaker().breakItems(items, widths);
-  }
-
-  List<int>? _total(List<LineItem> items, LineWidths widths, double limit) {
-    // Running totals of the items before each index.
+    // Running totals of the items before each index, the first item of
+    // the line after a break at each index, and each line's width: the
+    // same for every tolerance tried.
     final n = items.length;
-    final totalWidth = List<double>.filled(n + 1, 0);
-    final totalStretch = List<double>.filled(n + 1, 0);
-    final totalShrink = List<double>.filled(n + 1, 0);
+    final totalWidth = Float64List(n + 1);
+    final totalStretch = Float64List(n + 1);
+    final totalShrink = Float64List(n + 1);
     for (var i = 0; i < n; i++) {
       final item = items[i];
       totalWidth[i + 1] =
@@ -399,7 +394,50 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker {
       totalShrink[i + 1] =
           totalShrink[i] + (item is GlueItem ? item.shrink : 0);
     }
+    final next = Int32List(n + 1)..[n] = n;
+    for (var i = n - 1; i >= 0; i--) {
+      final discarded = switch (items[i]) {
+        GlueItem() => true,
+        PenaltyItem(:final isForced) => !isForced,
+        BoxItem() => false,
+      };
+      next[i] = discarded ? next[i + 1] : i;
+    }
+    final lineWidths = <double>[];
+    double widthOf(int line) {
+      while (lineWidths.length <= line) {
+        lineWidths.add(widths(lineWidths.length));
+      }
+      return lineWidths[line];
+    }
+
+    for (final ratio in [tolerance, tolerance * 5, 100.0]) {
+      final breaks = _total(
+        items,
+        (totalWidth, totalStretch, totalShrink, next),
+        widthOf,
+        ratio,
+      );
+      if (breaks != null) return breaks;
+    }
+    return const FirstFitLineBreaker().breakItems(items, widths);
+  }
+
+  List<int>? _total(
+    List<LineItem> items,
+    (Float64List, Float64List, Float64List, Int32List) sums,
+    LineWidths widths,
+    double limit,
+  ) {
+    final (totalWidth, totalStretch, totalShrink, next) = sums;
+    final n = items.length;
     var active = <_Node>[_Node(-1, 0, 1, 0, null, flagged: false, start: 0)];
+    var survivors = <_Node>[];
+    // The best break at this index for each fitness class and line count,
+    // in the order they were first found.
+    final bestFitness = <int>[];
+    final bestLine = <int>[];
+    final best = <_Node>[];
     for (var i = 0; i < n; i++) {
       final item = items[i];
       final penalty = switch (item) {
@@ -412,8 +450,10 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker {
       if (penalty == null) continue;
       final flagged = item is PenaltyItem && item.flagged;
       final forced = item is PenaltyItem && item.isForced;
-      final best = <(int, int), _Node>{};
-      final survivors = <_Node>[];
+      bestFitness.clear();
+      bestLine.clear();
+      best.clear();
+      survivors.clear();
       for (final node in active) {
         final start = node.start;
         var width =
@@ -434,8 +474,11 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker {
         }
         if (ratio >= -1 && !forced) survivors.add(node);
         if (ratio < -1 || ratio > limit) continue;
-        final badness = 100 * math.pow(ratio.abs(), 3);
-        var demerits = math.pow(linePenalty + badness, 2).toDouble();
+        // (math.pow's cube and square, multiplied as the VM's pow does.)
+        final r = ratio.abs();
+        final badness = 100 * (r * r * r);
+        final base = linePenalty + badness;
+        var demerits = base * base;
         if (penalty >= 0) {
           demerits += penalty * penalty;
         } else if (penalty > PenaltyItem.forced) {
@@ -451,20 +494,35 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker {
             : 3;
         if ((fitness - node.fitness).abs() > 1) demerits += fitnessDemerits;
         final total = node.demerits + demerits;
-        final key = (fitness, node.line + 1);
-        if (best[key] == null || total < best[key]!.demerits) {
-          best[key] = _Node(
+        final line = node.line + 1;
+        var at = 0;
+        while (at < best.length &&
+            (bestFitness[at] != fitness || bestLine[at] != line)) {
+          at++;
+        }
+        if (at == best.length || total < best[at].demerits) {
+          final found = _Node(
             i,
-            node.line + 1,
+            line,
             fitness,
             total,
             node,
             flagged: flagged,
-            start: _skipDiscardable(items, i + 1),
+            start: next[i + 1],
           );
+          if (at == best.length) {
+            bestFitness.add(fitness);
+            bestLine.add(line);
+            best.add(found);
+          } else {
+            best[at] = found;
+          }
         }
       }
-      active = [...survivors, ...best.values];
+      // The survivors, then the new breaks, are the active ones.
+      final kept = survivors..addAll(best);
+      survivors = active;
+      active = kept;
       if (active.isEmpty) return null;
     }
     final finals = active.where((node) => node.position == n - 1);
@@ -479,8 +537,13 @@ final class KnuthPlassLineBreaker extends ItemLineBreaker {
   }
 }
 
-/// The letters at the start of a text.
-final RegExp _leadingLetters = RegExp(r'\p{Alphabetic}*', unicode: true);
+final RegExp _alphabetic = RegExp(r'\p{Alphabetic}', unicode: true);
+
+/// Whether a rune is a letter (Unicode's Alphabetic property), by rune.
+final Map<int, bool> _alphabetics = {};
+
+bool _isAlphabetic(int rune) =>
+    _alphabetics[rune] ??= _alphabetic.hasMatch(String.fromCharCode(rune));
 
 /// Typst's line breaking (typst-layout's `inline/linebreak.rs`, as of
 /// v0.14): the breaks that minimize the sum of the lines' costs, each line
@@ -519,85 +582,127 @@ final class TypstLineBreaker extends ItemLineBreaker {
   List<int> breakItems(List<LineItem> items, LineWidths widths) {
     final n = items.length;
     if (n == 0) return const [];
-    // Running totals of the items before each index; infinite stretch (a
-    // fill) counted apart.
-    final width = List<double>.filled(n + 1, 0);
-    final stretch = List<double>.filled(n + 1, 0);
-    final shrink = List<double>.filled(n + 1, 0);
-    final fills = List<int>.filled(n + 1, 0);
-    final spaces = List<int>.filled(n + 1, 0);
+    // The items' kinds, and running totals of the items before each index
+    // (infinite stretch, a fill, counted apart).
+    final kinds = Uint8List(n);
+    final width = Float64List(n + 1);
+    final stretch = Float64List(n + 1);
+    final shrink = Float64List(n + 1);
+    final fills = Int32List(n + 1);
+    final spaces = Int32List(n + 1);
     for (var i = 0; i < n; i++) {
-      final item = items[i];
-      width[i + 1] = width[i] + (item is PenaltyItem ? 0 : item.width);
-      final infinite = item is GlueItem && !item.stretch.isFinite;
-      stretch[i + 1] =
-          stretch[i] + (item is GlueItem && !infinite ? item.stretch : 0);
-      shrink[i + 1] = shrink[i] + (item is GlueItem ? item.shrink : 0);
-      fills[i + 1] = fills[i] + (infinite ? 1 : 0);
-      // (Justifiable spaces: not a fixed space, which never stretches.)
-      spaces[i + 1] =
-          spaces[i] +
-          (item is GlueItem && !infinite && item.stretch > 0 ? 1 : 0);
+      var w = 0.0;
+      var st = 0.0;
+      var sh = 0.0;
+      var fill = 0;
+      var space = 0;
+      switch (items[i]) {
+        case BoxItem(width: final boxWidth):
+          w = boxWidth;
+        case GlueItem(
+          width: final glueWidth,
+          stretch: final s,
+          shrink: final h,
+        ):
+          kinds[i] = _glue;
+          w = glueWidth;
+          sh = h;
+          if (s.isFinite) {
+            st = s;
+            // (Justifiable spaces: not a fixed space, which never
+            // stretches.)
+            if (s > 0) space = 1;
+          } else {
+            fill = 1;
+          }
+        case PenaltyItem():
+          kinds[i] = _penalty;
+      }
+      width[i + 1] = width[i] + w;
+      stretch[i + 1] = stretch[i] + st;
+      shrink[i + 1] = shrink[i] + sh;
+      fills[i + 1] = fills[i] + fill;
+      spaces[i + 1] = spaces[i] + space;
     }
-    bool candidate(int i) => switch (items[i]) {
-      PenaltyItem(:final penalty) => penalty < PenaltyItem.never,
-      GlueItem(stretch: final s) =>
-        i > 0 && items[i - 1] is BoxItem && s.isFinite,
-      BoxItem() => false,
-    };
+    // The first item from each index that a break doesn't discard.
+    final next = Int32List(n + 1)..[n] = n;
+    for (var i = n - 1; i >= 0; i--) {
+      final discarded = switch (items[i]) {
+        GlueItem() => true,
+        PenaltyItem(:final isForced) => !isForced,
+        BoxItem() => false,
+      };
+      next[i] = discarded ? next[i + 1] : i;
+    }
+    // The width of each line (asked once a line).
+    final lineWidths = <double>[];
+    double widthOf(int line) {
+      while (lineWidths.length <= line) {
+        lineWidths.add(widths(lineWidths.length));
+      }
+      return lineWidths[line];
+    }
+
     final minRatio = justify ? -1.0 : 0.0;
-    final entries = <_TypstEntry>[_TypstEntry(-1, 0, 0, 0, null, dash: false)];
+    // The breaks found (entries): where, where the next line starts, the
+    // lines up to it, the cost of those lines, the break before, and
+    // whether its line ends with a dash. The paragraph's start first.
+    final entries = _TypstEntries()..add(-1, 0, 0, 0, -1, dash: false);
     var active = 0;
     var previous = -1;
     for (var i = 0; i < n; i++) {
-      if (!candidate(i)) continue;
       final item = items[i];
-      final forced = item is PenaltyItem && item.isForced;
-      final hyphen = item is PenaltyItem && item.flagged;
+      var forced = false;
+      var hyphen = false;
+      var own = 0.0;
+      var ownWidth = 0.0;
+      switch (item) {
+        case BoxItem():
+          continue;
+        case GlueItem():
+          // (After a box, and not a fill.)
+          if (i == 0 || kinds[i - 1] != _box || fills[i + 1] != fills[i]) {
+            continue;
+          }
+        case PenaltyItem(:final penalty):
+          if (penalty >= PenaltyItem.never) continue;
+          forced = item.isForced;
+          hyphen = item.flagged;
+          ownWidth = item.width;
+          // A break's own cost (none of Typst's: a break between the
+          // characters of a word too long for a line, say).
+          if (!forced && !hyphen && penalty > 0) own = penalty;
+      }
       // The line's end without the spaces before the break.
       var end = i;
-      while (end > 0 && items[end - 1] is GlueItem) {
+      while (end > 0 && kinds[end - 1] == _glue) {
         end--;
       }
       var lastBox = end - 1;
-      while (lastBox >= 0 && items[lastBox] is! BoxItem) {
+      while (lastBox >= 0 && kinds[lastBox] != _box) {
         lastBox--;
       }
       final dash =
           hyphen ||
           (lastBox >= 0 && (items[lastBox] as BoxItem).text.endsWith('-'));
-      // The letters of the word on each side of a hyphenation (not the
-      // punctuation around it: Typst hyphenates "beyond" in “beyond”).
-      double hyphenPenalty() {
-        final before = StringBuffer();
-        for (var k = i - 1; k >= 0 && items[k] is! GlueItem; k--) {
-          if (items[k] case BoxItem(:final text)) {
-            before.write(String.fromCharCodes(text.runes.toList().reversed));
-          }
-        }
-        final after = StringBuffer();
-        for (var k = i + 1; k < n && items[k] is! GlueItem; k++) {
-          if (items[k] case BoxItem(:final text)) after.write(text);
-        }
-        int letters(String text) =>
-            _leadingLetters.matchAsPrefix(text)?[0]?.runes.length ?? 0;
-        // (Counted in code points.)
-        final left = letters(before.toString());
-        final right = letters(after.toString());
-        final steps = math.max(0, 5 - left) + math.max(0, 5 - right);
-        return (1 + 0.15 * steps) * hyphenationCost;
-      }
-
-      // (The same for every line ending here: computed once.)
-      double? hyphenCost;
-      _TypstEntry? best;
-      for (var k = active; k < entries.length; k++) {
-        final pred = entries[k];
-        final start = pred.start;
+      // (The same for every line ending here.)
+      final hyphenCost = hyphen ? _hyphenPenalty(items, kinds, i) : 0.0;
+      var best = -1;
+      var bestTotal = 0.0;
+      final count = entries.length;
+      for (var k = active; k < count; k++) {
+        final start = entries.start[k];
         if (start > end) continue;
-        var w = width[end] - width[start] + _carry(items, pred.position);
-        if (item is PenaltyItem) w += item.width;
-        final available = widths(pred.line);
+        final position = entries.position[k];
+        var w =
+            width[end] -
+            width[start] +
+            switch (position >= 0 ? items[position] : null) {
+              PenaltyItem(:final carry) => carry,
+              _ => 0.0,
+            };
+        if (item is PenaltyItem) w += ownWidth;
+        final available = widthOf(entries.line[k]);
         final infinite = fills[end] - fills[start] > 0;
         final ratio = _ratio(
           available - w,
@@ -609,38 +714,37 @@ final class TypstLineBreaker extends ItemLineBreaker {
         if (ratio < minRatio) {
           badness = 1000000;
         } else if (!forced || ratio < 0) {
-          badness = 100 * math.pow(ratio.abs(), 3).toDouble();
+          // (|ratio| cubed as math.pow has it on the VM: multiplied.)
+          final r = ratio.abs();
+          badness = 100 * (r * r * r);
         } else {
           badness = 0;
         }
         var penalty = 0.0;
         // A lone word: no break opportunity between the line's start and
         // its end.
-        if (forced && pred.position == previous) penalty += runtCost;
-        if (hyphen) penalty += hyphenCost ??= hyphenPenalty();
-        if (dash && pred.dash) penalty += hyphenationCost;
-        // A break's own cost (none of Typst's: a break between the
-        // characters of a word too long for a line, say).
-        if (item case PenaltyItem(penalty: final p)
-            when !forced && !hyphen && p > 0) {
-          penalty += p;
-        }
-        final cost = math.pow(1 + badness + penalty, 2).toDouble();
+        if (forced && position == previous) penalty += runtCost;
+        if (hyphen) penalty += hyphenCost;
+        if (dash && entries.dash[k] != 0) penalty += hyphenationCost;
+        if (own > 0) penalty += own;
+        final x = 1 + badness + penalty;
+        final cost = x * x;
         if (ratio < minRatio && active == k) active++;
-        final total = pred.total + cost;
-        if (best == null || best.total >= total) {
-          best = _TypstEntry(
-            i,
-            _skipDiscardable(items, i + 1),
-            pred.line + 1,
-            total,
-            pred,
-            dash: dash,
-          );
+        final total = entries.total[k] + cost;
+        if (best < 0 || bestTotal >= total) {
+          best = k;
+          bestTotal = total;
         }
       }
-      if (best != null) {
-        entries.add(best);
+      if (best >= 0) {
+        entries.add(
+          i,
+          next[i + 1],
+          entries.line[best] + 1,
+          bestTotal,
+          best,
+          dash: dash,
+        );
         // Nothing breaks across a forced break.
         if (forced) active = entries.length - 1;
       }
@@ -648,13 +752,57 @@ final class TypstLineBreaker extends ItemLineBreaker {
     }
     final breaks = <int>[];
     for (
-      _TypstEntry? at = entries.last;
-      at != null && at.position >= 0;
-      at = at.previous
+      var at = entries.length - 1;
+      at >= 0 && entries.position[at] >= 0;
+      at = entries.previous[at]
     ) {
-      breaks.add(at.position);
+      breaks.add(entries.position[at]);
     }
     return breaks.reversed.toList();
+  }
+
+  static const int _box = 0;
+  static const int _glue = 1;
+  static const int _penalty = 2;
+
+  /// The cost of a hyphenation at [at]: [hyphenationCost], 15% more for
+  /// each letter closer than five to the word's edge (the letters of the
+  /// word on each side, not the punctuation around it: Typst hyphenates
+  /// "beyond" in “beyond”; counted in code points).
+  double _hyphenPenalty(List<LineItem> items, Uint8List kinds, int at) {
+    var left = 0;
+    var counting = true;
+    for (var k = at - 1; counting && k >= 0 && kinds[k] != _glue; k--) {
+      if (items[k] case BoxItem(:final text)) {
+        final runes = text.runes.toList();
+        for (var r = runes.length - 1; r >= 0; r--) {
+          if (!_isAlphabetic(runes[r])) {
+            counting = false;
+            break;
+          }
+          left++;
+        }
+      }
+    }
+    var right = 0;
+    counting = true;
+    for (
+      var k = at + 1;
+      counting && k < items.length && kinds[k] != _glue;
+      k++
+    ) {
+      if (items[k] case BoxItem(:final text)) {
+        for (final rune in text.runes) {
+          if (!_isAlphabetic(rune)) {
+            counting = false;
+            break;
+          }
+          right++;
+        }
+      }
+    }
+    final steps = math.max(0, 5 - left) + math.max(0, 5 - right);
+    return (1 + 0.15 * steps) * hyphenationCost;
   }
 
   /// How far a line's spaces stretch (positive) or shrink (negative) to
@@ -672,33 +820,41 @@ final class TypstLineBreaker extends ItemLineBreaker {
   }
 }
 
-final class _TypstEntry {
-  new(
-    this.position,
-    this.start,
-    this.line,
-    this.total,
-    this.previous, {
-    required this.dash,
-  });
+/// The breaks [TypstLineBreaker] found, as parallel lists.
+final class _TypstEntries {
+  int length = 0;
+  Int32List position = Int32List(64);
+  Int32List start = Int32List(64);
+  Int32List line = Int32List(64);
+  Int32List previous = Int32List(64);
+  Uint8List dash = Uint8List(64);
+  Float64List total = Float64List(64);
 
-  /// The item the line breaks at (-1 for the paragraph's start).
-  final int position;
-
-  /// The item the next line starts at.
-  final int start;
-
-  /// The number of lines up to this break.
-  final int line;
-
-  /// The cost of the lines up to this break.
-  final double total;
-
-  /// The break before.
-  final _TypstEntry? previous;
-
-  /// Whether the line ends with a dash (a hyphen).
-  final bool dash;
+  void add(
+    int position,
+    int start,
+    int line,
+    double total,
+    int previous, {
+    required bool dash,
+  }) {
+    if (length == this.position.length) {
+      final size = length * 2;
+      this.position = Int32List(size)..setRange(0, length, this.position);
+      this.start = Int32List(size)..setRange(0, length, this.start);
+      this.line = Int32List(size)..setRange(0, length, this.line);
+      this.previous = Int32List(size)..setRange(0, length, this.previous);
+      this.dash = Uint8List(size)..setRange(0, length, this.dash);
+      this.total = Float64List(size)..setRange(0, length, this.total);
+    }
+    this.position[length] = position;
+    this.start[length] = start;
+    this.line[length] = line;
+    this.total[length] = total;
+    this.previous[length] = previous;
+    this.dash[length] = dash ? 1 : 0;
+    length++;
+  }
 }
 
 final class _Node {
