@@ -130,6 +130,43 @@ Arabic and Pickthall.
   with the unit's label on both sides.
 - The include's other attributes apply as usual (`leveloffset=+1`).
 
+## A reference Bible in PDF
+
+The PDF engine sets a unit's apparatus where a print edition does, with
+theme keys alone (see `doc/pdf.md`):
+- The entries of a note stream (the cross-references' `[.xref]` spans) go
+  in the center column beside their verse (`role_xref_display: side`).
+- The running head gives the page's first and last verse, from the verses'
+  anchors (`running_content_marks: v-`).
+
+```yaml
+# kjv-reference-theme.yml
+extends: ./kjv-theme.yml
+page:
+  columns: 2
+  column-gap: 72
+role:
+  xref:
+    display: side
+    font-size: 6
+side-notes:
+  column: center
+running-content:
+  marks: v-
+header:
+  recto:
+    center:
+      content: '{page-first-mark}–{page-last-mark}'
+  verso:
+    center:
+      content: '{page-first-mark}–{page-last-mark}'
+```
+
+`ptome -b pdf -d article -a pdf-theme=kjv-reference-theme.yml kjv.adoc`
+then gives two columns of verses with their cross-references between
+them, the 1611 notes at the foot of the page, the divine name in small
+capitals, and `Genesis 2:20–Genesis 3:7` at the head of the page.
+
 ## Schemes
 
 `:units: bible, kjv` names YAML files in the `schemes/` directory nearest
