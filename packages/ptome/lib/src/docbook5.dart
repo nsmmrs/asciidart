@@ -25,6 +25,7 @@ import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/attribute_list.dart';
 import 'package:ptome/src/block.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:ptome/src/converter.dart';
 import 'package:ptome/src/document.dart';
 import 'package:ptome/src/inline.dart';
@@ -1163,8 +1164,11 @@ class Docbook5Converter extends BuiltInConverter {
       fileref = node.imageUri(node.target!);
       uri = fileref;
     }
+    final id = Behavior.inlineImageIds.of(node.document! as Document) == 'kept'
+        ? node.id
+        : null;
     final img =
-        '<inlinemediaobject${_commonAttributes(node.id, node.role)}>\n'
+        '<inlinemediaobject${_commonAttributes(id, node.role)}>\n'
         '<imageobject>\n'
         '<imagedata fileref="$uri"${_imageSizeAttributes(node.attributes)}/>\n'
         '</imageobject>\n'
@@ -1172,7 +1176,11 @@ class Docbook5Converter extends BuiltInConverter {
         '</inlinemediaobject>';
     final linkHref = node.hasAttr('link') ? node.attr('link') : null;
     if (fileref != null && linkHref != null) {
-      final href = linkHref == 'self' ? fileref : linkHref;
+      final href =
+          linkHref == 'self' &&
+              Behavior.linkSelf.of(node.document! as Document) == 'image'
+          ? fileref
+          : linkHref;
       return '<link xl:href="${_s(href)}">$img</link>';
     }
     return img;
@@ -1245,7 +1253,11 @@ class Docbook5Converter extends BuiltInConverter {
       final equation = _s(node.text);
       return '<inlineequation><alt><![CDATA[$equation]]></alt><mathphrase><![CDATA[$equation]]></mathphrase></inlineequation>';
     }
-    final (open, close, supportsPhrase) = _quoteTags[type] ?? _defaultQuoteTags;
+    var (open, close, supportsPhrase) = _quoteTags[type] ?? _defaultQuoteTags;
+    if ((type == 'double' || type == 'single') &&
+        Behavior.docbookQuoteRoles.of(node.document! as Document) == 'none') {
+      open = '<quote>';
+    }
     final text = _s(node.text);
     final String quotedText;
     final role = node.role;

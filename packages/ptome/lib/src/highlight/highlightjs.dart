@@ -11,6 +11,7 @@ library;
 
 import 'package:plain_highlighting/plain_highlighting.dart' show highlighting;
 import 'package:ptome/src/abstract_block.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:ptome/src/document.dart';
 import 'package:ptome/src/highlight/highlight.dart';
 import 'package:ptome/src/highlight/syntax_highlighter.dart';
@@ -24,7 +25,8 @@ const String portedHighlightJsVersion = '11.12.0';
 final class HighlightJsHighlighter extends SyntaxHighlighterBase {
   /// The highlighter for [document] (its `highlightjs-mode` decides).
   new({Document? document})
-    : client = document?.attr('highlightjs-mode') == 'client';
+    : client =
+          document != null && Behavior.highlightjsMode.of(document) == 'client';
 
   /// Whether highlighting runs in the browser.
   final bool client;
@@ -54,7 +56,7 @@ final class HighlightJsHighlighter extends SyntaxHighlighterBase {
     // the nohighlight option.
     if (language == null ||
         !highlighting.hasLanguage(language) ||
-        node.hasOption('nohighlight')) {
+        _nohighlight(node)) {
       return HighlightResult(escapeSpecialChars(source));
     }
     final html = highlighting.highlight(source, language: language).html;
@@ -70,8 +72,14 @@ final class HighlightJsHighlighter extends SyntaxHighlighterBase {
         content: node.content() ?? '',
         language: language,
         nowrap: opts.nowrap,
-        nohighlight: node.hasOption('nohighlight'),
+        nohighlight: _nohighlight(node),
       );
+
+  /// Whether [node]'s `nohighlight` option keeps it unhighlighted (as the
+  /// document's `html-nohighlight` says).
+  static bool _nohighlight(AbstractBlock node) =>
+      node.hasOption('nohighlight') &&
+      Behavior.htmlNohighlight.of(node.document! as Document) == 'honored';
 
   @override
   bool hasDocinfo(String location) => client || location == 'head';

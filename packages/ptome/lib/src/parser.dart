@@ -19,6 +19,7 @@ import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/block.dart';
 import 'package:ptome/src/callouts.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:ptome/src/constants.dart';
 import 'package:ptome/src/cursor.dart';
 import 'package:ptome/src/document.dart';
@@ -453,12 +454,30 @@ abstract final class Parser {
     }
   }
 
+  /// Whether four tildes delimit an open block, for the document being
+  /// parsed (its `tilde-blocks`).
+  static bool tildeBlocks = true;
+
   /// Parses AsciiDoc source read from [reader] into [document].
   ///
   /// Port of `Parser.parse`. Processes the document header, then parses
   /// the body into nested sections and blocks (skipped when [headerOnly]
   /// is set). Returns [document].
   static Document parse(
+    Reader reader,
+    Document document, {
+    bool headerOnly = false,
+  }) {
+    final outer = tildeBlocks;
+    tildeBlocks = Behavior.tildeBlocks.of(document) == 'open';
+    try {
+      return _parse(reader, document, headerOnly: headerOnly);
+    } finally {
+      tildeBlocks = outer;
+    }
+  }
+
+  static Document _parse(
     Reader reader,
     Document document, {
     bool headerOnly = false,
@@ -527,7 +546,9 @@ abstract final class Parser {
       docAttrs['leveloffset'],
     );
     if (implicitDoctitle &&
-        (blockAttrs.containsKey('title') || blockAttrs.containsKey('style'))) {
+        (blockAttrs.containsKey('title') ||
+            (blockAttrs.containsKey('style') &&
+                Behavior.doctitleStyle.of(document) == 'section'))) {
       docAttrs['authorcount'] = '0';
       return _finalizeHeader(document, blockAttrs, headerValid: false);
     }
@@ -1171,7 +1192,7 @@ abstract final class Parser {
     // section title.
     var id = section.id;
     if (id != null) {
-      if (id.isEmpty) {
+      if (id.isEmpty && Behavior.emptyIds.of(document) == 'none') {
         // An empty ID ([[]] or [#]) means no ID, not a generated one.
         section.id = id = null;
       } else if (sectTitle.contains(attrRefHead)) {
@@ -2504,7 +2525,7 @@ abstract final class Parser {
     // NOTE line matches the tip when delimiter is minimum length or
     // fenced code.
     final entry = _delimitedBlocks[tip];
-    if (entry == null) return null;
+    if (entry == null || (tip == '~~~~' && !tildeBlocks)) return null;
     if (workLen == tipLen ||
         uniform(
           workLine.substring(1),
@@ -3086,7 +3107,9 @@ abstract final class Parser {
         var validate = true;
         if (listBlock.attributes['start'] case final start?) {
           ordinal += _toInt(start) - 1;
-        } else if (first) {
+        } else if (first &&
+            Behavior.listStart.of(listBlock.document! as Document) ==
+                'marker') {
           // The first marker sets the start (#2218, #3252).
           final start = resolveOrderedListStart(trait as String);
           if (start != 1) {

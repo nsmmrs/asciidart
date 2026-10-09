@@ -7,6 +7,10 @@ abstract final class Asciidoctor {
   /// release whose behavior they get. See ADR-0003.
   static const String version = '2.1.0.alpha.0';
 
+  /// Asciidoctor's latest stable release: the `asciidoctor-version` of a
+  /// document converted with `asciidoctor-compat` (ADR-0022).
+  static const String stableVersion = '2.0.26';
+
   /// The version of this package: the `ptome-version` document
   /// attribute, the HTML generator meta tag and the man page header. Keep in
   /// sync with `version:` in pubspec.yaml.

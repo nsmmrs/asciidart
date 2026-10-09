@@ -227,12 +227,45 @@ names work too (`html5`, `epub3`...). A value from the environment or a
 file is a default: the document's own `:asciidoctor-compat:` (or
 `:asciidoctor-compat!:`) wins.
 
+`asciidoctor-compat` aims at the files Asciidoctor's latest stable
+release writes (2.0.26, with asciidoctor-pdf 2.3.27 and asciidoctor-epub3
+2.3.0; the test corpus checks it, ADR-0022). It is not a mode: it gives
+settings of the engine the values that release's tools have, each of which
+a document can also set alone.
+
 | Format | With `asciidoctor-compat` |
 | --- | --- |
-| HTML, website | Asciidoctor's stylesheet alone |
+| HTML, website | Asciidoctor 2.0.26's stylesheet alone (`stylesheet=asciidoctor-2.0.26`, its web fonts with it), and the HTML behaviors below |
 | EPUB | asciidoctor-epub3's stylesheet alone |
-| DocBook, man pages | no change: the output is Asciidoctor's already |
+| DocBook, man pages | the behaviors below |
 | PDF | asciidoctor-pdf's default theme when the document names none, and its page rules (`doc/pdf.md`, "asciidoctor-pdf's look"): the pages look as its pages do |
+| Every format | `{asciidoctor-version}` is 2.0.26 (when the setting comes with the conversion), and the language behaviors below |
+
+Ptome follows Asciidoctor's main line, which changed these things since
+2.0.26; each is an attribute, whose value with `asciidoctor-compat` is the
+release's:
+
+| Attribute | Ptome | With `asciidoctor-compat` |
+| --- | --- | --- |
+| `html-widths` | `attribute`: `width="50%"` on tables, columns and horizontal lists | `style`: `style="width: 50%;"` |
+| `highlightjs-mode` | `server`: code highlighted at conversion | `client`: highlight.js 9.18.3 in the browser |
+| `html-generator` | `unless-reproducible`: no generator tag with `reproducible` | `always` |
+| `html-toc` | `ptome`: parts at level 0, entries classed by level, a section's own `toclevels` | `2.0.26` |
+| `html-page-break` | `class`: `<div class="page-break">` | `style`: `page-break-after: always` |
+| `html-break-roles` | `kept`: a thematic break's role is its class | `dropped` |
+| `html-wistia` | `embed`: Wistia's player | `video`: a video element |
+| `html-nohighlight` | `honored`: the `nohighlight` option leaves a block plain | `ignored` |
+| `docbook-quote-roles` | `written`: `<quote role="double">` | `none`: `<quote>` |
+| `empty-ids` | `none`: `[[]]` gives a section no ID | `empty`: an empty ID |
+| `tilde-blocks` | `open`: `~~~~` delimits an open block | `text` |
+| `cxx-attribute` | `defined`: `{cxx}` is C++ | `undefined` |
+| `list-start` | `marker`: a list starting `3.` starts at 3 | `one` |
+| `include-link` | `all`: an include that falls back to a link keeps its attributes | `role`: `role=include` alone |
+| `link-self` | `image`: `link=self` links an image to itself | `self`: to the URL `self` |
+| `inline-image-ids` | `kept` | `dropped` |
+| `include-front-matter` | `honored`: an include's `skip-front-matter` option | `ignored` |
+| `doctitle-style` | `section`: a style above the document title makes it a section of that style | `title`: the style is dropped |
+| `inline-imagesdir` | `kept`: an inline image's own `imagesdir` wins | `replaced`: the document's |
 
 Bug fixes and repairs (valid XHTML in the EPUB, its landmarks, the
 index in every format) stay in every case. Each format's own setting

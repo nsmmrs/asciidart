@@ -601,7 +601,7 @@ void _copyStylesheets(Document doc, String outdir, {required bool mkdirs}) {
   var copyAsciidoctorStylesheet = false;
   var copyUserStylesheet = false;
   if (defaultStylesheetKeys.contains(stylesheet) ||
-      stylesheet == Stylesheets.classicStylesheetKey) {
+      Stylesheets.isAsciidoctor(stylesheet)) {
     copyAsciidoctorStylesheet = true;
   } else if (stylesheet != null && !Helpers.isUriish(stylesheet)) {
     copyUserStylesheet = true;

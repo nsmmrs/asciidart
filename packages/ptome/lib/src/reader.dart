@@ -14,6 +14,7 @@ import 'dart:math' as math;
 
 import 'package:meta/meta.dart';
 import 'package:ptome/src/abstract_node.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:ptome/src/constants.dart';
 import 'package:ptome/src/cursor.dart';
 import 'package:ptome/src/document.dart';
@@ -952,7 +953,9 @@ class PreprocessorReader extends Reader {
           ? _LineNormalization.full
           : _LineNormalization.chomp,
       include: true,
-      skipFrontMatter: attrs.containsKey('skip-front-matter-option'),
+      skipFrontMatter:
+          attrs.containsKey('skip-front-matter-option') &&
+          Behavior.includeFrontMatter.of(_document) == 'honored',
       indent: attrs['indent'],
     );
     if (prepared.isEmpty) {
@@ -2141,10 +2144,14 @@ class PreprocessorReader extends Reader {
   /// The attribute list of the link an include directive falls back to:
   /// the directive's own [attrlist], after `role=include` unless in compat
   /// mode.
-  String _includeLinkAttrlist(String? attrlist) =>
-      _document.hasAttr('compat-mode')
-      ? attrlist ?? ''
-      : 'role=include${attrlist == null ? '' : ',$attrlist'}';
+  String _includeLinkAttrlist(String? attrlist) {
+    if (Behavior.includeLink.of(_document) == 'role') {
+      return _document.hasAttr('compat-mode') ? '' : 'role=include';
+    }
+    return _document.hasAttr('compat-mode')
+        ? attrlist ?? ''
+        : 'role=include${attrlist == null ? '' : ',$attrlist'}';
+  }
 }
 
 /// A saved include context, restored when the include is exhausted.

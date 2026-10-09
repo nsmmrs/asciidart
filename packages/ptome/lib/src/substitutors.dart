@@ -38,6 +38,7 @@ import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/attribute_list.dart';
 import 'package:ptome/src/block.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:ptome/src/constants.dart';
 import 'package:ptome/src/document.dart';
 import 'package:ptome/src/extensions.dart' show MacroAttributes;
@@ -808,7 +809,9 @@ String subAttributes(
       }
     } else if (docAttrs.containsKey(downcase(match.group(2)!))) {
       return docAttrs[downcase(match.group(2)!)]!;
-    } else if (intrinsicAttributes.containsKey(downcase(match.group(2)!))) {
+    } else if (intrinsicAttributes.containsKey(downcase(match.group(2)!)) &&
+        (downcase(match.group(2)!) != 'cxx' ||
+            Behavior.cxxAttribute.of(doc) == 'defined')) {
       return intrinsicAttributes[downcase(match.group(2)!)]!;
     } else {
       final key = downcase(match.group(2)!);
@@ -1263,7 +1266,11 @@ String subMacros(AbstractNode node, String text) {
         id = attrs['id'];
         doc.registerImage(target);
         if (docAttrs['imagesdir'] case final imagesdir?) {
-          attrs.putIfAbsent('imagesdir', () => imagesdir);
+          if (Behavior.inlineImagesdir.of(doc) == 'kept') {
+            attrs.putIfAbsent('imagesdir', () => imagesdir);
+          } else {
+            attrs['imagesdir'] = imagesdir;
+          }
         }
       }
       if (!attrs.containsKey('alt')) {

@@ -27,8 +27,19 @@ class Stylesheets {
   /// stylesheet as it is, without Ptome's house rules (ADR-0011).
   static const String classicStylesheetKey = 'asciidoctor';
 
+  /// The value of the `stylesheet` attribute that names the stylesheet of
+  /// Asciidoctor's latest stable release (2.0.26), which
+  /// `asciidoctor-compat` uses for HTML.
+  static const String stableStylesheetKey = 'asciidoctor-2.0.26';
+
+  /// Whether [key] names one of the stylesheets Ptome carries (Asciidoctor's,
+  /// or the stable release's).
+  static bool isAsciidoctor(String? key) =>
+      key == classicStylesheetKey || key == stableStylesheetKey;
+
   String? _primaryStylesheetData;
   String? _classicStylesheetData;
+  String? _stableStylesheetData;
 
   /// The file name of the primary stylesheet.
   String get primaryStylesheetName => defaultStylesheetName;
@@ -44,11 +55,29 @@ class Stylesheets {
     EmbeddedData.file('stylesheets/asciidoctor-default.css'),
   );
 
+  /// The stylesheet of Asciidoctor's latest stable release
+  /// (`stylesheet=asciidoctor-2.0.26`, data/stylesheets/asciidoctor-2.0.26.css,
+  /// as the 2.0.26 gem has it).
+  String get stableStylesheetData => _stableStylesheetData ??= _rstrip(
+    EmbeddedData.file('stylesheets/asciidoctor-2.0.26.css'),
+  );
+
   /// The built-in stylesheet for a `stylesheet` attribute of [key]: the
-  /// classic one for [classicStylesheetKey], else the default.
-  String dataFor(String? key) => key == classicStylesheetKey
-      ? classicStylesheetData
-      : primaryStylesheetData;
+  /// classic one for [classicStylesheetKey], the stable release's for
+  /// [stableStylesheetKey], else the default.
+  String dataFor(String? key) => switch (key) {
+    classicStylesheetKey => classicStylesheetData,
+    stableStylesheetKey => stableStylesheetData,
+    _ => primaryStylesheetData,
+  };
+
+  /// The Google Fonts families the built-in stylesheet of [key] is set in
+  /// (the `webfonts` attribute's default): the stable release's monospace
+  /// face is Droid Sans Mono, the others' Noto Sans Mono.
+  String webfontsFor(String? key) =>
+      'Open+Sans:300,300italic,400,400italic,600,600italic%7C'
+      'Noto+Serif:400,400italic,700,700italic%7C'
+      '${key == stableStylesheetKey ? 'Droid' : 'Noto'}+Sans+Mono:400,700';
 
   /// Writes the built-in stylesheet for a `stylesheet` attribute of [key] to
   /// [targetDir].

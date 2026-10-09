@@ -25,6 +25,7 @@ import 'package:meta/meta.dart';
 import 'package:ptome/src/abstract_block.dart';
 import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/callouts.dart';
+import 'package:ptome/src/compat.dart';
 import 'package:ptome/src/composite.dart';
 import 'package:ptome/src/constants.dart';
 import 'package:ptome/src/converter.dart';
@@ -537,7 +538,6 @@ class Document extends AbstractBlock implements NodeDocument {
     }
 
     attrOverrides['asciidoctor'] = const _SetValue('');
-    attrOverrides['asciidoctor-version'] = const _SetValue(Asciidoctor.version);
     attrOverrides['ptome-version'] = const _SetValue(
       Asciidoctor.packageVersion,
     );
@@ -585,6 +585,22 @@ class Document extends AbstractBlock implements NodeDocument {
     if (options.doctype case final doctype?) {
       attrOverrides['doctype'] = _SetValue(doctype);
     }
+
+    // The Asciidoctor release documents see: the latest stable one's when
+    // `asciidoctor-compat`, given to the conversion, names the backend's
+    // format.
+    final compat = attrOverrides['asciidoctor-compat'];
+    final backend = attrOverrides['backend'];
+    attrOverrides['asciidoctor-version'] = _SetValue(
+      compat is _SetValue &&
+              parseCompat(compat.value).contains(
+                CompatFormat.named(
+                  backend is _SetValue ? backend.value : defaultBackend,
+                ),
+              )
+          ? Asciidoctor.stableVersion
+          : Asciidoctor.version,
+    );
 
     if (safe >= SafeMode.server) {
       // Restrict the document from setting copycss, source-highlighter

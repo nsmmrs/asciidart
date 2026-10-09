@@ -306,7 +306,7 @@ class Html5Converter extends BuiltInConverter {
         'initial-scale=1.0"$slash>',
       );
     final reproducible = node.hasAttr('reproducible');
-    if (!reproducible) {
+    if (!reproducible || Behavior.htmlGenerator.of(node) == 'always') {
       result.add(
         '<meta name="generator" content="Ptome '
         '${_s(node.attr('ptome-version'))}"$slash>',
@@ -370,11 +370,14 @@ class Html5Converter extends BuiltInConverter {
     late final stylesdir = node.attr('stylesdir');
     final stylesheetKey = htmlStylesheetKey(node);
     if (_defaultStylesheetKeys.contains(stylesheetKey) ||
-        stylesheetKey == Stylesheets.classicStylesheetKey) {
+        Stylesheets.isAsciidoctor(stylesheetKey)) {
       final webfonts = node.attr('webfonts');
       if (webfonts != null) {
+        final families = webfonts.isEmpty
+            ? Stylesheets.instance.webfontsFor(stylesheetKey)
+            : webfonts;
         result.add(
-          '<link rel="stylesheet" href="$assetUriScheme//fonts.googleapis.com/css?family=${webfonts.isEmpty ? 'Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CNoto+Sans+Mono:400,700' : webfonts}"$slash>',
+          '<link rel="stylesheet" href="$assetUriScheme//fonts.googleapis.com/css?family=$families"$slash>',
         );
       }
       if (linkcss) {
@@ -710,6 +713,68 @@ class Html5Converter extends BuiltInConverter {
     return result.join(lf);
   }
 
+  /// The sections of [node] listed as Asciidoctor 2.0.26 lists them
+  /// (`html-toc: 2.0.26`): the list classed with its first section's level,
+  /// the entries without classes, the document's `toclevels` throughout.
+  String? _outline2026(AbstractBlock node, ConvertOptions? opts) {
+    if (!node.hasSections) return null;
+    final attrs = node.document!.attributes;
+    final sectnumlevels =
+        opts?.sectnumlevels ?? parseLeadingInt(attrs['sectnumlevels'] ?? '3');
+    final toclevels =
+        opts?.toclevels ?? parseLeadingInt(attrs['toclevels'] ?? '2');
+    final sections = node.sections;
+    final result = <String>['<ul class="sectlevel${sections[0].level}">'];
+    for (final child in sections) {
+      final section = child as Section;
+      final slevel = section.level!;
+      String stitle;
+      if (section.caption != null) {
+        stitle = section.captionedTitle();
+      } else if (section.numbered && slevel <= sectnumlevels) {
+        String signified(String? signifier, String title) =>
+            signifier == null ? title : '$signifier $title';
+        if (slevel < 2 && (node.document! as Document).doctype == 'book') {
+          stitle = switch (section.sectname) {
+            'chapter' => signified(
+              attrs['chapter-signifier'],
+              '${section.sectnum()} ${section.title!}',
+            ),
+            'part' => signified(
+              attrs['part-signifier'],
+              '${section.sectnum('.', ':')} ${section.title!}',
+            ),
+            _ => '${section.sectnum()} ${section.title!}',
+          };
+        } else {
+          stitle = '${section.sectnum()} ${section.title!}';
+        }
+      } else {
+        stitle = section.title!;
+      }
+      if (stitle.contains('<a')) stitle = stitle.replaceAll(_dropAnchorRx, '');
+      final childToc = slevel < toclevels
+          ? _outline2026(
+              section,
+              ConvertOptions(
+                toclevels: toclevels,
+                sectnumlevels: sectnumlevels,
+              ),
+            )
+          : null;
+      if (childToc != null) {
+        result
+          ..add('<li><a href="#${_s(section.id)}">$stitle</a>')
+          ..add(childToc)
+          ..add('</li>');
+      } else {
+        result.add('<li><a href="#${_s(section.id)}">$stitle</a></li>');
+      }
+    }
+    result.add('</ul>');
+    return result.join('\n');
+  }
+
   /// Converts [node] (a document or section) to a table-of-contents outline.
   ///
   /// Returns `null` when [node] has no sections. [opts] carries
@@ -718,6 +783,9 @@ class Html5Converter extends BuiltInConverter {
   String? convertOutline(AbstractBlock node, [ConvertOptions? opts]) {
     if (!node.hasSections) {
       return null;
+    }
+    if (Behavior.htmlToc.of(node.document! as Document) == '2.0.26') {
+      return _outline2026(node, opts);
     }
     final sections = node.sections;
     final parts = node is Document && node.multipart;
@@ -1062,11 +1130,11 @@ class Html5Converter extends BuiltInConverter {
         if (node.hasAttr('labelwidth') || node.hasAttr('itemwidth')) {
           result.add('<colgroup>');
           final labelWidth = node.hasAttr('labelwidth')
-              ? ' width="${_chompPercent(node.attr('labelwidth')!)}%"'
+              ? _width(node, _chompPercent(node.attr('labelwidth')!))
               : '';
           result.add('<col$labelWidth$slash>');
           final itemWidth = node.hasAttr('itemwidth')
-              ? ' width="${_chompPercent(node.attr('itemwidth')!)}%"'
+              ? _width(node, _chompPercent(node.attr('itemwidth')!))
               : '';
           result
             ..add('<col$itemWidth$slash>')
@@ -1221,7 +1289,11 @@ class Html5Converter extends BuiltInConverter {
     var wrappedImg = img;
     // link=self links the image to itself (lib/asciidoctor/converter/html5.rb).
     final link = node.attr('link');
-    final href = link == 'self' ? src : link;
+    final href =
+        link == 'self' &&
+            Behavior.linkSelf.of(node.document! as Document) == 'image'
+        ? src
+        : link;
     if (href != null) {
       final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
@@ -1453,7 +1525,10 @@ class Html5Converter extends BuiltInConverter {
   }
 
   /// Converts the [node] page break.
-  String convertPageBreak(Block node) => '<div class="page-break"></div>';
+  String convertPageBreak(Block node) =>
+      Behavior.htmlPageBreak.of(node.document! as Document) == 'style'
+      ? '<div style="page-break-after: always;"></div>'
+      : '<div class="page-break"></div>';
 
   /// Converts the [node] paragraph.
   String convertParagraph(Block node) {
@@ -1521,7 +1596,11 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] thematic break.
   String convertThematicBreak(Block node) {
-    final classAttribute = node.role != null ? ' class="${_s(node.role)}"' : '';
+    final classAttribute =
+        node.role != null &&
+            Behavior.htmlBreakRoles.of(node.document! as Document) == 'kept'
+        ? ' class="${_s(node.role)}"'
+        : '';
     return '<hr$classAttribute$_voidElementSlash>';
   }
 
@@ -1566,7 +1645,7 @@ class Html5Converter extends BuiltInConverter {
     } else if (tablewidth == '100') {
       classes.add('stretch');
     } else {
-      widthAttribute = ' width="${_s(tablewidth)}%"';
+      widthAttribute = _width(node, _s(tablewidth));
     }
     if (node.hasAttr('float')) {
       classes.add(_s(node.attr('float')));
@@ -1593,7 +1672,7 @@ class Html5Converter extends BuiltInConverter {
           result.add(
             col.hasOption('autowidth')
                 ? '<col$slash>'
-                : '<col width="${_s(col.attr('colpcwidth'))}%"$slash>',
+                : '<col${_width(node, _s(col.attr('colpcwidth')))}$slash>',
           );
         }
       }
@@ -1912,7 +1991,8 @@ class Html5Converter extends BuiltInConverter {
             '<iframe$widthAttribute$heightAttribute src="$assetUriScheme//www.youtube.com/embed/$target?rel=$relParamVal$startParam$endParam$autoplayParam$loopParam$muteParam$controlsParam$listParam$fsParam$modestParam$themeParam$hlParam" frameborder="0"$fsAttribute></iframe>\n'
             '</div>\n'
             '</div>';
-      case 'wistia':
+      case 'wistia'
+          when Behavior.htmlWistia.of(node.document! as Document) == 'embed':
         var assetUriScheme = node.document!.attr('asset-uri-scheme', 'https')!;
         if (assetUriScheme.isNotEmpty) assetUriScheme = '$assetUriScheme:';
         final delimiter = <String>['?'];
@@ -2192,13 +2272,21 @@ class Html5Converter extends BuiltInConverter {
     }
     var wrappedImg = img;
     final link = node.attr('link');
-    final href = link == 'self' ? src : link;
+    final href =
+        link == 'self' &&
+            Behavior.linkSelf.of(node.document! as Document) == 'image'
+        ? src
+        : link;
     if (href != null) {
       final linkConstraintAttrs = _appendLinkConstraintAttrs(node).join();
       wrappedImg =
           '<a class="image" href="${_q(href)}"$linkConstraintAttrs>$img</a>';
     }
-    final idAttr = node.id != null ? ' id="${node.id}"' : '';
+    final idAttr =
+        node.id != null &&
+            Behavior.inlineImageIds.of(node.document! as Document) == 'kept'
+        ? ' id="${node.id}"'
+        : '';
     final role = node.role;
     final String classAttrVal;
     if (role != null) {
@@ -2452,6 +2540,13 @@ class Html5Converter extends BuiltInConverter {
   /// in an image target or attribute would end early, letting the rest of
   /// the value into the markup (#2862, #2661).
   String _q(String? value) => _encodeAttributeValue(_s(value));
+
+  /// The width attribute of [node]'s element for [percent] (`html-widths`:
+  /// `width="50%"`, or `style="width: 50%;"` as Asciidoctor 2.0.26 wrote it).
+  static String _width(AbstractNode node, String percent) =>
+      Behavior.htmlWidths.of(node.document! as Document) == 'style'
+      ? ' style="width: $percent%;"'
+      : ' width="$percent%"';
 
   /// Removes one trailing `%` from [value] (port of `chomp '%'`).
   String _chompPercent(String value) =>
