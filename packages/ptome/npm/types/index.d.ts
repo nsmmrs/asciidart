@@ -103,7 +103,7 @@ export declare const BlockKind: {
  * What a {@link Diagnostic} is about, for the messages that are worth telling
  * apart in code; {@link other} for the rest.
  */
-export type DiagnosticCode = 'unknownReference' | 'duplicateId' | 'includeNotFound' | 'missingAttribute' | 'sectionOutOfSequence' | 'unterminatedBlock' | 'listNumbering' | 'tableStructure' | 'missingAsset' | 'other';
+export type DiagnosticCode = 'unknownReference' | 'duplicateId' | 'includeNotFound' | 'missingAttribute' | 'sectionOutOfSequence' | 'unterminatedBlock' | 'listNumbering' | 'tableStructure' | 'missingAsset' | 'unitLabel' | 'unitId' | 'unitRange' | 'unitReference' | 'unitNote' | 'unitInclude' | 'unitLayer' | 'unitScheme' | 'other';
 export declare const DiagnosticCode: {
   /**
    * A cross reference to an ID that is not defined.
@@ -141,6 +141,40 @@ export declare const DiagnosticCode: {
    * An image or other asset that cannot be found or read.
    */
   readonly missingAsset: 'missingAsset';
+  /**
+   * A unit's label its level does not allow, or not the one expected (a
+   * gap, a repeat, going backwards; see `doc/units.md`).
+   */
+  readonly unitLabel: 'unitLabel';
+  /**
+   * A unit ID used twice.
+   */
+  readonly unitId: 'unitId';
+  /**
+   * A units range that closes nothing or is never closed.
+   */
+  readonly unitRange: 'unitRange';
+  /**
+   * A reference by address to a passage not found.
+   */
+  readonly unitReference: 'unitReference';
+  /**
+   * A note in a stream no scheme declares.
+   */
+  readonly unitNote: 'unitNote';
+  /**
+   * A passage, block or document a units include names that is not
+   * found, or a citation style not declared.
+   */
+  readonly unitInclude: 'unitInclude';
+  /**
+   * A layer's or overlay's file or address not found.
+   */
+  readonly unitLayer: 'unitLayer';
+  /**
+   * Scheme files not found or not valid.
+   */
+  readonly unitScheme: 'unitScheme';
   /**
    * Any other message.
    */
@@ -663,6 +697,31 @@ export declare abstract class Node {
 }
 
 /**
+ * A passage of a document written in units: the units from one to
+ * another (`Exod 34:6-7`).
+ */
+export declare class Passage {
+  protected constructor();
+  /**
+   * Its first unit.
+   */
+  readonly start: Unit;
+  /**
+   * Its last unit.
+   */
+  readonly end: Unit;
+  /**
+   * The passage as its scheme cites it, what its ends share said once
+   * (`Exod 34:6–7`).
+   */
+  readonly citation: string;
+  /**
+   * Its units at its last unit's level and below, in document order.
+   */
+  readonly units: Unit[];
+}
+
+/**
  * Parses and converts AsciiDoc with one configuration.
  *
  * An instance holds everything that shapes a conversion: the safe mode,
@@ -822,6 +881,7 @@ export declare class SourceLocation {
   protected constructor();
   readonly path: string | null;
   readonly line: number;
+  readonly column: number | null;
 }
 
 /**
@@ -843,15 +903,120 @@ export declare class TableColumn {
  */
 export declare class Unit {
   protected constructor();
+  /**
+   * The name of the scheme the unit belongs to (`bible`).
+   */
   readonly scheme: string;
+  /**
+   * The name of the unit's level (`verse`).
+   */
   readonly level: string;
+  /**
+   * The level's depth in its scheme (0 for the outermost: a book).
+   */
   readonly depth: number;
+  /**
+   * The labels of the unit's level and the levels above it, by level
+   * name, as markers write them (`{book: EXO, chapter: 34, verse: 6}`).
+   */
   readonly labels: Record<string, string>;
+  /**
+   * The unit's ID (`v-exo-34-6`), its anchor in the output.
+   */
   readonly id: string;
+  /**
+   * The unit's reftext (`Exodus 34:6`), what references to it show.
+   */
   readonly reftext: string;
+  /**
+   * The unit as its scheme cites it (`Exod 34:6`).
+   */
   readonly citation: string;
+  /**
+   * The path of the source file the unit starts in.
+   */
   readonly path: string;
+  /**
+   * The line the unit starts on (1-based).
+   */
   readonly line: number;
+  /**
+   * The unit it is in: the unit of the nearest level above (a verse's
+   * chapter), if any.
+   */
+  readonly parent: Unit | null;
+  /**
+   * The units in it at the levels below, in document order (a chapter's
+   * verses).
+   */
+  readonly children: Unit[];
+  /**
+   * The notes that belong to it (at their streams' reset level), in the
+   * order of their callers.
+   */
+  readonly notes: UnitNote[];
+}
+
+/**
+ * A note of a note stream in a document written in units (`note:x[…]`).
+ */
+export declare class UnitNote {
+  protected constructor();
+  /**
+   * The note's stream (`x`).
+   */
+  readonly stream: string;
+  /**
+   * Its caller in its stream (`a`), if the stream has callers.
+   */
+  readonly caller: string | null;
+  /**
+   * The words it is on, if it has any (`##merciful##note:x[…]`).
+   */
+  readonly lemma: string | null;
+  /**
+   * The note's text, as written.
+   */
+  readonly text: string;
+  /**
+   * The unit it belongs to, if any.
+   */
+  readonly unit: Unit | null;
+}
+
+/**
+ * A reference by address in a document written in units
+ * (`<<Ps 86:15; 103:8–13>>`), resolved.
+ */
+export declare class UnitReference {
+  protected constructor();
+  /**
+   * The reference as written, between its brackets.
+   */
+  readonly text: string;
+  /**
+   * The path of the source file it is in.
+   */
+  readonly path: string;
+  /**
+   * The line it is on (1-based).
+   */
+  readonly line: number;
+  /**
+   * The passages it cites, each with what it links to; a passage not
+   * found has no target.
+   */
+  readonly links: UnitReferenceLink[];
+}
+
+/**
+ * A passage a reference cites, and the anchor it links to.
+ */
+export declare class UnitReferenceLink {
+  protected constructor();
+  readonly text: string;
+  readonly id: string;
+  readonly document: string | null;
 }
 
 /**
@@ -1205,6 +1370,16 @@ export declare class Document extends Block {
    */
   readonly units: Unit[];
   /**
+   * The references by address in a document written in units
+   * (`<<Ps 86:15; 103:8–13>>`), in document order, resolved.
+   */
+  readonly unitReferences: UnitReference[];
+  /**
+   * The terms a document written in units defines (`[.dfn]#term#`), by
+   * term (in lower case), with the ID of each one's definition.
+   */
+  readonly definedTerms: Record<string, string>;
+  /**
    * The messages reported while parsing and converting this document.
    */
   readonly diagnostics: Diagnostic[];
@@ -1246,6 +1421,12 @@ export declare class Document extends Block {
    * the document is not written in units.
    */
   unit(idOrAddress: string): Unit | null;
+  /**
+   * The passage at {@link address} (`Exod 34:6-7`, `Ps 23`), as the document's
+   * schemes cite it; `null` when there is none or the document is not
+   * written in units.
+   */
+  passage(address: string): Passage | null;
   /**
    * The document converted to its output format: the body only, or a
    * complete page when {@link standalone} is `true` (default: as parsed).

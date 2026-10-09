@@ -19,7 +19,6 @@ import 'package:ptome/src/section.dart';
 import 'package:ptome/src/table.dart';
 import 'package:ptome/src/units/citation.dart';
 import 'package:ptome/src/units/engine.dart';
-import 'package:ptome/src/units/files.dart' as p;
 import 'package:ptome/src/units/presentation.dart';
 import 'package:ptome/src/units/render.dart';
 
@@ -60,9 +59,6 @@ final class UnitsInclude {
 
   /// Whether it repeats a block of this document by its ID.
   bool get repeat => target.startsWith('#');
-
-  /// Where it is, for messages.
-  String get where => '${p.basename(file)}: line $line';
 }
 
 /// A document's rendered units, as a cited document gives them.

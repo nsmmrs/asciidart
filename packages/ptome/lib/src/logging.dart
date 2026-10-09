@@ -83,10 +83,18 @@ enum Severity {
 /// A log message: its [text] plus the source position it refers to.
 ///
 /// Port of the hash built by `Logging#message_with_context`. [toString]
-/// renders `sourceLocation: text` when a location is present, else [text].
+/// renders `sourceLocation: text` when a location is present (`path:line:
+/// column: text` with a [column]), else [text].
 class LogMessage {
-  /// Creates a message with [text] and optional source locations.
-  const new(this.text, {this.sourceLocation, this.includeLocation});
+  /// Creates a message with [text], optional source locations, the
+  /// [column] (1-based) it refers to and the [code] of what it is about.
+  const new(
+    this.text, {
+    this.sourceLocation,
+    this.includeLocation,
+    this.column,
+    this.code,
+  });
 
   /// The message text, without location prefix.
   final String text;
@@ -97,10 +105,21 @@ class LogMessage {
   /// The position inside an include file the message refers to, if any.
   final Cursor? includeLocation;
 
+  /// The column (1-based) the message refers to, if it refers to one.
+  final int? column;
+
+  /// What the message is about, for messages with a code of their own
+  /// (`unit-label`, a units problem).
+  final String? code;
+
   @override
   String toString() {
     final location = sourceLocation;
-    return location == null ? text : '$location: $text';
+    if (location == null) return text;
+    if (column case final column?) {
+      return '${location.path}:${location.lineno}:$column: $text';
+    }
+    return '$location: $text';
   }
 }
 

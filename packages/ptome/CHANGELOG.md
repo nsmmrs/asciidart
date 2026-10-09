@@ -31,9 +31,15 @@ Asciidoctor project.
   - `ptome check FILE...` reads documents without converting them.
   - `include::text.adoc[parallel=translation.adoc]` sets two documents in
     one scheme side by side, unit by unit, matched by address.
-  - `Document.units` and `Document.unit(idOrAddress)` give the units in the
-    Dart and JavaScript APIs: each `Unit` has its scheme, level, labels,
-    ID, reftext, citation and source line.
+  - `Document.units`, `Document.unit(idOrAddress)` and
+    `Document.passage(address)` give the units in the Dart and JavaScript
+    APIs: each `Unit` has its scheme, level, labels, ID, reftext, citation,
+    source line, parent, children and notes; references by address and
+    defined terms too. Units are nodes of their own in the tree
+    (`UnitMark`, `NoteCall`, `NoteEntry`, `UnitBlock`) and in every
+    backend (semantic HTML: `class="unit"`, `data-unit`).
+  - `ptome check --format=json --list` reports units and problems (each
+    with its kind, file, line and column) to tools.
   - Checked against the loci experiment's 26 documents (scripture, law,
     classics, drama, liturgy, a hymnal, a catechism, a specification) and
     a commonplace book quoting them all: the units model each yields

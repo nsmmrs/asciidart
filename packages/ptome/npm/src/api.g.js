@@ -367,6 +367,27 @@ export class Node {
   }
 }
 
+export class Passage {
+  constructor() {
+    throw new TypeError('Passage objects come from ptome; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get start() {
+    return core.Passage$get$start(this)
+  }
+  get end() {
+    return core.Passage$get$end(this)
+  }
+  get citation() {
+    return core.Passage$get$citation(this)
+  }
+  get units() {
+    return core.Passage$get$units(this)
+  }
+}
+
 export class Ptome {
   constructor(...args) {
     return core.Ptome(...args)
@@ -480,6 +501,9 @@ export class SourceLocation {
   get line() {
     return core.SourceLocation$get$line(this)
   }
+  get column() {
+    return core.SourceLocation$get$column(this)
+  }
 }
 
 export class TableColumn {
@@ -533,6 +557,78 @@ export class Unit {
   }
   get line() {
     return core.Unit$get$line(this)
+  }
+  get parent() {
+    return core.Unit$get$parent(this)
+  }
+  get children() {
+    return core.Unit$get$children(this)
+  }
+  get notes() {
+    return core.Unit$get$notes(this)
+  }
+}
+
+export class UnitNote {
+  constructor() {
+    throw new TypeError('UnitNote objects come from ptome; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get stream() {
+    return core.UnitNote$get$stream(this)
+  }
+  get caller() {
+    return core.UnitNote$get$caller(this)
+  }
+  get lemma() {
+    return core.UnitNote$get$lemma(this)
+  }
+  get text() {
+    return core.UnitNote$get$text(this)
+  }
+  get unit() {
+    return core.UnitNote$get$unit(this)
+  }
+}
+
+export class UnitReference {
+  constructor() {
+    throw new TypeError('UnitReference objects come from ptome; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get text() {
+    return core.UnitReference$get$text(this)
+  }
+  get path() {
+    return core.UnitReference$get$path(this)
+  }
+  get line() {
+    return core.UnitReference$get$line(this)
+  }
+  get links() {
+    return core.UnitReference$get$links(this)
+  }
+}
+
+export class UnitReferenceLink {
+  constructor() {
+    throw new TypeError('UnitReferenceLink objects come from ptome; they cannot be created with new')
+  }
+  toString() {
+    return core.describe(this)
+  }
+  get text() {
+    return core.UnitReferenceLink$get$text(this)
+  }
+  get id() {
+    return core.UnitReferenceLink$get$id(this)
+  }
+  get document() {
+    return core.UnitReferenceLink$get$document(this)
   }
 }
 
@@ -825,6 +921,12 @@ export class Document extends Block {
   get units() {
     return core.Document$get$units(this)
   }
+  get unitReferences() {
+    return core.Document$get$unitReferences(this)
+  }
+  get definedTerms() {
+    return core.Document$get$definedTerms(this)
+  }
   get diagnostics() {
     return core.Document$get$diagnostics(this)
   }
@@ -842,6 +944,9 @@ export class Document extends Block {
   }
   unit(...args) {
     return core.Document$unit(this, ...args)
+  }
+  passage(...args) {
+    return core.Document$passage(this, ...args)
   }
   convert(...args) {
     return core.Document$convert(this, ...args)
@@ -1385,7 +1490,7 @@ export class Video extends Block {
   }
 }
 
-registerClasses({ Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, FontFile, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, Ptome, SourceCode, SourceLocation, TableColumn, Unit, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, NoteCall, NoteEntry, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnitBlock, UnitMark, UnorderedList, Verse, Video })
+registerClasses({ Attributes, Author, BlockMacroContext, CustomBlockContext, DescriptionListEntry, Diagnostic, FileConversion, FontFile, HtmlDefaults, IncludeRequest, IndexEntry, IndexLetter, InlineMacroContext, InlineText, Passage, Ptome, SourceCode, SourceLocation, TableColumn, Unit, UnitNote, UnitReference, UnitReferenceLink, BlockMacro, CustomBlock, Docinfo, IncludeResolver, InlineMacro, Postprocessor, Preprocessor, TreeProcessor, Admonition, Audio, BibliographyAnchor, Button, Callout, CalloutList, CrossReference, DescriptionList, DiscreteHeading, Document, Example, Footnote, Formatted, Icon, Image, IndexTerm, InlineAnchor, InlineImage, InlineStem, Keyboard, LineBreak, Link, ListItem, Listing, Literal, Menu, NoteCall, NoteEntry, Open, OrderedList, OtherBlock, PageBreak, Paragraph, Passthrough, Preamble, Quote, Section, Sidebar, Stem, Table, TableCell, TableOfContents, ThematicBreak, UnitBlock, UnitMark, UnorderedList, Verse, Video })
 
 export const AdmonitionKind = Object.freeze({
   note: 'note',
@@ -1425,6 +1530,14 @@ export const DiagnosticCode = Object.freeze({
   listNumbering: 'listNumbering',
   tableStructure: 'tableStructure',
   missingAsset: 'missingAsset',
+  unitLabel: 'unitLabel',
+  unitId: 'unitId',
+  unitRange: 'unitRange',
+  unitReference: 'unitReference',
+  unitNote: 'unitNote',
+  unitInclude: 'unitInclude',
+  unitLayer: 'unitLayer',
+  unitScheme: 'unitScheme',
   other: 'other',
 })
 

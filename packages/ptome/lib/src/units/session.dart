@@ -58,8 +58,10 @@ final class UnitsSession {
     } else {
       final dir = p.schemesDir(docfile);
       if (dir == null) {
-        LoggerManager.logger.error(
+        _say(
+          UnitsProblem.scheme,
           'units: no schemes/ directory above $docfile',
+          error: true,
         );
         return null;
       }
@@ -69,7 +71,7 @@ final class UnitsSession {
           dir,
         );
       } on Exception catch (e) {
-        LoggerManager.logger.error('units: $e');
+        _say(UnitsProblem.scheme, 'units: $e', error: true);
         return null;
       }
     }
@@ -184,18 +186,53 @@ final class UnitsSession {
       a = run();
       problems.forEach(a.diagnostics.add);
     }
-    for (final d in a.diagnostics) {
-      final where = d.loc == null ? '' : '${d.loc}: ';
-      if (d.error) {
-        LoggerManager.logger.error('$where${d.message}');
-      } else {
-        LoggerManager.logger.warn('$where${d.message}');
-      }
-    }
+    a.diagnostics.forEach(_log);
     analysis = a;
     rendering = renderUnits(_document, a, textOf);
     _resolveIncludes();
     return a;
+  }
+
+  /// Logs [text] about [problem] (an [error], or a warning), where the
+  /// include [at] is.
+  static void _say(
+    UnitsProblem problem,
+    String text, {
+    bool error = false,
+    UnitsInclude? at,
+  }) => LoggerManager.logger.add(
+    error ? Severity.error : Severity.warn,
+    LogMessage(
+      text,
+      sourceLocation: at == null
+          ? null
+          : Cursor(at.file, p.dirname(at.file), p.basename(at.file), at.line),
+      code: 'unit-${problem.name}',
+    ),
+  );
+
+  /// Logs [d] where the parser read what it is about (its file, line and
+  /// column), with its problem as the message's code.
+  static void _log(Diagnostic d) {
+    final loc = d.loc;
+    final origin = loc?.file.originOf(loc.line);
+    final message = origin == null || loc == null
+        ? LogMessage(
+            loc == null ? d.message : '$loc: ${d.message}',
+            code: 'unit-${d.problem.name}',
+          )
+        : LogMessage(
+            d.message,
+            sourceLocation: Cursor(
+              origin.file,
+              origin.file == null ? null : p.dirname(origin.file!),
+              origin.path,
+              origin.line,
+            ),
+            column: origin.column + loc.column + 1,
+            code: 'unit-${d.problem.name}',
+          );
+    LoggerManager.logger.add(d.error ? Severity.error : Severity.warn, message);
   }
 
   void _walk(AbstractBlock node) {
@@ -399,9 +436,11 @@ final class UnitsSession {
             ? const <AbstractBlock>[]
             : includer.parallel(left, right);
         if (table.isEmpty) {
-          LoggerManager.logger.error(
-            '${include.where}: no units to set side by side: '
-            '${include.target} and $other',
+          _say(
+            UnitsProblem.include,
+            'no units to set side by side: ${include.target} and $other',
+            error: true,
+            at: include,
           );
         }
         blocks.addAll(table);
@@ -412,9 +451,7 @@ final class UnitsSession {
             ? includer.repeat(block, rendering!)
             : null;
         if (copy == null) {
-          LoggerManager.logger.warn(
-            '${include.where}: no block #$id to repeat',
-          );
+          _say(UnitsProblem.include, 'no block #$id to repeat', at: include);
         } else {
           blocks.add(copy);
         }
@@ -424,21 +461,26 @@ final class UnitsSession {
             ? null
             : resolvePassage(work.analysis, include.unit!);
         if (work == null) {
-          LoggerManager.logger.warn(
-            '${include.where}: no document ${include.target} to include from',
+          _say(
+            UnitsProblem.include,
+            'no document ${include.target} to include from',
+            at: include,
           );
         } else if (passage == null) {
-          LoggerManager.logger.warn(
-            '${include.where}: no passage ${include.unit} in ${include.target}',
+          _say(
+            UnitsProblem.include,
+            'no passage ${include.unit} in ${include.target}',
+            at: include,
           );
         } else {
           final style = include.cite ?? 'default';
           if (style != 'none' &&
               style != 'default' &&
               !work.analysis.config.citations.containsKey(style)) {
-            LoggerManager.logger.warn(
-              '${include.where}: ${include.target} declares no citation '
-              'style $style',
+            _say(
+              UnitsProblem.include,
+              '${include.target} declares no citation style $style',
+              at: include,
             );
           }
           blocks.addAll(
@@ -505,7 +547,9 @@ final class UnitsSession {
     for (final layer in layers) {
       final read = readLayer(layer, _document.safe);
       if (read == null) {
-        problems.add(Diagnostic(null, 'layer not found: $layer'));
+        problems.add(
+          Diagnostic(UnitsProblem.layer, null, 'layer not found: $layer'),
+        );
         continue;
       }
       final stream = read.stream;
@@ -515,7 +559,11 @@ final class UnitsSession {
         final unit = resolvePassage(a, address)?.start;
         if (unit == null) {
           problems.add(
-            Diagnostic(null, '${p.basename(layer)}: $address not found'),
+            Diagnostic(
+              UnitsProblem.layer,
+              null,
+              '${p.basename(layer)}: $address not found',
+            ),
           );
           continue;
         }
@@ -623,7 +671,7 @@ final class UnitsSession {
       );
       final work = _workDocument(path, _document.safe)?.unitsSession?.analysis;
       if (work == null) {
-        LoggerManager.logger.warn('units: work not found: $path');
+        _say(UnitsProblem.include, 'units: work not found: $path');
         continue;
       }
       for (final name in entry.substring(0, eq).split('|')) {

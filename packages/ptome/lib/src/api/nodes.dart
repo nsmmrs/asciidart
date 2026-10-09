@@ -319,12 +319,8 @@ final class Document extends Block {
   List<Unit> get units {
     final analysis = _doc.unitsSession?.analysis;
     if (analysis == null) return const [];
-    return [
-      for (final u in [
-        ...analysis.units,
-      ]..sort((a, b) => a.start.compareTo(b.start)))
-        _unit(analysis, u),
-    ];
+    final model = _UnitsModel.of(analysis);
+    return [for (final u in model.ordered) model.view(u)];
   }
 
   /// The unit with the ID [idOrAddress] (`v-exo-34-6`), or the first unit
@@ -337,8 +333,39 @@ final class Document extends Block {
     final found =
         analysis.byId[idOrAddress] ??
         impl.resolvePassage(analysis, idOrAddress)?.start;
-    return found == null ? null : _unit(analysis, found);
+    return found == null ? null : _UnitsModel.of(analysis).view(found);
   }
+
+  /// The passage at [address] (`Exod 34:6-7`, `Ps 23`), as the document's
+  /// schemes cite it; `null` when there is none or the document is not
+  /// written in units.
+  Passage? passage(String address) {
+    final analysis = _doc.unitsSession?.analysis;
+    final found = analysis == null
+        ? null
+        : impl.resolvePassage(analysis, address);
+    return found == null ? null : Passage._(_UnitsModel.of(analysis!), found);
+  }
+
+  /// The references by address in a document written in units
+  /// (`<<Ps 86:15; 103:8–13>>`), in document order, resolved.
+  List<UnitReference> get unitReferences {
+    final analysis = _doc.unitsSession?.analysis;
+    if (analysis == null) return const [];
+    final model = _UnitsModel.of(analysis);
+    return [
+      for (final use in [
+        ...analysis.refs.values,
+      ]..sort((a, b) => a.xref.loc.compareTo(b.xref.loc)))
+        UnitReference._(model, use),
+    ];
+  }
+
+  /// The terms a document written in units defines (`[.dfn]#term#`), by
+  /// term (in lower case), with the ID of each one's definition.
+  Map<String, String> get definedTerms => Map.unmodifiable(
+    _doc.unitsSession?.analysis?.terms ?? const <String, String>{},
+  );
 
   /// The messages reported while parsing and converting this document.
   List<Diagnostic> get diagnostics =>

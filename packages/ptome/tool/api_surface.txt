@@ -42,6 +42,14 @@ enum DiagnosticCode
   static DiagnosticCode other
   static DiagnosticCode sectionOutOfSequence
   static DiagnosticCode tableStructure
+  static DiagnosticCode unitId
+  static DiagnosticCode unitInclude
+  static DiagnosticCode unitLabel
+  static DiagnosticCode unitLayer
+  static DiagnosticCode unitNote
+  static DiagnosticCode unitRange
+  static DiagnosticCode unitReference
+  static DiagnosticCode unitScheme
   static DiagnosticCode unknownReference
   static DiagnosticCode unterminatedBlock
   static List<DiagnosticCode> values
@@ -189,7 +197,10 @@ final class Document extends Block
   List<IndexLetter> index
   List<InlineContent> titleInlines
   List<Unit> units
+  List<UnitReference> unitReferences
+  Map<String, String> definedTerms
   Map<String, String?> headerAttributes
+  Passage? passage(String address)
   String convert({bool? standalone})
   String source
   String toHtml({bool? standalone})
@@ -313,6 +324,12 @@ final class Paragraph extends Block with _Text
   String content
   String plainText
   String source
+final class Passage
+  List<Unit> units
+  String citation
+  String toString()
+  Unit end
+  Unit start
 final class Passthrough extends Block with _Text
   List<InlineContent> inlines
   String content
@@ -370,6 +387,7 @@ final class SourceLocation
   bool ==(Object other)
   int hashCode
   int line
+  int? column
 final class Stem extends Block with _Text
   List<InlineContent> inlines
   StemNotation notation
@@ -399,6 +417,8 @@ final class TreeProcessor extends Extension
   TreeProcessor(void Function(Document) process)
   void Function(Document) process
 final class Unit
+  List<Unit> children
+  List<UnitNote> notes
   Map<String, String> labels
   String citation
   String id
@@ -407,6 +427,7 @@ final class Unit
   String reftext
   String scheme
   String toString()
+  Unit? parent
   int depth
   int line
 final class UnitBlock extends Block
@@ -420,6 +441,26 @@ final class UnitMark extends Inline
   String reftext
   String scheme
   bool isStart
+final class UnitNote
+  String stream
+  String text
+  String toString()
+  String? caller
+  String? lemma
+  Unit? unit
+final class UnitReference
+  List<UnitReferenceLink> links
+  String path
+  String text
+  String toString()
+  int line
+final class UnitReferenceLink
+  String id
+  String text
+  String toString()
+  String? document
+  bool ==(Object other)
+  int hashCode
 final class UnorderedList extends Block
   List<ListItem> items
   String plainText

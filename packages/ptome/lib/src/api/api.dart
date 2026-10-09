@@ -40,6 +40,7 @@ import 'package:ptome/src/reader.dart' as impl;
 import 'package:ptome/src/section.dart' as impl;
 import 'package:ptome/src/table.dart' as impl;
 import 'package:ptome/src/units/citation.dart' as impl;
+import 'package:ptome/src/units/document.dart' as impl show Loc;
 import 'package:ptome/src/units/engine.dart' as impl;
 import 'package:ptome/src/version.dart' as impl;
 

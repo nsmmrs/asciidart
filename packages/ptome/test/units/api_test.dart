@@ -66,4 +66,54 @@ void main() {
     expect(point.citation, 'Article 6(1)(a)');
     expect(point.blocks.single, isA<Paragraph>());
   });
+
+  test('the model: parents, children, notes, passages, references', () async {
+    final doc = await ptome.parseFile('$_fixtures/bible/sample.adoc');
+    final verse = doc.unit('Exod 34:7')!;
+    expect(verse.parent?.id, 'c-exo-34');
+    expect(verse.parent?.parent?.id, 'b-exo');
+    expect(doc.unit('c-exo-34')!.children.map((u) => u.id), [
+      'v-exo-34-1',
+      'v-exo-34-2',
+      'v-exo-34-6',
+      'v-exo-34-7',
+    ]);
+    final note = verse.notes.single;
+    expect(note.stream, 'tn');
+    expect(note.lemma, 'forgiving');
+    expect(note.text, 'Heb. bearing');
+    expect(note.unit?.id, 'v-exo-34-7');
+    final cross = doc.unit('Exod 34:6')!.notes.single;
+    expect((cross.stream, cross.caller), ('x', 'a'));
+
+    final passage = doc.passage('Exod 34:6-7')!;
+    expect(passage.citation, 'Exod 34:6–7');
+    expect(passage.units.map((u) => u.id), ['v-exo-34-6', 'v-exo-34-7']);
+    expect(doc.passage('Ps 3')!.units.map((u) => u.level).toSet(), {
+      'chapter',
+      'verse',
+    });
+
+    final reference = doc.unitReferences.firstWhere(
+      (r) => r.text == 'Exod 34:6',
+    );
+    expect(reference.links.single.id, 'v-exo-34-6');
+    expect(reference.path, endsWith('sample.adoc'));
+  });
+
+  test('units problems: their own codes, with lines and columns', () async {
+    final doc = await ptome.parseFile('$_fixtures/bible/sample.adoc');
+    final order = doc.diagnostics.firstWhere(
+      (d) => d.message.startsWith('verse 6 after 2'),
+    );
+    expect(order.code, DiagnosticCode.unitLabel);
+    expect(order.severity, Severity.warning);
+    expect((order.location?.line, order.location?.column), (15, 1));
+    expect(
+      doc.diagnostics
+          .where((d) => d.code == DiagnosticCode.unitReference)
+          .map((d) => d.message),
+      contains('reference "Joel 2:13" not found'),
+    );
+  });
 }

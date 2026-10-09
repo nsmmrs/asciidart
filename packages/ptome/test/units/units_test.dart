@@ -43,7 +43,7 @@ void main() {
     addTearDown(() => LoggerManager.logger = previous);
     _convert('$_fixtures/bible/out-of-order.adoc', 'html5');
     expect(
-      logger.messages.map((m) => m.message.text).join('\n'),
+      logger.messages.map((m) => '${m.message}').join('\n'),
       contains('out-of-order.adoc:10:1: verse 2 after 5'),
     );
   });

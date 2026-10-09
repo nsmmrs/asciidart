@@ -9,11 +9,44 @@ import 'package:ptome/src/units/files.dart' as p;
 import 'package:ptome/src/units/scheme.dart';
 import 'package:ptome/src/units/template.dart';
 
+/// What a units problem is about.
+enum UnitsProblem {
+  /// A label its level does not allow, or not the one expected (a gap, a
+  /// repeat, going backwards, a wrong first label, nothing to step to).
+  label,
+
+  /// A unit ID used twice.
+  id,
+
+  /// A range that closes nothing or is never closed.
+  range,
+
+  /// A reference by address to a passage not found.
+  reference,
+
+  /// A note in a stream no scheme declares.
+  note,
+
+  /// A passage, block or document an include names that is not found, or
+  /// a citation style not declared.
+  include,
+
+  /// A layer's or overlay's file or address not found.
+  layer,
+
+  /// Scheme files not found or not valid.
+  scheme,
+}
+
 /// A problem the engine found: a label out of sequence, a reference not
 /// found.
 final class Diagnostic {
-  /// A diagnostic at [loc] saying [message]; an [error] rather than a warning.
-  new(this.loc, this.message, {this.error = false});
+  /// A [problem] at [loc] saying [message]; an [error] rather than a
+  /// warning.
+  new(this.problem, this.loc, this.message, {this.error = false});
+
+  /// What kind of problem it is.
+  final UnitsProblem problem;
 
   /// Where it was found, if anywhere in particular.
   final Loc? loc;
@@ -222,12 +255,13 @@ final class Analysis {
     return b.toString();
   }
 
-  /// Records a warning [m] at [loc].
-  void warn(Loc? loc, String m) => diagnostics.add(Diagnostic(loc, m));
+  /// Records a warning [m] about [problem] at [loc].
+  void warn(UnitsProblem problem, Loc? loc, String m) =>
+      diagnostics.add(Diagnostic(problem, loc, m));
 
-  /// Records an error [m] at [loc].
-  void error(Loc? loc, String m) =>
-      diagnostics.add(Diagnostic(loc, m, error: true));
+  /// Records an error [m] about [problem] at [loc].
+  void error(UnitsProblem problem, Loc? loc, String m) =>
+      diagnostics.add(Diagnostic(problem, loc, m, error: true));
 }
 
 final class _Cursor {
@@ -403,7 +437,11 @@ final class Engine {
                     (token.id == null || r.id == token.id),
               );
               if (at < 0) {
-                a.error(token.loc, 'range {${token.name}] closes nothing');
+                a.error(
+                  UnitsProblem.range,
+                  token.loc,
+                  'range {${token.name}] closes nothing',
+                );
               } else {
                 ranges.removeAt(at);
               }
@@ -419,7 +457,7 @@ final class Engine {
       if (block != null && e is TokenEvent) a.contextOf[e.token] = _innermost();
     }
     for (final r in ranges) {
-      a.error(r.loc, 'range [${r.name}} is never closed');
+      a.error(UnitsProblem.range, r.loc, 'range [${r.name}} is never closed');
     }
     // Callers go in the order they appear in the text (a lemma's caller
     // is at the lemma's start).
@@ -562,6 +600,7 @@ final class Engine {
     final key = a.keyOf(s, u.labels) + (version == null ? '' : '@$version');
     if (a.index.containsKey(key) && !u.isZero) {
       a.warn(
+        UnitsProblem.label,
         u.start,
         '${u.level.name} ${u.label} again (first at ${a.index[key]!.start})',
       );
@@ -578,7 +617,7 @@ final class Engine {
       }
     }
     if (a.byId.containsKey(u.id)) {
-      a.warn(u.start, 'ID ${u.id} again');
+      a.warn(UnitsProblem.id, u.start, 'ID ${u.id} again');
     }
     a.byId[u.id] = u;
   }
@@ -607,7 +646,11 @@ final class Engine {
             m.label,
           ).where((pp) => pp.end == d).firstOrNull;
           if (parsed == null) {
-            a.error(m.loc, '"${m.label}" is not a ${level.name} label');
+            a.error(
+              UnitsProblem.label,
+              m.loc,
+              '"${m.label}" is not a ${level.name} label',
+            );
             continue;
           }
           _check(c, d, parsed.labels[d]!, m.loc);
@@ -625,7 +668,11 @@ final class Engine {
         } else if (!e.discrete && m?.op == MarkerOp.step) {
           final label = _stepLabel(c, d);
           if (label == null) {
-            a.error(e.loc, 'no ${level.name} label to step to');
+            a.error(
+              UnitsProblem.label,
+              e.loc,
+              'no ${level.name} label to step to',
+            );
             continue;
           }
           _start(c, d, label, e.loc, heading: e, marker: m);
@@ -723,7 +770,11 @@ final class Engine {
         if (d > 0 && !c.labels.take(d).any((l) => l != null)) continue;
         final label = _stepLabel(c, d);
         if (label == null) {
-          a.warn(at.loc, 'no ${level.name} after ${c.labels[d]}');
+          a.warn(
+            UnitsProblem.label,
+            at.loc,
+            'no ${level.name} after ${c.labels[d]}',
+          );
           continue;
         }
         _start(c, d, label, at.loc, at: at);
@@ -773,7 +824,9 @@ final class Engine {
       return true;
     }).toList();
     if (candidates.isEmpty) {
-      if (!peek) a.error(m.loc, '"${m.label}" is not a label here');
+      if (!peek) {
+        a.error(UnitsProblem.label, m.loc, '"${m.label}" is not a label here');
+      }
       return null;
     }
     int score(Parsed pp) {
@@ -843,6 +896,7 @@ final class Engine {
             : c.scheme.levels[base.depth - m.up];
         if (level == null || !level.stepping) {
           a.error(
+            UnitsProblem.label,
             m.loc,
             'a bare @ needs a label here '
             '(${level?.name ?? c.scheme.name} does not step)',
@@ -852,6 +906,7 @@ final class Engine {
         final label = _stepLabel(c, level.depth);
         if (label == null) {
           a.error(
+            UnitsProblem.label,
             m.loc,
             'nothing comes after ${level.name} ${c.labels[level.depth]}',
           );
@@ -973,7 +1028,11 @@ final class Engine {
           !f.sameAs(label.whole) &&
           level.type is! BekkerType &&
           !level.zero) {
-        a.warn(loc, '${level.name} starts at $label, not ${f.text}');
+        a.warn(
+          UnitsProblem.label,
+          loc,
+          '${level.name} starts at $label, not ${f.text}',
+        );
       }
       return;
     }
@@ -1005,7 +1064,11 @@ final class Engine {
       ];
       if (skipped.isNotEmpty && skipped.every(v.excluded.contains)) return;
     }
-    a.warn(loc, '${level.name} $label after $cur (expected ${next.text})');
+    a.warn(
+      UnitsProblem.label,
+      loc,
+      '${level.name} $label after $cur (expected ${next.text})',
+    );
   }
 
   void _note(Note n) {
@@ -1013,7 +1076,7 @@ final class Engine {
         config.streams[n.stream] ??
         (n.stream == 'footnote' ? NoteStream(name: 'footnote') : null);
     if (stream == null) {
-      a.error(n.loc, 'no note stream "${n.stream}"');
+      a.error(UnitsProblem.note, n.loc, 'no note stream "${n.stream}"');
       return;
     }
     Unit? owner;
@@ -1046,7 +1109,7 @@ final class Engine {
             .where((n) => n.isNotEmpty)) {
       final file = p.join(p.dirname(doc.root.path), name);
       if (!p.isFile(file)) {
-        a.error(null, 'overlay file $name not found');
+        a.error(UnitsProblem.layer, null, 'overlay file $name not found');
         continue;
       }
       for (final (i, line) in p.readLines(file).indexed) {
@@ -1056,7 +1119,11 @@ final class Engine {
         final link = parts.whereType<RefLink>().firstOrNull;
         final unit = link == null ? null : a.byId[link.id];
         if (unit == null) {
-          a.warn(null, '$name:${i + 1}: "${m[2]}" not found');
+          a.warn(
+            UnitsProblem.layer,
+            null,
+            '$name:${i + 1}: "${m[2]}" not found',
+          );
           continue;
         }
         (a.overlays[unit] ??= []).add(m[1]!.trim());
@@ -1084,7 +1151,11 @@ final class Engine {
         if (part is RefText &&
             part.text.trim().isNotEmpty &&
             !RegExp(r'^[\s;,]+$').hasMatch(part.text)) {
-          a.warn(x.loc, 'reference "${part.text.trim()}" not found');
+          a.warn(
+            UnitsProblem.reference,
+            x.loc,
+            'reference "${part.text.trim()}" not found',
+          );
         }
       }
     }

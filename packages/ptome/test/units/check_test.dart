@@ -39,4 +39,36 @@ void main() {
     expect(await runCliCode(['check'], err: err), 64);
     expect(err.toString(), contains('Usage: ptome check'));
   });
+
+  test(
+    '--format=json: an object for each document; --list its units',
+    () async {
+      final out = StringBuffer();
+      final code = await runCliCode([
+        'check',
+        '--format=json',
+        '--list',
+        '$_fixtures/bible/sample.adoc',
+      ], out: out);
+      expect(code, 1);
+      final text = out.toString();
+      expect(text, startsWith('[\n{"path": '));
+      expect(
+        text,
+        contains(
+          '{"severity": "warning", "kind": "label", '
+          '"message": "verse 6 after 2 (expected 3)", '
+          '"path": "sample.adoc", "line": 15, "column": 1}',
+        ),
+      );
+      expect(text, contains('"units": {"bible.book": 3, "bible.chapter": 4'));
+      expect(
+        text,
+        contains(
+          '{"id": "v-exo-34-6", "scheme": "bible", "level": "verse", '
+          '"citation": "Exod 34:6", "path": "sample.adoc", "line": 15}',
+        ),
+      );
+    },
+  );
 }

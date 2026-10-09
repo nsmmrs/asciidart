@@ -345,7 +345,12 @@ whose templates printed AsciiDoc (`lower`, `heading`, `mark`, `entry`,
 
 `ptome check FILE...` reads documents as conversion does, without
 converting them. It prints each document's problems, then a summary line, and exits with
-status 1 when any document has a problem. `-q` prints only the summaries.
+status 1 when any document has a problem. `-q` prints only the summaries,
+and `--list` lists every unit with its citation and line.
+`--format=json` prints a JSON array with an object for each document: its
+units by level, its notes and references, and its problems, each with its
+kind (`label`, `id`, `range`, `reference`, `note`, `include`, `layer`,
+`scheme`), file, line and column.
 
 ```console
 $ ptome check exodus.adoc
@@ -362,8 +367,17 @@ Each `Unit` has:
 - its ID, reftext and citation (`Exod 34:6`);
 - the file and line it starts on.
 
+Each unit also has its `parent` and `children` (a chapter's verses) and
+its `notes` (each `UnitNote` with its stream, caller, lemma and text).
+
 `Document.unit` finds a unit by ID, or by an address its schemes cite
-(`Exodus 34:6`, `Ps 3`). The npm package has the same members.
+(`Exodus 34:6`, `Ps 3`); `Document.passage` gives a `Passage` (its first
+and last unit, its citation, its units). `Document.unitReferences` lists
+the references by address with what each passage links to, and
+`Document.definedTerms` the terms defined with `[.dfn]`. A units problem
+is a `Diagnostic` with a code of its own (`DiagnosticCode.unitLabel`,
+`unitReference` …) and its line and column. The npm package has the same
+members.
 
 ```dart
 final doc = await const Ptome(safe: SafeMode.unsafe).parseFile('exodus.adoc');

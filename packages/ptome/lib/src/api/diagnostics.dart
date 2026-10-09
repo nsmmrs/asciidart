@@ -71,8 +71,47 @@ enum DiagnosticCode {
   /// An image or other asset that cannot be found or read.
   missingAsset,
 
+  /// A unit's label its level does not allow, or not the one expected (a
+  /// gap, a repeat, going backwards; see `doc/units.md`).
+  unitLabel,
+
+  /// A unit ID used twice.
+  unitId,
+
+  /// A units range that closes nothing or is never closed.
+  unitRange,
+
+  /// A reference by address to a passage not found.
+  unitReference,
+
+  /// A note in a stream no scheme declares.
+  unitNote,
+
+  /// A passage, block or document a units include names that is not
+  /// found, or a citation style not declared.
+  unitInclude,
+
+  /// A layer's or overlay's file or address not found.
+  unitLayer,
+
+  /// Scheme files not found or not valid.
+  unitScheme,
+
   /// Any other message.
   other;
+
+  /// The code a message with the code [code] has (a units problem's).
+  static DiagnosticCode? _ofCode(String? code) => switch (code) {
+    'unit-label' => unitLabel,
+    'unit-id' => unitId,
+    'unit-range' => unitRange,
+    'unit-reference' => unitReference,
+    'unit-note' => unitNote,
+    'unit-include' => unitInclude,
+    'unit-layer' => unitLayer,
+    'unit-scheme' => unitScheme,
+    _ => null,
+  };
 
   static final List<(RegExp, DiagnosticCode)> _patterns = [
     (RegExp('^possible invalid reference'), unknownReference),
@@ -102,10 +141,12 @@ enum DiagnosticCode {
 /// Where in the source something is.
 @immutable
 final class SourceLocation {
-  const new _(this.path, this.line);
+  const new _(this.path, this.line, [this.column]);
 
-  static SourceLocation? _of(impl.Cursor? cursor) =>
-      cursor == null ? null : SourceLocation._(cursor.path, cursor.lineno);
+  static SourceLocation? _of(impl.Cursor? cursor, [int? column]) =>
+      cursor == null
+      ? null
+      : SourceLocation._(cursor.path, cursor.lineno, column);
 
   /// The file (or `<stdin>` for source given as a string), when known.
   final String? path;
@@ -113,15 +154,23 @@ final class SourceLocation {
   /// The 1-based line number.
   final int line;
 
+  /// The 1-based column, for messages that know it (a units problem's).
+  final int? column;
+
   @override
   bool operator ==(Object other) =>
-      other is SourceLocation && other.path == path && other.line == line;
+      other is SourceLocation &&
+      other.path == path &&
+      other.line == line &&
+      other.column == column;
 
   @override
-  int get hashCode => Object.hash(path, line);
+  int get hashCode => Object.hash(path, line, column);
 
   @override
-  String toString() => '${path ?? '<stdin>'}: line $line';
+  String toString() => column == null
+      ? '${path ?? '<stdin>'}: line $line'
+      : '${path ?? '<stdin>'}:$line:$column';
 }
 
 /// A message about a document, reported while parsing or converting it.
@@ -171,8 +220,11 @@ final class _Collector extends impl.LoggerBase {
     final diagnostic = Diagnostic._(
       Severity._of(severity),
       message.text,
-      DiagnosticCode._of(message.text),
-      SourceLocation._of(location),
+      DiagnosticCode._ofCode(message.code) ?? DiagnosticCode._of(message.text),
+      SourceLocation._of(
+        location,
+        message.includeLocation == null ? message.column : null,
+      ),
     );
     diagnostics.add(diagnostic);
     onDiagnostic?.call(diagnostic);
