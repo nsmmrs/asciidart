@@ -8,6 +8,5 @@ output = 'ceb1fdb4384c'
 log = ['warning:: image to embed not found or not readable: {base}/project/X/Administration/m.gif']
 
 [html5.ptome]
-output = 'ceb1fdb4384c'
-log = ['warning:: image to embed not found or not readable: {base}/project/Administration/m.gif']
+output = 'b427430dd2f7'
 divergence = 'https://github.com/asciidoctor/asciidoctor/issues/4419 (ptome benchmark/PARITY.md)'

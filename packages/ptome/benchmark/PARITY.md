@@ -21,30 +21,15 @@ from main ([ADR-0017](../../../adr/0017-follow-main-fix-bugs.md)).
 
 ## Corpus
 
-- `vendor/asciidoctor/test/fixtures/**` (upstream's fixtures, `*.adoc`,
-  `*.asciidoc`, recursive) plus
-  `vendor/asciidoctor/data/reference/syntax.adoc`: 30 files per backend.
-- `test/parity/**` (documents of our own) plus the syntax reference: 12 files
-  per backend. These pin the places where 2.0.26 differs from upstream
-  `main` (tilde open blocks, ordered list starts, `link=self`, front matter,
-  table and manpage layout, ...) and the differences the corpus check found;
-  see [`test/parity/README.md`](../test/parity/README.md).
-
-## Method
-
-From the repository root, with the gem on `PATH`
-(`gem install asciidoctor -v 2.0.26`):
-
-```sh
-tool/build-exes.sh
-tool/parity.sh dist/ptome-linux-x64
-```
-
-`tool/parity.sh` runs both corpora on html5, docbook5 and manpage. Each file
-is converted as `<exe> -b <backend> -o - -q <input>` with `TZ=UTC` and
-`SOURCE_DATE_EPOCH=0`. CI runs the same script on every push, against the
-native executable (`dart-exe-e2e` job) and against the npm package's CLI on
-Node.js (`npm` job, `tool/parity.sh test/e2e/bin/ptome-node`).
+Since 2026-10-09 the gate is the test corpus (`test/corpus`,
+[ADR-0022](../../../adr/0022-the-corpus-is-the-gate.md)): documents with the
+result the gem and ptome give each, recorded in advance by
+`packages/ptome_corpus_tools` and checked by `dart test` on the Dart VM and
+Node.js. Asciidoctor's fixtures (`curated/asciidoctor-fixtures`, with the
+syntax reference) and our own parity documents (`curated/parity`, formerly
+`test/parity`) are converted as the CLI converts them (standalone, unsafe)
+on html5, docbook5 and manpage; ptome must match the gem exactly. The
+numbers below are from `tool/parity.sh`, the CLI gate it replaced.
 
 ## Verdict (2026-10-05): PASS — 126/126 identical
 
@@ -91,7 +76,7 @@ for: `cols=""`, `%autowidth` with a width, nested description list items
 with attached blocks, line breaks in AsciiMath blocks, Ruby's ASCII-only
 `\s` and `strip` against Unicode spaces, `\p{Blank}`, full case mapping
 (`ß` → `SS`), a dropped table cell's line number, an empty block anchor
-crash, and the missing "not available" warnings. `test/parity/` keeps
+crash, and the missing "not available" warnings. The corpus's `curated/parity` keeps
 reproducers of each.
 
 ## Known intentional differences
@@ -125,8 +110,7 @@ reproducers of each.
 - Dart-only features (Mustache templates, `init-config`, `-j/--jobs`) have
   no Ruby counterpart.
 - DocBook and EPUB output is valid XML where Asciidoctor's isn't
-  (`test/divergences/xml_output.bats` reproduces each case on both
-  CLIs): tags are balanced (emphasis that opens inside an index term and
+  (corpus cases `curated/divergence/xml_output-*` reproduce each case): tags are balanced (emphasis that opens inside an index term and
   closes after it); a section style DocBook has no element for
   (`[introduction]`) gives a chapter or section, and `[partintro]`
   outside a part a section; emphasis and quotes inside a `<literal>`
@@ -138,7 +122,7 @@ reproducers of each.
   text. With `source-highlighter=highlight.js`, an EPUB's code is
   highlighted at conversion and the theme's stylesheet is in the EPUB
   (`styles/highlightjs.css`), where the gem links highlight.js's
-  stylesheet and scripts outside it (`test/divergences/epub_output.bats`).
+  stylesheet and scripts outside it (corpus cases `curated/divergence/epub_output-*`).
   EPUB parity compares the gem's chapters with these repairs made. The
   `isbn` and `editor` attributes (which the gem ignores) add an ISBN
   identifier and editors to an EPUB's metadata, and
@@ -148,7 +132,7 @@ reproducers of each.
   never into it: in `(((_hyperscript, event filter))) an _event filter_`
   the emphasis is `event filter` and the term `_hyperscript`, where
   Asciidoctor pairs the underscores across the term, prints a stray tag
-  and splits the term (`test/divergences/index_terms.bats`). The term's
+  and splits the term (corpus cases `curated/divergence/index_terms-*`). The term's
   own text is quoted alone.
 - Generated text from templates (ADR-0010): `footnote-reference-template`
   and `footnote-label-template` set the footnote markers in HTML and EPUB,
@@ -209,7 +193,7 @@ reproducers of each.
 - An EPUB's landmarks name the front and back matter (dedication,
   colophon, acknowledgments, index) and its "Start of Content" is the
   first chapter after the front matter, where asciidoctor-epub3's is the
-  first chapter (`test/divergences/epub_output.bats`); EPUB parity
+  first chapter (corpus cases `curated/divergence/epub_output-*`); EPUB parity
   compares navigation documents without their landmarks.
 - Where Asciidoctor has no output for a book feature, Ptome writes
   its own (ADR-0012, `doc/formats.md`): a text file shown as an image
@@ -289,9 +273,9 @@ Intentional differences:
 ## Upstream bugs fixed
 
 Bugs reported upstream that the gem built from `main` at `30fb8cd5` still
-has (see the [triage](../doc/upstream-triage.md)). Each has a test in
-[`test/bugfix/`](../test/bugfix/README.md) that fails on that gem and
-passes here; `tool/bugfix_check.sh` checks both, in CI and in the gates.
+has (see the [triage](../doc/upstream-triage.md)). Each has a case in
+the corpus's `curated/bugfix` (`test/corpus`, [ADR-0022](../../../adr/0022-the-corpus-is-the-gate.md))
+recorded on that gem, whose result shows the bug, and on ptome.
 Documents that don't hit these cases convert as with the gem.
 
 - Section IDs: a title made only of punctuation gets the separator (`_`,

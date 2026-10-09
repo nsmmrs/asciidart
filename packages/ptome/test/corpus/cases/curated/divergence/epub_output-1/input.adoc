@@ -1,0 +1,9 @@
+= Doc
+:source-highlighter: highlight.js
+
+== One
+
+[source,python]
+----
+def f(): pass
+----

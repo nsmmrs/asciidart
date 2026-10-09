@@ -5,7 +5,7 @@
 ///
 /// ```sh
 /// dart run tool/pdf_look.dart --gem GEM --exe PTOME --cache DIR \
-///   --out DIR [-j N] [--dpi N] [--pairs] DOC.adoc...
+///   --out DIR [-j N] [--dpi N] [--pairs] [--exact] DOC.adoc...
 /// ```
 ///
 /// The gem's PDF of each document and its pages (gray PGM images at
@@ -254,10 +254,7 @@ Future<Look> _look(
   final differences = <double>[
     for (var i = 0; i < count; i++)
       if (i < gemPages.length && i < pages.length)
-        difference(
-          Gray.parse(gemPages[i].readAsBytesSync()).blurred(2),
-          Gray.parse(pages[i].readAsBytesSync()).blurred(2),
-        )
+        _compare(gemPages[i], pages[i])
       else
         1,
   ];
@@ -268,6 +265,19 @@ Future<Look> _look(
     differences: differences,
     error: null,
   );
+}
+
+/// Whether pages are compared pixel for pixel (`--exact`: no blur, any
+/// change of gray differs) rather than for their look.
+var _exact = false;
+
+/// The difference between the pages in [a] and [b].
+double _compare(File a, File b) {
+  final x = Gray.parse(a.readAsBytesSync());
+  final y = Gray.parse(b.readAsBytesSync());
+  return _exact
+      ? difference(x, y, threshold: 0)
+      : difference(x.blurred(2), y.blurred(2));
 }
 
 /// Writes `NAME-pN.png` in [out]: the gem's page, Ptome's, and the
@@ -323,6 +333,8 @@ Future<void> main(List<String> args) async {
         dpi = int.parse(args[++i]);
       case '--pairs':
         pairs = true;
+      case '--exact':
+        _exact = true;
       default:
         docs.add(args[i]);
     }
@@ -330,7 +342,7 @@ Future<void> main(List<String> args) async {
   if (gem == null || exe == null || cache == null || out == null) {
     stderr.writeln(
       'usage: pdf_look.dart --gem GEM --exe PTOME --cache DIR --out DIR '
-      '[-j N] [--dpi N] [--pairs] DOC.adoc...',
+      '[-j N] [--dpi N] [--pairs] [--exact] DOC.adoc...',
     );
     exitCode = 64;
     return;

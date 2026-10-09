@@ -1,0 +1,4 @@
+= Book
+:copyright: Jane Doe 2023
+
+Text.

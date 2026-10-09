@@ -1,0 +1,7 @@
+<chapter xml:id="_chapter">
+<title>Chapter</title>
+<partintro xml:id="_intro">
+<title>Intro</title>
+<simpara>Text.</simpara>
+</partintro>
+</chapter>

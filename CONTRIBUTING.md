@@ -4,7 +4,7 @@ The bar for every change is unchanged output: Ptome must convert
 documents exactly as the Asciidoctor gem built from the vendored upstream
 commit (`main` at `30fb8cd5`, `packages/ptome/tool/vendor.sh`) does (ADR-0001, ADR-0017),
 unless the difference is deliberate and listed in `benchmark/PARITY.md`
-(a fixed upstream bug, with its test in `test/bugfix/`; diagnostics, which
+(a fixed upstream bug, with its case in the corpus's `curated/bugfix`; diagnostics, which
 read like a Dart tool's).
 
 ## Layout
@@ -47,12 +47,11 @@ after a deliberate change of output, record ptome's new results with
 `dart run bin/corpus.dart regen -p ptome` there and review the diff
 (`test/corpus/README.md`).
 
-Parity with the gem, on a built executable:
+The command line, on a built executable:
 
 ```sh
 ./tool/build-exes.sh
 ASCIIDOCTOR_EXE="$PWD/dist/ptome-linux-x64" bats test/e2e/
-./tool/parity.sh dist/ptome-linux-x64
 ```
 
 `ASCIIDOCTOR_EXE=test/e2e/bin/asciidoctor-ruby bats test/e2e/` runs the
@@ -80,7 +79,7 @@ dart run tool/corpus_parity.dart --exe-a asciidoctor \
 
 Use a gem install without optional gems as `--exe-a`, and run Ptome
 with `-a highlightjs-mode=client` (see `benchmark/PARITY.md`). Every
-difference it finds deserves a reproducer in `test/parity/`.
+difference it finds deserves a case in the corpus (`test/corpus/cases/curated`).
 
 ## The npm package
 
@@ -92,7 +91,6 @@ npm run types                # tsc over typical usage
 npm run lint                 # publint and are-the-types-wrong
 cd ../.. && dart test -p node
 ASCIIDOCTOR_EXE=test/e2e/bin/ptome-node bats test/e2e/
-./tool/parity.sh test/e2e/bin/ptome-node
 ```
 
 The browser test looks for Chromium at `/usr/bin/chromium`; set
@@ -113,9 +111,9 @@ The browser test looks for Chromium at `/usr/bin/chromium`; set
   (VM and JavaScript implementations; `test/platform_seam_test.dart`).
 - `lib/src/js/` and `npm/`: the JavaScript bridge and the npm package
   (ADR-0005).
-- `tool/`: build scripts, the parity gate and the differential harness.
-- `test/e2e/`: the bats suite shared with the gem; `test/parity/`: extra
-  parity documents.
+- `tool/`: build scripts and the differential harness.
+- `test/e2e/`: the bats suite shared with the gem; `test/corpus/`: the
+  black-box corpus ([ADR-0022](adr/0022-the-corpus-is-the-gate.md)).
 - `adr/`: decisions.
 
 ## Embedded data
@@ -123,7 +121,7 @@ The browser test looks for Chromium at `/usr/bin/chromium`; set
 Files taken from Asciidoctor (its stylesheets, locales, syntax reference and
 test fixtures) live under `vendor/asciidoctor/`, unchanged and pinned to an
 upstream revision; see `vendor/README.md`. `tool/vendor.sh` recreates them
-(`--check` verifies them). Documents of our own go in `test/parity/`.
+(`--check` verifies them). Documents of our own go in the corpus.
 
 `lib/src/data.g.dart` embeds the vendored locales and stylesheets so the
 package never reads them at run time, and `lib/src/cli/help_topics.g.dart`
@@ -140,4 +138,5 @@ dart test test/cli/help_topics_test.dart
 ## Pull requests
 
 Keep each change focused, with a test. For a behavior change, show that the
-gem agrees: a fixture in `test/parity/` or an e2e test makes it permanent.
+gem agrees: a corpus case recorded on the gem, or an e2e test, makes it
+permanent.

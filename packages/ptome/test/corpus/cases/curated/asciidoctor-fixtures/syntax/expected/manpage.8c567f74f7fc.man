@@ -1,0 +1,655 @@
+'\" t
+.\"     Title: AsciiDoc Syntax
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor VERSION
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "COMMAND" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.sp
+A brief reference of the most commonly used AsciiDoc syntax.
+You can find the full documentation for the AsciiDoc syntax at \c
+.URL "https://asciidoctor.org/docs" "" "."
+.SH "PARAGRAPHS"
+.sp
+A normal paragraph.
+Line breaks are not preserved.
+.sp
+A blank line separates paragraphs.
+.sp
+This paragraph is marked with the \f(CRhardbreaks\fP option.
+.br
+Notice how line breaks are now preserved.
+.sp
+.if n .RS 4
+.nf
+.fam C
+An indented (literal) paragraph disables text formatting,
+preserves spaces and line breaks, and is displayed in a
+monospaced font.
+.fam
+.fi
+.if n .RE
+.sp
+.RS 4
+.sp
+Adding a style, ID, and/or role gives a paragraph (or block) special meaning, like this sidebar.
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+An admonition paragraph, like this note, grabs the reader\(cqs attention.
+.sp .5v
+.RE
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Tip
+.ps -1
+.br
+.sp
+Convert this document using the \f(CRasciidoctor\fP command to see the output produced from it.
+.sp .5v
+.RE
+.SH "TEXT FORMATTING"
+.sp
+.B Constrained (applied at word boundaries)
+.br
+\fBstrong importance\fP (aka bold)
+.br
+\fIstress emphasis\fP (aka italic)
+.br
+\f(CRmonospaced\fP (aka typewriter text)
+.br
+\(lqdouble\(rq and \(oqsingle\(cq typographic quotes
+.br
+passthrough text (substitutions disabled)
+.br
+\f(CRliteral text\fP (monospaced with substitutions disabled)
+.br
+a mark to remember (highlighted for notation)
+.sp
+.B Unconstrained (applied anywhere)
+.br
+\fBC\fPreate, \fBR\fPead, \fBU\fPpdate, and \fBD\fPelete (CRUD)
+.br
+fan\fIfreakin\fPtastic
+.br
+\f(CRmono\fPculture
+.br
+markup your text
+.sp
+.B Replacements
+.br
+A long time ago in a galaxy far, far away.\|.\|.
+.br
+\(co 1976 Arty Artisan
+.br
+I believe I shall\(emno, actually I won\(cqt.
+.sp
+.B ID and roles for phrases
+.br
+delete me
+.br
+the \fIimages\fP directory
+.br
+a \fBwibble\fP does wobble
+.sp
+.B Macros
+.br
+The European [flag] is blue & contains ************ arranged in a [circle o].
+.br
+The \-> operator is often referred to as the stabby lambda.
+.br
+Since \f(CR++\fP has strong priority in AsciiDoc, you can rewrite C++ \(rA C++.
+.br
+sqrt(4) = 2
+.SH "ATTRIBUTES"
+.sp
+.if n .RS 4
+.nf
+.fam C
+// define attributes in the document header; must be flush with left margin
+:name: value
+.fam
+.fi
+.if n .RE
+.sp
+You can download and install Asciidoctor VERSION from \c
+.URL "https://rubygems.org/gems/asciidoctor" "" "."
+C++ is not required, only Ruby.
+Use a leading backslash to output a word enclosed in curly braces, like {name}.
+.SH "LINKS"
+.sp
+\c
+.br
+.URL "https://example.org/page" "A webpage"
+.br
+\c
+.br
+.URL "../path/to/file.txt" "A local file"
+.br
+A sibling document
+.br
+\c
+.br
+.MTO "hello\(atexample.org" "Email to say hello!" ""
+.SH "ANCHORS"
+.sp
+A paragraph (or any block) with an anchor (aka ID) and reftext.
+.sp
+See reference text or optional text of internal link.
+.sp
+Jumps to anchor in another document.
+.sp
+This paragraph has a footnote.[1]
+.SH "LISTS"
+.SS "Unordered"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+level 1
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+level 2
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+level 3
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+level 4
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+etc.
+.RE
+.RE
+.RE
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+back at level 1
+.sp
+Attach a block or paragraph to a list item using a list continuation (which you can enclose in an open block).
+.RE
+.sp
+.B Some Authors
+.br
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Edgar Allan Poe
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Sheri S. Tepper
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Bill Bryson
+.RE
+.SS "Ordered"
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+Step 1
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+Step 2
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+Step 2a
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+Step 2b
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 3." 4.2
+.\}
+Step 3
+.RE
+.sp
+.B Remember your Roman numerals?
+.br
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+is one
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+is two
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 3." 4.2
+.\}
+is three
+.RE
+.SS "Checklist"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+checked
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+not checked
+.RE
+.SS "Callout"
+.sp
+.if n .RS 4
+.nf
+.fam C
+puts \*(AqHello, World!\*(Aq \fB(1)\fP
+.fam
+.fi
+.if n .RE
+.TS
+tab(:);
+r lw(\n(.lu*75u/100u).
+\fB(1)\fP\h'-2n':T{
+Prints \f(CRHello, World!\fP to the console.
+T}
+.TE
+.SS "Description"
+.sp
+first term
+.RS 4
+description of first term
+.RE
+.sp
+second term
+.RS 4
+description of second term
+.RE
+.SH "DOCUMENT STRUCTURE"
+.SS "Header"
+.sp
+.if n .RS 4
+.nf
+.fam C
+// header must be flush with left margin
+= Document Title
+Author Name <author@example.org>
+v1.0, 2019\-01\-01
+.fam
+.fi
+.if n .RE
+.SS "Sections"
+.sp
+.if n .RS 4
+.nf
+.fam C
+// must be flush with left margin
+= Document Title (Level 0)
+== Level 1
+=== Level 2
+==== Level 3
+===== Level 4
+====== Level 5
+== Back at Level 1
+.fam
+.fi
+.if n .RE
+.SS "Includes"
+.sp
+.if n .RS 4
+.nf
+.fam C
+// must be flush with left margin
+include::basics.adoc[]
+.fam
+.fi
+.if n .RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+// define \-a allow\-uri\-read to allow content to be read from URI
+include::https://example.org/installation.adoc[]
+.fam
+.fi
+.if n .RE
+.SH "BLOCKS"
+.sp
+open \- a general\-purpose content wrapper; useful for enclosing content to attach to a list item
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+admonition \- a notice for the reader, ranging in severity from a tip to an alert
+.sp .5v
+.RE
+.sp
+.RS 4
+.sp
+example \- a demonstration of the concept being documented
+.RE
+.sp
+.B Toggle Me
+.br
+.RS 4
+.sp
+collapsible \- these details are revealed by clicking the title
+.RE
+.sp
+.RS 4
+.sp
+sidebar \- auxiliary content that can be read independently of the main content
+.RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+literal \- an exhibit that features program output
+.fam
+.fi
+.if n .RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+listing \- an exhibit that features program input, source code, or the contents of a file
+.fam
+.fi
+.if n .RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+source \- a listing that is embellished with (colorized) syntax highlighting
+.fam
+.fi
+.if n .RE
+.sp
+.if n .RS 4
+.nf
+.fam C
+fenced code \- a shorthand syntax for the source block
+.fam
+.fi
+.if n .RE
+.RS 3
+.ll -.6i
+.sp
+quote \- a quotation or excerpt; attribution with title of source are optional
+.br
+.RE
+.ll
+.RS 5
+.ll -.10i
+citetitle \(em attribution
+.RE
+.ll
+.sp
+.nf
+verse \- a literary excerpt, often a poem; attribution with title of source are optional
+.fi
+.br
+.in +.5i
+.ll -.5i
+citetitle \(em attribution
+.in
+.ll
+pass - content passed directly to the output document; often raw HTML
+.sp
+x = y^2 (asciimath)
+.SH "TABLES"
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table 1. Table Attributes
+.TS
+allbox tab(:);
+rtB ltB.
+T{
+.sp
+Attribute Name
+T}:T{
+.sp
+Values
+T}
+.T&
+lt lt.
+T{
+.sp
+options
+T}:T{
+.sp
+header,footer,autowidth
+T}
+T{
+.sp
+cols
+T}:T{
+.sp
+colspec[;colspec;.\|.\|.]
+T}
+T{
+.sp
+grid
+T}:T{
+.sp
+all | cols | rows | none
+T}
+T{
+.sp
+frame
+T}:T{
+.sp
+all | sides | ends | none
+T}
+T{
+.sp
+stripes
+T}:T{
+.sp
+all | even | odd | none
+T}
+T{
+.sp
+width
+T}:T{
+.sp
+(0%..100%)
+T}
+T{
+.sp
+format
+T}:T{
+.sp
+psv | csv | dsv
+T}
+.TE
+.sp
+.SH "MULTIMEDIA"
+.sp
+[block image]
+.sp
+Press [reload] to reload the page.
+.sp
+<movie.mp4&start=60&end=140> (video)
+.sp
+<aHjpOzsQ9YI> (video)
+.sp
+<300817511> (video)
+.sp
+<e4a27b971d> (video)
+.SH "BREAKS"
+.sp
+.ce
+\l'\n(.lu*25u/100u\(ap'
+.bp
+.SH "NOTES"
+.IP [1]
+This is the text of the footnote.

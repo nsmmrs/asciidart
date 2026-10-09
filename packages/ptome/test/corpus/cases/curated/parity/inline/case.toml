@@ -1,0 +1,8 @@
+description = "Parity with Asciidoctor (the former test/parity): no `cxx` attribute (#4442); `[` in formatted-text attribute lists (#4306); dots in attribute names (#4147); `link=self` (#3656); inline image ids (#4311); `imagesdir` on image macros (#3661); Wistia; `<quote>` roles (#2947); hdlist column widths; remote include without `allow-uri-read` (#2284)"
+source = "handmade:test/parity/inline.adoc"
+features = ["parity"]
+formats = ["html5", "docbook5", "manpage"]
+
+[options]
+standalone = true
+safe = "unsafe"

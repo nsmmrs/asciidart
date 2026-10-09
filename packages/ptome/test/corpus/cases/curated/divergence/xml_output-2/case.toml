@@ -1,0 +1,5 @@
+description = "a section style DocBook has no element for gives a chapter. A section style DocBook has no element for ([introduction]) became that element (<introduction>), which no DocBook schema allows: ptome writes the chapter or section it is. Fails on the gem. DocBook output must be well-formed XML. An index term that starts with an underscore (`_hyperscript`) before constrained emphasis lets the emphasis open inside the term and close in the text after it: Asciidoctor 2.0.26 writes `<primary><emphasis>hyperscript</primary>` and a stray `</emphasis>`. Found by the Hypermedia Systems acceptance run; ptome balances the tags (benchmark/PARITY.md). Fails on the gem."
+source = "handmade:test/divergences/xml_output.bats"
+features = ["divergence"]
+divergence = "ptome benchmark/PARITY.md"
+formats = ["docbook5"]

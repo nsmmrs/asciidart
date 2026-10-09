@@ -9,13 +9,9 @@ import 'dart:io';
 
 import 'package:ptome/src/font_index.dart';
 
-/// The folders of the vendored fonts.
-const List<String> vendoredFontDirectories = [
-  'vendor/asciidoctor-pdf/data/fonts',
-  'vendor/asciidoctor-pdf/icons',
-  'data/pdf-fonts',
-  'vendor/asciidoctor-epub3/fonts',
-];
+import 'vendored_font_directories.dart';
+
+export 'vendored_font_directories.dart';
 
 /// Puts the vendored fonts on this process's font path, before the
 /// machine's fonts.

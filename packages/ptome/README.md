@@ -24,8 +24,8 @@ JavaScript) an npm package. It was called asciidart until 2026-10-08
 ## Why
 
 - **Compatible, and checked.** Every change is compared byte for byte with
-  the Asciidoctor gem built from upstream `main` on all three backends (`tool/parity.sh`, run
-  in CI) and over a corpus of about 4,500 real-world documents
+  the Asciidoctor gem built from upstream `main` on all three backends (the test
+  corpus, `test/corpus`, run in CI on the Dart VM and Node.js) and over a corpus of about 4,500 real-world documents
   (`tool/corpus_parity.dart`); the command line passes the same end-to-end
   suite as the gem. Where Ptome differs on purpose, the difference is
   listed in [`benchmark/PARITY.md`](benchmark/PARITY.md). EPUB 3 output

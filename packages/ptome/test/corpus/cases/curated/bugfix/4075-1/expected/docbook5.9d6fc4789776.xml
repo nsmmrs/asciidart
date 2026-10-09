@@ -1,6 +1,0 @@
-<simpara><link xl:href="https://example.com"><inlinemediaobject>
-<imageobject>
-<imagedata fileref="data:image/gif;base64,"/>
-</imageobject>
-<textobject><phrase>github</phrase></textobject>
-</inlinemediaobject>bar</link></simpara>

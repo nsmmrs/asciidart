@@ -63,8 +63,8 @@ Asciidoctor project.
 - Fixes 25 bugs reported upstream that Asciidoctor (upstream `main` at
   `30fb8cd5`) still has, chosen by triaging
   all 610 open upstream issues (`doc/upstream-triage.md`). Each fix has a
-  CLI test in `test/bugfix/` that fails on the gem and passes here
-  (`tool/bugfix_check.sh`), and the output differences are listed in
+  case in the test corpus recorded on the gem, whose result shows the bug,
+  and on ptome (ADR-0022), and the output differences are listed in
   `benchmark/PARITY.md`: section IDs for punctuation-only titles and titles
   with footnotes; nested fonts in man pages; table cells after colspans and
   beside rowspans taking the right column spec, invalid column specs, tabs
@@ -77,7 +77,8 @@ Asciidoctor project.
 - Converts AsciiDoc to HTML 5, DocBook 5 and man pages. Output is
   byte-identical to the Asciidoctor gem (built from upstream `main` at
   `30fb8cd5`) on every backend, apart from the bugs fixed, checked in
-  CI by `tool/parity.sh` over the fixture and parity corpora; the end-to-end
+  CI by the test corpus (about 1,200 documents with the gem's results,
+  ADR-0022) on the Dart VM and Node.js; the end-to-end
   CLI suite (134 tests) passes against both Ptome and the gem.
 - A small, typed public API designed from usage scenarios
   (`doc/api.md`): a `Ptome` configuration (safe mode, attributes,

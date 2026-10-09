@@ -1,0 +1,9 @@
+description = "Asciidoctor's own test fixture vendor/asciidoctor/test/fixtures/with-front-matter.adoc, as the CLI converts it (the former tool/parity.sh)."
+source = "vendor:vendor/asciidoctor/test/fixtures/with-front-matter.adoc"
+features = ["parity"]
+formats = ["html5", "docbook5", "manpage"]
+
+[options]
+standalone = true
+safe = "unsafe"
+input = "../../../../../../vendor/asciidoctor/test/fixtures/with-front-matter.adoc"

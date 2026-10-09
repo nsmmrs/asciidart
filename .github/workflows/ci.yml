@@ -167,14 +167,6 @@ jobs:
         EXE="$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
         echo "ASCIIDOCTOR_EXE=$EXE"
         ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
-    - name: Check the upstream bug reproductions (fixed here, still in Asciidoctor)
-      run: ./tool/bugfix_check.sh "$(pwd)/dist/$(ls dist | grep '^ptome-linux-')" "$(command -v asciidoctor)"
-    - name: Run divergence tests (ptome differs from the gem on purpose)
-      run: |
-        EXE="$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
-        ASCIIDOCTOR_EXE="$EXE" bats test/divergences/
-    - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0
-      run: ./tool/parity.sh "dist/$(ls dist | grep '^ptome-linux-')"
     - name: Install asciidoctor-epub3 gem on the main gem (EPUB oracle)
       # Without its asciidoctor dependency, which would bring in the 2.0
       # release; the version line shows the Asciidoctor it runs on.
@@ -231,22 +223,9 @@ jobs:
       run: npm publish --dry-run
     - name: Run the Dart tests on Node.js
       run: dart test -p node
-    - name: Set up Ruby (oracle only)
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.4'
-    - name: Install the asciidoctor gem from upstream main (parity oracle)
-      run: |
-        # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
-        git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
-        git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
-        (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
-        gem install --no-document asciimath:2.0.6
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)
       env:
         ASCIIDOCTOR_EXE: test/e2e/bin/ptome-node
       run: bats test/e2e/
-    - name: Check byte-identical parity with Asciidoctor 2.1.0.alpha.0 (Node CLI)
-      run: ./tool/parity.sh test/e2e/bin/ptome-node

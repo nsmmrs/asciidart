@@ -1,0 +1,8 @@
+description = "Parity with Asciidoctor (the former test/parity): manpage list and table cell spacing (#4182, #4482)"
+source = "handmade:test/parity/manpage-lists.adoc"
+features = ["parity"]
+formats = ["html5", "docbook5", "manpage"]
+
+[options]
+standalone = true
+safe = "unsafe"

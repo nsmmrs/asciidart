@@ -11,7 +11,10 @@ import 'package:test/test.dart';
 
 void main() {
   final files = [
-    for (final dir in ['vendor/asciidoctor/test/fixtures', 'test/parity'])
+    for (final dir in [
+      'vendor/asciidoctor/test/fixtures',
+      'test/corpus/cases/curated/parity',
+    ])
       ...Directory(dir)
           .listSync(recursive: true)
           .whereType<File>()

@@ -1,0 +1,5 @@
+description = "a part introduction outside a part gives a section. [partintro] on a section that isn't in a part gave <partintro> there, where DocBook doesn't allow it: ptome writes a section. Fails on the gem. DocBook output must be well-formed XML. An index term that starts with an underscore (`_hyperscript`) before constrained emphasis lets the emphasis open inside the term and close in the text after it: Asciidoctor 2.0.26 writes `<primary><emphasis>hyperscript</primary>` and a stray `</emphasis>`. Found by the Hypermedia Systems acceptance run; ptome balances the tags (benchmark/PARITY.md). Fails on the gem."
+source = "handmade:test/divergences/xml_output.bats"
+features = ["divergence"]
+divergence = "ptome benchmark/PARITY.md"
+formats = ["docbook5"]

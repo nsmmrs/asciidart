@@ -1,0 +1,8 @@
+description = "Parity with Asciidoctor (the former test/parity): multipart book TOC levels (#2262, #4814)"
+source = "handmade:test/parity/book-toc.adoc"
+features = ["parity"]
+formats = ["html5", "docbook5", "manpage"]
+
+[options]
+standalone = true
+safe = "unsafe"

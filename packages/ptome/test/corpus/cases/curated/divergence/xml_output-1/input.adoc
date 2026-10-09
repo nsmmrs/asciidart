@@ -1,0 +1,2 @@
+((("_hyperscript", "event filter")))
+We can use an _event filter_ syntax in +_hyperscript+ here.

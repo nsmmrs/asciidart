@@ -1,0 +1,8 @@
+description = "Parity with Asciidoctor (the former test/parity): ordered list marker validation warnings and implicit styles"
+source = "handmade:test/parity/olist-markers.adoc"
+features = ["parity"]
+formats = ["html5", "docbook5", "manpage"]
+
+[options]
+standalone = true
+safe = "unsafe"

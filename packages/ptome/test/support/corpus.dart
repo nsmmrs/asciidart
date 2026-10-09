@@ -14,20 +14,20 @@
 library;
 
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:ptome/ptome.dart';
 import 'package:ptome/src/font_index.dart';
+import 'package:ptome/src/io.dart' as io;
 import 'package:toml/toml.dart';
 
-import '../vendored_fonts.dart';
-import 'paths.dart';
+import '../../tool/vendored_font_directories.dart';
 
-/// The corpus directory (tests run from the package root).
-final String corpusRoot = p.absolute('test', 'corpus');
+/// The corpus directory (tests run from the package root). Files are read
+/// through ptome's I/O seam, so the corpus runs on Node.js too.
+final String corpusRoot = p.posix.join(io.currentDirectory, 'test', 'corpus');
 
 /// The profile whose recorded results ptome is checked against.
 const ptomeProfile = 'ptome';
@@ -73,10 +73,13 @@ final class Result {
 
   List<String> get logLines => [for (final entry in log) formatLog(entry)];
 
+  /// Whether this is the result [other] records: the same output and log,
+  /// or both a crash (whose wording is the platform's).
   bool matches(Result other) =>
+      (error != null && other.error != null) ||
       hash == other.hash &&
-      error == other.error &&
-      logLines.join('\n') == other.logLines.join('\n');
+          error == other.error &&
+          logLines.join('\n') == other.logLines.join('\n');
 }
 
 /// One case: a document, its options, and ptome's recorded result per
@@ -112,7 +115,7 @@ final class Case {
   final Map<Format, Result> expected;
 
   String blobPath(Format format, String hash) =>
-      p.join(dir, 'expected', '${format.name}.$hash.${format.extension}');
+      p.posix.join(dir, 'expected', '${format.name}.$hash.${format.extension}');
 
   /// Converts the case to [format] with ptome, normalized as recorded.
   ({Result result, Object? output}) convert(Format format) {
@@ -168,25 +171,27 @@ final class Case {
 /// same on every machine.
 List<Case> loadCases() {
   Fonts.installed = FontIndex([
-    for (final dir in vendoredFontDirectories) p.absolute(dir),
+    for (final dir in vendoredFontDirectories)
+      p.posix.join(io.currentDirectory, dir),
   ]);
-  final defaults = _table(_toml(p.join(corpusRoot, 'defaults.toml')));
+  final defaults = _table(_toml(p.posix.join(corpusRoot, 'defaults.toml')));
   final profile = _table(
-    _toml(p.join(corpusRoot, 'profiles.toml'))[ptomeProfile],
+    _toml(p.posix.join(corpusRoot, 'profiles.toml'))[ptomeProfile],
   );
-  final casesRoot = p.join(corpusRoot, 'cases');
+  final casesRoot = p.posix.join(corpusRoot, 'cases');
   final cases = <Case>[];
-  void walk(Directory dir) {
-    if (File(p.join(dir.path, 'case.toml')).existsSync()) {
-      cases.add(_load(dir.path, casesRoot, defaults, profile));
+  void walk(String dir) {
+    if (io.isFile(p.posix.join(dir, 'case.toml'))) {
+      cases.add(_load(dir, casesRoot, defaults, profile));
       return;
     }
-    (dir.listSync().whereType<Directory>().toList()
-          ..sort((a, b) => a.path.compareTo(b.path)))
-        .forEach(walk);
+    ([
+      for (final entry in io.listDirectory(dir))
+        if (entry.isDirectory) p.posix.join(dir, entry.name),
+    ]..sort()).forEach(walk);
   }
 
-  walk(Directory(casesRoot));
+  walk(casesRoot);
   return cases;
 }
 
@@ -196,18 +201,18 @@ Case _load(
   Map<String, Object?> defaults,
   Map<String, Object?> profile,
 ) {
-  final meta = _toml(p.join(dir, 'case.toml'));
+  final meta = _toml(p.posix.join(dir, 'case.toml'));
   final options = _table(meta['options']);
-  final versions = File(p.join(dir, 'versions.toml')).existsSync()
-      ? _toml(p.join(dir, 'versions.toml'))
+  final versions = io.isFile(p.posix.join(dir, 'versions.toml'))
+      ? _toml(p.posix.join(dir, 'versions.toml'))
       : const <String, Object?>{};
-  final input = p.normalize(
-    p.join(dir, options['input'] as String? ?? 'input.adoc'),
+  final input = p.posix.normalize(
+    p.posix.join(dir, options['input'] as String? ?? 'input.adoc'),
   );
   return Case._(
-    id: p.relative(dir, from: casesRoot),
-    dir: p.dirname(input),
-    input: utf8.decode(File(input).readAsBytesSync(), allowMalformed: true),
+    id: p.posix.relative(dir, from: casesRoot),
+    dir: p.posix.dirname(input),
+    input: utf8.decode(io.readBytes(input), allowMalformed: true),
     formats: [
       for (final name in meta['formats'] as List? ?? const ['html5'])
         Format.values.byName(name as String),
@@ -259,7 +264,8 @@ LogEntry _log(String text) {
   );
 }
 
-Map<String, Object?> _toml(String path) => TomlDocument.loadSync(path).toMap();
+Map<String, Object?> _toml(String path) =>
+    TomlDocument.parse(utf8.decode(io.readBytes(path))).toMap();
 
 Map<String, Object?> _table(Object? value) =>
     (value as Map? ?? const {}).cast<String, Object?>();
@@ -295,10 +301,13 @@ String normalizeText(String text, {required String baseDir}) => text
     .replaceAll(_versionStamp, 'Asciidoctor VERSION')
     .replaceAll(_lastUpdated, 'Last updated DATETIME')
     .replaceAllMapped(_manDate, (m) => '${m[1]}DATE')
-    .replaceAll(posixPath(baseDir), '{base}')
     .replaceAll(baseDir, '{base}')
-    .replaceAll(currentPath, '{cwd}')
-    .replaceAll(Directory.current.path, '{cwd}');
+    .replaceAll(_native(baseDir), '{base}')
+    .replaceAll(io.currentDirectory, '{cwd}')
+    .replaceAll(_native(io.currentDirectory), '{cwd}');
+
+/// [path] with the platform's separators (on Windows, backslashes).
+String _native(String path) => io.isWindows ? path.replaceAll('/', r'\') : path;
 
 /// 12 hex digits of the SHA-256 of [bytes].
 String contentHash(List<int> bytes) =>

@@ -1,0 +1,7 @@
+= Book
+:doctype: book
+
+[introduction]
+== Introduction
+
+Text.

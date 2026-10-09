@@ -1,0 +1,4 @@
+= Book
+:copyright: (C) Jane Doe, CC BY
+
+Text.

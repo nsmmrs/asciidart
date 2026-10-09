@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Corpus findings</title>
+</info>
+<simpara>An empty column list takes the columns from the first row.</simpara>
+<informaltable frame="all" rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col_1" colwidth="50*"/>
+<colspec colname="col_2" colwidth="50*"/>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara>one</simpara></entry>
+<entry align="left" valign="top"><simpara>two</simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara>1</simpara></entry>
+<entry align="left" valign="top"><simpara>2</simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara>a</simpara></entry>
+<entry align="left" valign="top"><simpara>b</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+<simpara>Autowidth with an explicit table width leaves the columns unsized.</simpara>
+<informaltable frame="all" rowsep="1" colsep="1">
+<?dbhtml table-width="75%"?>
+<?dbfo table-width="75%"?>
+<?dblatex table-width="75%"?>
+<tgroup cols="3">
+<colspec colname="col_1" colwidth="106.2498*"/>
+<colspec colname="col_2" colwidth="106.2498*"/>
+<colspec colname="col_3" colwidth="106.2502*"/>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara>A</simpara></entry>
+<entry align="left" valign="top"><simpara>B</simpara></entry>
+<entry align="left" valign="top"><simpara>C</simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara>a</simpara></entry>
+<entry align="left" valign="top"><simpara>b</simpara></entry>
+<entry align="left" valign="top"><simpara>c</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+<simpara>A nested description list item with an attached block.</simpara>
+<variablelist>
+<varlistentry>
+<term>category</term>
+<listitem>
+<variablelist>
+<varlistentry>
+<term>term 1</term>
+<listitem>
+<simpara>def 1</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+</listitem>
+</varlistentry>
+</variablelist>
+<informalequation>
+<mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>f</mml:mi><mml:mo>:</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mtext>N</mml:mtext></mml:mstyle><mml:mo>&#x2192;</mml:mo><mml:mstyle mathvariant="double-struck"><mml:mtext>N</mml:mtext></mml:mstyle><mml:mo>\</mml:mo><mml:mo>\</mml:mo><mml:mi>f</mml:mi><mml:mo>:</mml:mo><mml:mi>x</mml:mi><mml:mo>&#x21A6;</mml:mo><mml:mi>x</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:math>
+</informalequation>
+<section xml:id="_das_große_ganze_ωμέγα_ασ">
+<title>Das große Ganze: Ωμέγα ΑΣ</title>
+<simpara>A link before a no-break space and colon: <link xl:href="https://ruby-lang.org">Ruby</link> :
+text with an ideographic space at the end of a line　
+and more text.</simpara>
+<simpara>Spaces that are not ASCII do not delimit text: a <emphasis role="strong">b</emphasis> c, x <emphasis>y</emphasis> z, and
+a <emphasis role="strong">b</emphasis>　c.</simpara>
+<simpara>Pass-through spacing: <literal>code</literal> and <inlineequation><mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi><mml:mo>+</mml:mo><mml:mn>1</mml:mn></mml:math></inlineequation>.</simpara>
+</section>
+</article>

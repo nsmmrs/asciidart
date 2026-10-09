@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>AsciiDoc Syntax</title>
+</info>
+<simpara>A brief reference of the most commonly used AsciiDoc syntax.
+You can find the full documentation for the AsciiDoc syntax at <link xl:href="https://asciidoctor.org/docs">https://asciidoctor.org/docs</link>.</simpara>
+<section xml:id="_paragraphs">
+<title>Paragraphs</title>
+<simpara>A normal paragraph.
+Line breaks are not preserved.</simpara>
+<simpara>A blank line separates paragraphs.</simpara>
+<simpara>This paragraph is marked with the <literal>hardbreaks</literal> option.<?asciidoc-br?>
+Notice how line breaks are now preserved.</simpara>
+<literallayout class="monospaced">An indented (literal) paragraph disables text formatting,
+preserves spaces and line breaks, and is displayed in a
+monospaced font.</literallayout>
+<sidebar xml:id="id" role="role">
+<simpara>Adding a style, ID, and/or role gives a paragraph (or block) special meaning, like this sidebar.</simpara>
+</sidebar>
+<note>
+<simpara>An admonition paragraph, like this note, grabs the reader&#8217;s attention.</simpara>
+</note>
+<tip>
+<simpara>Convert this document using the <literal>asciidoctor</literal> command to see the output produced from it.</simpara>
+</tip>
+</section>
+<section xml:id="_text_formatting">
+<title>Text Formatting</title>
+<formalpara>
+<title>Constrained (applied at word boundaries)</title>
+<para><emphasis role="strong">strong importance</emphasis> (aka bold)<?asciidoc-br?>
+<emphasis>stress emphasis</emphasis> (aka italic)<?asciidoc-br?>
+<literal>monospaced</literal> (aka typewriter text)<?asciidoc-br?>
+<quote role="double">double</quote> and <quote role="single">single</quote> typographic quotes<?asciidoc-br?>
+passthrough text (substitutions disabled)<?asciidoc-br?>
+<literal>literal text</literal> (monospaced with substitutions disabled)<?asciidoc-br?>
+a <emphasis role="marked">mark</emphasis> to remember (highlighted for notation)</para>
+</formalpara>
+<formalpara>
+<title>Unconstrained (applied anywhere)</title>
+<para><emphasis role="strong">C</emphasis>reate, <emphasis role="strong">R</emphasis>ead, <emphasis role="strong">U</emphasis>pdate, and <emphasis role="strong">D</emphasis>elete (CRUD)<?asciidoc-br?>
+fan<emphasis>freakin</emphasis>tastic<?asciidoc-br?>
+<literal>mono</literal>culture<?asciidoc-br?>
+<emphasis role="marked">mark</emphasis>up your text</para>
+</formalpara>
+<formalpara>
+<title>Replacements</title>
+<para>A long time ago in a galaxy far, far away&#8230;&#8203;<?asciidoc-br?>
+&#169; 1976 Arty Artisan<?asciidoc-br?>
+I believe I shall&#8212;&#8203;no, actually I won&#8217;t.</para>
+</formalpara>
+<formalpara>
+<title>ID and roles for phrases</title>
+<para><phrase role="line-through">delete me</phrase><?asciidoc-br?>
+the <emphasis><phrase role="path">images</phrase></emphasis> directory<?asciidoc-br?>
+a <anchor xml:id="wibble"/><emphasis role="strong"><phrase role="term">wibble</phrase></emphasis> does wobble</para>
+</formalpara>
+<formalpara>
+<title>Macros</title>
+<para>The European <inlinemediaobject role="blue"><?asciidoc-br?>
+<imageobject><?asciidoc-br?>
+<imagedata fileref="./images/icons/flag.png"/><?asciidoc-br?>
+</imageobject><?asciidoc-br?>
+<textobject><phrase>flag</phrase></textobject><?asciidoc-br?>
+</inlinemediaobject> is blue &amp; contains ************ arranged in a <inlinemediaobject role="yellow"><?asciidoc-br?>
+<imageobject><?asciidoc-br?>
+<imagedata fileref="./images/icons/circle-o.png"/><?asciidoc-br?>
+</imageobject><?asciidoc-br?>
+<textobject><phrase>circle o</phrase></textobject><?asciidoc-br?>
+</inlinemediaobject>.<?asciidoc-br?>
+The -&gt; operator is often referred to as the stabby lambda.<?asciidoc-br?>
+Since <literal>++</literal> has strong priority in AsciiDoc, you can rewrite C++ &#8658; C&#43;&#43;.<?asciidoc-br?>
+<inlineequation><mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:msqrt><mml:mn>4</mml:mn></mml:msqrt><mml:mo>=</mml:mo><mml:mn>2</mml:mn></mml:math></inlineequation></para>
+</formalpara>
+</section>
+<section xml:id="_attributes">
+<title>Attributes</title>
+<literallayout class="monospaced">// define attributes in the document header; must be flush with left margin
+:name: value</literallayout>
+<simpara>You can download and install Asciidoctor VERSION from <link xl:href="https://rubygems.org/gems/asciidoctor">https://rubygems.org/gems/asciidoctor</link>.
+C&#43;&#43; is not required, only Ruby.
+Use a leading backslash to output a word enclosed in curly braces, like {name}.</simpara>
+</section>
+<section xml:id="_links">
+<title>Links</title>
+<simpara><link xl:href="https://example.org/page">A webpage</link><?asciidoc-br?>
+<link xl:href="../path/to/file.txt">A local file</link><?asciidoc-br?>
+<link xl:href="document.xml">A sibling document</link><?asciidoc-br?>
+<link xl:href="mailto:hello@example.org">Email to say hello!</link></simpara>
+</section>
+<section xml:id="_anchors">
+<title>Anchors</title>
+<simpara xml:id="idname" xreflabel="reference text">A paragraph (or any block) with an anchor (aka ID) and reftext.</simpara>
+<simpara>See <xref linkend="idname"/> or <link linkend="idname">optional text of internal link</link>.</simpara>
+<simpara><link xl:href="document.xml#idname">Jumps to anchor in another document</link>.</simpara>
+<simpara>This paragraph has a footnote.<footnote><simpara>This is the text of the footnote.</simpara></footnote></simpara>
+</section>
+<section xml:id="_lists">
+<title>Lists</title>
+<section xml:id="_unordered">
+<title>Unordered</title>
+<itemizedlist>
+<listitem>
+<simpara>level 1</simpara>
+<itemizedlist>
+<listitem>
+<simpara>level 2</simpara>
+<itemizedlist>
+<listitem>
+<simpara>level 3</simpara>
+<itemizedlist>
+<listitem>
+<simpara>level 4</simpara>
+<itemizedlist>
+<listitem>
+<simpara>etc.</simpara>
+</listitem>
+</itemizedlist>
+</listitem>
+</itemizedlist>
+</listitem>
+</itemizedlist>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem>
+<simpara>back at level 1</simpara>
+<simpara>Attach a block or paragraph to a list item using a list continuation (which you can enclose in an open block).</simpara>
+</listitem>
+</itemizedlist>
+<itemizedlist mark="circle">
+<title>Some Authors</title>
+<listitem>
+<simpara>Edgar Allan Poe</simpara>
+</listitem>
+<listitem>
+<simpara>Sheri S. Tepper</simpara>
+</listitem>
+<listitem>
+<simpara>Bill Bryson</simpara>
+</listitem>
+</itemizedlist>
+</section>
+<section xml:id="_ordered">
+<title>Ordered</title>
+<orderedlist numeration="arabic">
+<listitem>
+<simpara>Step 1</simpara>
+</listitem>
+<listitem>
+<simpara>Step 2</simpara>
+<orderedlist numeration="loweralpha">
+<listitem>
+<simpara>Step 2a</simpara>
+</listitem>
+<listitem>
+<simpara>Step 2b</simpara>
+</listitem>
+</orderedlist>
+</listitem>
+<listitem>
+<simpara>Step 3</simpara>
+</listitem>
+</orderedlist>
+<orderedlist numeration="upperroman">
+<title>Remember your Roman numerals?</title>
+<listitem>
+<simpara>is one</simpara>
+</listitem>
+<listitem>
+<simpara>is two</simpara>
+</listitem>
+<listitem>
+<simpara>is three</simpara>
+</listitem>
+</orderedlist>
+</section>
+<section xml:id="_checklist">
+<title>Checklist</title>
+<itemizedlist mark="none">
+<listitem>
+<simpara>&#10003; checked</simpara>
+</listitem>
+<listitem>
+<simpara>&#10063; not checked</simpara>
+</listitem>
+</itemizedlist>
+</section>
+<section xml:id="_callout">
+<title>Callout</title>
+<programlisting language="ruby" linenumbering="unnumbered">puts 'Hello, World!' <co xml:id="CO1-1"/></programlisting>
+<calloutlist>
+<callout arearefs="CO1-1">
+<para>Prints <literal>Hello, World!</literal> to the console.</para>
+</callout>
+</calloutlist>
+</section>
+<section xml:id="_description">
+<title>Description</title>
+<variablelist>
+<varlistentry>
+<term>first term</term>
+<listitem>
+<simpara>description of first term</simpara>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>second term</term>
+<listitem>
+<simpara>description of second term</simpara>
+</listitem>
+</varlistentry>
+</variablelist>
+</section>
+</section>
+<section xml:id="_document_structure">
+<title>Document Structure</title>
+<section xml:id="_header">
+<title>Header</title>
+<literallayout class="monospaced">// header must be flush with left margin
+= Document Title
+Author Name &lt;author@example.org&gt;
+v1.0, 2019-01-01</literallayout>
+</section>
+<section xml:id="_sections">
+<title>Sections</title>
+<literallayout class="monospaced">// must be flush with left margin
+= Document Title (Level 0)
+== Level 1
+=== Level 2
+==== Level 3
+===== Level 4
+====== Level 5
+== Back at Level 1</literallayout>
+</section>
+<section xml:id="_includes">
+<title>Includes</title>
+<literallayout class="monospaced">// must be flush with left margin
+include::basics.adoc[]</literallayout>
+<literallayout class="monospaced">// define -a allow-uri-read to allow content to be read from URI
+include::https://example.org/installation.adoc[]</literallayout>
+</section>
+</section>
+<section xml:id="_blocks">
+<title>Blocks</title>
+<simpara>open - a general-purpose content wrapper; useful for enclosing content to attach to a list item</simpara>
+<note>
+<simpara>admonition - a notice for the reader, ranging in severity from a tip to an alert</simpara>
+</note>
+<informalexample>
+<simpara>example - a demonstration of the concept being documented</simpara>
+</informalexample>
+<example>
+<title>Toggle Me</title>
+<simpara>collapsible - these details are revealed by clicking the title</simpara>
+</example>
+<sidebar>
+<simpara>sidebar - auxiliary content that can be read independently of the main content</simpara>
+</sidebar>
+<literallayout class="monospaced">literal - an exhibit that features program output</literallayout>
+<screen>listing - an exhibit that features program input, source code, or the contents of a file</screen>
+<programlisting language="language" linenumbering="unnumbered">source - a listing that is embellished with (colorized) syntax highlighting</programlisting>
+<programlisting language="language" linenumbering="unnumbered">fenced code - a shorthand syntax for the source block</programlisting>
+<blockquote>
+<attribution>
+attribution
+<citetitle>citetitle</citetitle>
+</attribution>
+<simpara>quote - a quotation or excerpt; attribution with title of source are optional</simpara>
+</blockquote>
+<blockquote>
+<attribution>
+attribution
+<citetitle>citetitle</citetitle>
+</attribution>
+<literallayout>verse - a literary excerpt, often a poem; attribution with title of source are optional</literallayout>
+</blockquote>
+pass - content passed directly to the output document; often raw HTML
+<informalequation>
+<mml:math xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mi>x</mml:mi><mml:mo>=</mml:mo><mml:msup><mml:mi>y</mml:mi><mml:mn>2</mml:mn></mml:msup></mml:math>
+</informalequation>
+</section>
+<section xml:id="_tables">
+<title>Tables</title>
+<table frame="topbot" rowsep="1" colsep="1">
+<title>Table Attributes</title>
+<?dbhtml table-width="50%"?>
+<?dbfo table-width="50%"?>
+<?dblatex table-width="50%"?>
+<tgroup cols="2">
+<colspec colname="col_1" colwidth="70.8332*"/>
+<colspec colname="col_2" colwidth="141.6667*"/>
+<thead>
+<row>
+<entry align="right" valign="top">Attribute Name</entry>
+<entry align="left" valign="top">Values</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">options</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>header,footer,autowidth</simpara></entry>
+</row>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">cols</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>colspec[;colspec;&#8230;&#8203;]</simpara></entry>
+</row>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">grid</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>all | cols | rows | none</simpara></entry>
+</row>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">frame</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>all | sides | ends | none</simpara></entry>
+</row>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">stripes</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>all | even | odd | none</simpara></entry>
+</row>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">width</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>(0%..100%)</simpara></entry>
+</row>
+<row>
+<entry align="right" valign="top"><simpara><emphasis role="strong">format</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>psv | csv | dsv</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section xml:id="_multimedia">
+<title>Multimedia</title>
+<informalfigure>
+<mediaobject>
+<imageobject>
+<imagedata fileref="screenshot.png" contentwidth="800" contentdepth="450"/>
+</imageobject>
+<textobject><phrase>block image</phrase></textobject>
+</mediaobject>
+</informalfigure>
+<simpara>Press <inlinemediaobject>
+<imageobject>
+<imagedata fileref="reload.svg" contentwidth="16"/>
+</imageobject>
+<textobject><phrase>reload</phrase></textobject>
+</inlinemediaobject> to reload the page.</simpara>
+
+
+
+
+</section>
+<section xml:id="_breaks">
+<title>Breaks</title>
+<simpara><?asciidoc-hr?></simpara>
+<simpara><?asciidoc-pagebreak?></simpara>
+</section>
+</article>

@@ -1,0 +1,117 @@
+'\" t
+.\"     Title: Document Title
+.\"    Author: Doc Writer
+.\" Generator: Asciidoctor VERSION
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "COMMAND" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.sp
+Preamble paragraph.
+.if n .sp
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+.B Note
+.ps -1
+.br
+.sp
+This is test, only a test.
+.sp .5v
+.RE
+.SH "SECTION A"
+.sp
+\fBSection A\fP paragraph.
+.SS "Section A Subsection"
+.sp
+\fBSection A\fP \fIsubsection\fP paragraph.
+.SH "SECTION B"
+.sp
+\fBSection B\fP paragraph.
+.TS
+allbox tab(:);
+lt lt lt.
+T{
+.sp
+a
+T}:T{
+.sp
+b
+T}:T{
+.sp
+c
+T}
+T{
+.sp
+1
+T}:T{
+.sp
+2
+T}:T{
+.sp
+3
+T}
+.TE
+.sp
+.sp
+.B Section B list
+.br
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Item 1
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Item 2
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Item 3
+.RE
+.SH "AUTHOR"
+.sp
+Doc Writer

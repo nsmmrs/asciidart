@@ -1,0 +1,9 @@
+= Book
+:doctype: book
+
+== Chapter
+
+[partintro]
+=== Intro
+
+Text.

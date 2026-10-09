@@ -18,7 +18,7 @@ From [Asciidoctor](https://github.com/asciidoctor/asciidoctor), MIT License
 | `LICENSE` | v2.0.26 (`0b99b39c`) | upstream's license |
 
 Change these files only through `tool/vendor.sh` (after changing its pinned
-revisions); documents of our own belong in `test/parity/`.
+revisions); documents of our own belong in the test corpus (`test/corpus/cases/curated`).
 
 ## asciidoctor-epub3/
 

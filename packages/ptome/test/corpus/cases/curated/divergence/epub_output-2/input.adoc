@@ -1,0 +1,11 @@
+= Doc
+:doctype: book
+
+[dedication]
+== For You
+
+Hi.
+
+== One
+
+Text.
