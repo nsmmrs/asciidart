@@ -95,6 +95,14 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Install Dart dependencies
       run: dart pub get
+    - name: Build the executable (every test that runs the CLI uses it)
+      shell: bash
+      run: |
+        ./tool/build-exes.sh
+        exe="$(pwd)/dist/$(ls dist | grep '^ptome-')"
+        # (A Windows path on Windows, for Dart's Process.run.)
+        if command -v cygpath >/dev/null; then exe="$(cygpath -w "$exe")"; fi
+        echo "PTOME_EXE=$exe" >> "$GITHUB_ENV"
     - name: Install poppler and qpdf (PDF pages and structure in tests)
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils qpdf
@@ -108,20 +116,13 @@ jobs:
       run: dart run tool/api_check.dart
     - name: Check that the JavaScript projection is up to date
       run: dart run tool/generate_js.dart --check
-  dart-exe-e2e:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Set up Dart
-      uses: dart-lang/setup-dart@v1
-    - name: Build Dart executable
-      run: ./tool/build-exes.sh
     - name: Set up Ruby (oracle only)
+      if: matrix.os == 'ubuntu-latest'
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: '3.4'
     - name: Install the asciidoctor gem from upstream main (e2e oracle)
+      if: matrix.os == 'ubuntu-latest'
       # With asciimath, whose conversion ptome ports (AsciiMath becomes
       # MathML in DocBook, ADR-0014). No other optional gems: ptome
       # highlights with highlight.js only, and Rouge, Pygments and CodeRay
@@ -133,21 +134,23 @@ jobs:
         (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
         gem install --no-document asciimath:2.0.6
     - name: Install bats
+      if: matrix.os == 'ubuntu-latest'
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Dart exe)
-      run: |
-        EXE="$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
-        echo "ASCIIDOCTOR_EXE=$EXE"
-        ASCIIDOCTOR_EXE="$EXE" bats test/e2e/
+      if: matrix.os == 'ubuntu-latest'
+      run: ASCIIDOCTOR_EXE="$PTOME_EXE" bats test/e2e/
     - name: Run e2e CLI tests (Ruby oracle)
+      if: matrix.os == 'ubuntu-latest'
       # The same suite against the gem, so every test states the gem's
       # behavior.
       env:
         ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-ruby
       run: bats test/e2e/
     - name: Run differential selfcheck
+      if: matrix.os == 'ubuntu-latest'
       run: bats test/differential/
     - name: Install asciidoctor-epub3 gem on the main gem (EPUB oracle)
+      if: matrix.os == 'ubuntu-latest'
       # Without its asciidoctor dependency, which would bring in the 2.0
       # release; the version line shows the Asciidoctor it runs on.
       run: |
@@ -156,14 +159,16 @@ jobs:
         gem install --no-document --ignore-dependencies asciidoctor-epub3 -v 2.3.0
         asciidoctor-epub3 -v | tee /dev/stderr | grep -q 'using Asciidoctor 2.1.0'
     - name: Download EPUBCheck
+      if: matrix.os == 'ubuntu-latest'
       run: |
         curl -sSLo "$RUNNER_TEMP/epubcheck.zip" https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip
         unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP"
     - name: Check EPUB parity with asciidoctor-epub3 2.3.0 on the main gem
+      if: matrix.os == 'ubuntu-latest'
       run: >-
         dart run tool/epub_parity.dart
         --exe-a "$(command -v asciidoctor-epub3)"
-        --exe-b "$(pwd)/dist/$(ls dist | grep '^ptome-linux-')"
+        --exe-b "$PTOME_EXE"
         --epubcheck "$RUNNER_TEMP/epubcheck-5.4.0/epubcheck.jar"
         $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc' | sort)
   npm:

@@ -16,6 +16,8 @@ import 'package:ptome/src/cli/init_config.dart';
 import 'package:ptome/src/cli/run.dart';
 import 'package:test/test.dart';
 
+import '../support/cli.dart';
+
 /// Finds this package's root (the directory holding its pubspec).
 String findPackageRoot() {
   var dir = Directory.current;
@@ -54,6 +56,8 @@ Directory generateScaffold([List<String> extraArgs = const <String>[]]) {
 }
 
 void main() {
+  tearDownAll(deletePtomeCommand);
+
   group('runInitConfig', () {
     test('generates a pubspec, configuration, main and README', () {
       final dir = generateScaffold();
@@ -218,9 +222,7 @@ void main() {
       'the stock binary serves init-config into the current directory',
       () async {
         final dir = makeTempDir('init-config-test');
-        final result = await Process.run('dart', [
-          'run',
-          '${findPackageRoot()}/bin/ptome.dart',
+        final result = await runPtome([
           'init-config',
         ], workingDirectory: dir.path);
         expect(
