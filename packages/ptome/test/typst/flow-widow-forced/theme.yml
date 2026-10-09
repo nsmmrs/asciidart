@@ -1,3 +1,0 @@
-extends: ./../base-theme.yml
-page:
-  size: [120pt, 50pt]

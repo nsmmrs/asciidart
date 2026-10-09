@@ -26,10 +26,10 @@ the result.
 
 Tests check every language's patterns against the vendored files, and
 hyphenate the words of the Universal Declaration of Human Rights in 19
-languages against typst's hypher and Hyphenopoly (`tool/oracles/`, the
-`tools` tag): they agree on almost every word, and where they disagree with
-each other, one of them agrees with this package. Given the same patterns,
-pub.dev's `hyphenation` package breaks every word as this one does.
+languages against Hyphenopoly (`tool/oracles/`, the `tools` tag): they
+agree on almost every word, the rest where its patterns are newer. Given
+the same patterns, pub.dev's `hyphenation` package breaks every word as
+this one does.
 
 The library lives in the [ptome](https://github.com/nsmmrs/ptome)
 workspace, whose PDF backend hyphenates with it.

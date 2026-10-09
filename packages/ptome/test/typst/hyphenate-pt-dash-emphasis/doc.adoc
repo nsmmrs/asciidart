@@ -1,4 +1,0 @@
-:lang: pt
-:hyphens: pt
-
-Quebabe é a -melhor- comida que existe.

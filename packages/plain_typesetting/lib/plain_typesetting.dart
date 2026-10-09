@@ -93,7 +93,6 @@ export 'src/layout/paragraph.dart'
         PenaltyItem,
         TextAlign,
         TextFragment,
-        TypstLineBreaker,
         buildLines,
         paragraphItems;
 export 'src/link.dart' show LinkTarget, NamedTarget, UriTarget;

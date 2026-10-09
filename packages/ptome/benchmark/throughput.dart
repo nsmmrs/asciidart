@@ -4,8 +4,7 @@
 // The corpus is built deterministically from in-repo samples (mdbasics,
 // the syntax reference and the sample fixture), repeated --copies times;
 // with --file, a document read from a file (its includes too, unsafe), such
-// as the Hypermedia Systems book that tool/hs_acceptance.dart clones
-// (~/.cache/asciidart-work/hs-old/HypermediaSystems.adoc, benchmark/HS.md).
+// as the Hypermedia Systems book (~/Work/ports/hypermedia-systems-ptome).
 //
 // Usage (from the package folder):
 //   dart run benchmark/throughput.dart [--copies 20] [--iterations 15]

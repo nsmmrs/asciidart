@@ -122,8 +122,9 @@ final class _FontState {
   final bool kerning;
   final String? transform;
 
-  /// The theme key of the text's Typst leading (`<category>_leading`), when
-  /// its category or one it inherits from sets one (else `base_leading`).
+  /// The theme key of the text's cap-height leading (`<category>_leading`),
+  /// when its category or one it inherits from sets one (else
+  /// `base_leading`).
   final String? leadingKey;
 
   _FontState copyWith({
@@ -367,7 +368,8 @@ final class PdfConverter extends BuiltInConverter
         'greedy' => LineBreaking.greedy,
         _ => LineBreaking.auto,
       },
-      // (Typst's typography: the gem never repeats a hyphen.)
+      // (As the language's orthography has it; the gem never repeats a
+      // hyphen.)
       hyphenRepetition: asciidoctorCompat(document, CompatFormat.pdf)
           ? HyphenRepetition.none
           : HyphenRepetition.forLanguage(document.attr('lang')),
@@ -1040,7 +1042,7 @@ final class PdfConverter extends BuiltInConverter
       final left = (_n('${category}_margin_left') ?? 0).toDouble();
       final right = (_n('${category}_margin_right') ?? 0).toDouble();
       // The modern engine: the text sheared as a block, by an angle in
-      // degrees leaning right (`<category>_skew`, as Typst's skew).
+      // degrees leaning right (`<category>_skew`).
       final degrees = _n('${category}_skew');
       _out.add(
         BlockBox(
@@ -1343,9 +1345,10 @@ final class PdfConverter extends BuiltInConverter
     final margin = (_n('toc_margin_top') ?? 0).toDouble();
     if (margin > 0) _out.add(SpacerBox(margin));
     final indent = (_n('toc_indent') ?? 0).toDouble();
-    // Under Typst's model (base_leading) each entry is a paragraph of its
-    // own: the entries the leading apart (toc_entry_spacing).
-    final gap = (_n('toc_entry_spacing') ?? _typstLeading(toc) ?? 0).toDouble();
+    // With lines set from their cap heights (base_leading) each entry is
+    // a paragraph of its own: the entries the leading apart
+    // (toc_entry_spacing).
+    final gap = (_n('toc_entry_spacing') ?? _capLeading(toc) ?? 0).toDouble();
     var first = true;
     void level(List<Section> entries, int levels, double left) {
       for (final entry in entries) {
@@ -2593,8 +2596,9 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// The block before [node] in the flow: its previous sibling, past
-  /// images that float out of it (`image_placement`, modern engine), as
-  /// Typst's floating figures leave a paragraph after a paragraph.
+  /// images that float out of it (`image_placement`, modern engine): a
+  /// figure floated away leaves the paragraphs around it next to each
+  /// other.
   AbstractBlock? _flowPrevious(AbstractBlock node) {
     var previous = _previousSibling(node);
     while (previous != null && _floatsOut(previous)) {
@@ -3062,7 +3066,8 @@ final class PdfConverter extends BuiltInConverter
         _ => _font.kerning,
       },
       transform: h('text_transform'),
-      // Under Typst's model: the level's leading (heading_h<n>_leading).
+      // Lines from their cap heights: the level's leading
+      // (heading_h<n>_leading).
       leadingKey: [
         if (role != null) '${role}_heading_h${level}_leading',
         'heading_h${level}_leading',
@@ -3124,7 +3129,8 @@ final class PdfConverter extends BuiltInConverter
     CustomContent content = box;
     // The modern engine's `heading_min_height_after: auto`: the heading
     // stays with what starts after it (as much of it as may start a page:
-    // a paragraph's first lines), as Typst's sticky headings.
+    // a paragraph's first lines): a heading is never the last thing on a
+    // page.
     final sticky =
         arrange &&
         hasContent &&
@@ -3173,12 +3179,12 @@ final class PdfConverter extends BuiltInConverter
         ? _headingBorder(category, background: background)
         : null;
     // Floating images wait for no heading: it follows them (unless
-    // `heading_float_barrier` is false: Typst's headings pass floats
-    // waiting for the next page).
+    // `heading_float_barrier` is false: headings pass floats waiting for
+    // the next page).
     final barrier =
         _theme.value('heading_float_barrier') != const ThemeBool(false);
     // In the middle or at the bottom of its page, when it starts the page
-    // (a part's title, as Typst's align(horizon) sets it).
+    // (a part's title).
     final verticalAlign = switch (_choice(
       '${category}_vertical_align',
       _alignsV,
@@ -3397,14 +3403,14 @@ final class PdfConverter extends BuiltInConverter
     required String align,
   }) {
     final face = _fonts.font(font.family, font.style);
-    final typst = _typstLeading(font) != null;
+    final capLines = _capLeading(font) != null;
     final metrics = _lineMetrics(font);
     final cap = face.capHeightAt(font.size);
     // The first line's baseline and the distance between baselines.
-    final baseline = typst
+    final baseline = capLines
         ? cap
         : metrics.paddingTop + face.ascenderAt(font.size);
-    final pitch = (typst ? cap : face.heightAt(font.size)) + metrics.leading;
+    final pitch = (capLines ? cap : face.heightAt(font.size)) + metrics.leading;
     final category = 'heading_h${drop.level}_drop';
     final unsized = _themeFont(category, font);
     final dropFace = _fonts.font(unsized.family, unsized.style);
@@ -3422,7 +3428,7 @@ final class PdfConverter extends BuiltInConverter
       singleLine: true,
       overhang: false,
     );
-    final dropBaseline = _typstLeading(dropFont) != null
+    final dropBaseline = _capLeading(dropFont) != null
         ? dropFace.capHeightAt(size)
         : dropFace.ascenderAt(size);
     return _Dropped(
@@ -3494,7 +3500,7 @@ final class PdfConverter extends BuiltInConverter
 
     var content = node.content() ?? '';
     // The modern engine: a paragraph of concealed index terms alone takes
-    // no room (their anchors where it is), as Typst's index entries.
+    // no room (their anchors where it is).
     if (!node.hasTitle) {
       final terms = RegExp('<a id="([^"]+)" type="indexterm">$_dummyText</a>')
           .allMatches(content)
@@ -3507,8 +3513,7 @@ final class PdfConverter extends BuiltInConverter
               )
               .trim()
               .isEmpty) {
-        // (They go with the block after them, as Typst attaches tags to
-        // the content that follows.)
+        // (They go with the block after them: the content they index.)
         _out.add(
           BlockBox([
             for (final term in terms)
@@ -4055,8 +4060,7 @@ final class PdfConverter extends BuiltInConverter
 
   /// Whether each piece of a block of theme [category] split across pages
   /// has its padding and border at its top and bottom (the modern
-  /// engine's `<category>_box_decoration_break: clone`, as CSS's; Typst's
-  /// breakable blocks have their inset so).
+  /// engine's `<category>_box_decoration_break: clone`, as CSS's).
   bool _cloneEdges(String category) =>
       _choice('${category}_box_decoration_break', const ['slice', 'clone']) ==
       'clone';
@@ -4891,8 +4895,7 @@ final class PdfConverter extends BuiltInConverter
     }
     // A text file (ASCII art) in the modern engine: its text, as it is,
     // in the code font (or `image_text_*`), the block as wide as its
-    // longest line and aligned as an image, as Typst sets an asciiart
-    // figure.
+    // longest line and aligned as an image.
     if (format == 'txt' && data == null) {
       if (_imageBytes(node, target) case final bytes?) {
         _textImage(node, utf8.decode(bytes, allowMalformed: true), align);
@@ -5006,7 +5009,7 @@ final class PdfConverter extends BuiltInConverter
         parent is Document ||
         parent?.context == BlockContext.preamble;
     // (The block's own `placement` attribute first: `none` keeps it where
-    // it is, as Typst's figure placement.)
+    // it is.)
     // In columns, a figure that spans them floats across the top or bottom
     // of its page (`auto` unless its placement says).
     final span = _spans(node);
@@ -5066,8 +5069,8 @@ final class PdfConverter extends BuiltInConverter
     }
   }
 
-  /// Whether the figure [node], in columns, spans them (Typst's figure
-  /// `scope: "parent"`): its `scope` attribute (`parent` or `page`), else
+  /// Whether the figure [node], in columns, spans them (LaTeX's
+  /// `figure*`): its `scope` attribute (`parent` or `page`), else
   /// `image_role_<role>_scope` for one of its roles, else `image_scope`.
   bool _spans(AbstractBlock node) {
     if (!_inColumns) return false;
@@ -5088,8 +5091,7 @@ final class PdfConverter extends BuiltInConverter
   /// [convertImage]): kept whole, captioned and floated as an image is.
   void _textImage(Block node, String text, String align) {
     final font = _themeFont('image_text', _themeFont('code', _font));
-    // Every line kept, the empty one after a final line break too (as
-    // Typst's raw text keeps it).
+    // Every line kept, the empty one after a final line break too.
     final box = _textBox(
       _guardIndentation(text.endsWith('\n') ? '$text\u00a0' : text),
       font,
@@ -6371,9 +6373,9 @@ final class PdfConverter extends BuiltInConverter
     final wrapIndent = _length('code_wrap_indent', font.size) ?? font.size;
     final wrapMarker =
         _choice('code_wrap_marker', const ['arrow', 'none']) != 'none';
-    // Without a hanging indent or a marker, a long line wraps as Typst
-    // wraps raw text: at the line breaking algorithm's breaks (after a
-    // slash too), as many words on a line as fit.
+    // Without a hanging indent or a marker, a long line wraps at the
+    // line breaking algorithm's breaks (UAX #14; after a slash too), as
+    // many words on a line as fit.
     final plainWrap = wrapIndent == 0 && !wrapMarker;
     if (plainWrap) source = _breakAfterSlashes(source);
     final box = _textBox(
@@ -6802,8 +6804,7 @@ final class PdfConverter extends BuiltInConverter
       text = transformText(text, transform);
     }
     // The modern engine's `<category>_caption_indent`: set in from the
-    // left (a code block's caption over its padded code, as Typst's
-    // figure inset).
+    // left (a code block's caption over its padded code).
     final indent =
         _length('${captionKey}_indent', font.size) ??
         _length('caption_indent', font.size) ??
@@ -6863,7 +6864,7 @@ final class PdfConverter extends BuiltInConverter
       };
     } else {
       // (`ulist_marker_nesting: ulist`, modern engine: the level among
-      // unordered lists alone, as Typst's list markers.)
+      // unordered lists alone.)
       final own =
           _choice('ulist_marker_nesting', const ['all', 'ulist']) == 'ulist';
       bullet = switch (_listLevel(
@@ -6990,10 +6991,10 @@ final class PdfConverter extends BuiltInConverter
     final saved = _out;
     final items = <LayoutBox>[];
     _out = items;
-    // Typst's lists (the modern engine's list_body_indent): the markers at
-    // list_indent, the text after the widest marker and the body indent.
-    // An ordered list's own (`olist_body_indent`; `olist_marker_width`,
-    // its numbers in boxes that wide at their left: Typst's enums).
+    // The modern engine's list_body_indent: the markers at list_indent,
+    // the text after the widest marker and the body indent. An ordered
+    // list's own (`olist_body_indent`; `olist_marker_width`, its numbers
+    // in boxes that wide at their left).
     final ordered = node.context == BlockContext.olist;
     final bodyIndent =
         (ordered ? _length('olist_body_indent', _font.size) : null) ??
@@ -7152,8 +7153,9 @@ final class PdfConverter extends BuiltInConverter
       final lineHeight = _font.lineHeight * _font.size;
       CustomContent content = _MinRoom(
         box,
-        // (Under Typst's model, a line is as tall as its cap height.)
-        _typstLeading(_font) != null
+        // (With lines set from their cap heights, a line is as tall as its
+        // cap height.)
+        _capLeading(_font) != null
             ? _fonts.font(_font.family, _font.style).capHeightAt(_font.size)
             : lineHeight + metrics.leading + metrics.paddingTop,
       );
@@ -7197,8 +7199,8 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// Runs [body] with the modern engine's `<category>_*` keys in place of
-  /// the theme's (`quote_base_justify_width: widest`: a block Typst sizes
-  /// to its content justifies its lines to the widest; `quote_list_*`
+  /// the theme's (`quote_base_justify_width: widest`: a block sized to
+  /// its content justifies its lines to the widest; `quote_list_*`
   /// for the lists in a quote), as a section role's.
   void _withBaseKeys(String category, void Function() body) {
     final savedAlign = _baseTextAlign;
@@ -7366,8 +7368,7 @@ final class PdfConverter extends BuiltInConverter
     }
     final blocks = _collect(() => _traverse(desc));
     // The space after the term: an en space, or as wide as
-    // `description_list_term_gap` (0.6em, as Typst's terms separator).
-    // (A space, where the line may break, as Typst's weak spacing.)
+    // `description_list_term_gap`. (A space, where the line may break.)
     final gap = switch (_theme.value('description_list_term_gap')) {
       ThemeNumber(:final value) => '<font width="$value"> </font>',
       ThemeString(:final value) => '<font width="$value"> </font>',
@@ -7405,8 +7406,8 @@ final class PdfConverter extends BuiltInConverter
         ),
       );
     }
-    // The entries apart as paragraphs (Typst's wide terms: the paragraph
-    // spacing between items), or as `description_list_item_spacing` says
+    // The entries apart as paragraphs (the paragraph spacing between
+    // items), or as `description_list_item_spacing` says
     // (a tight list: the leading).
     if (!last) {
       final spacing =
@@ -7581,7 +7582,7 @@ final class PdfConverter extends BuiltInConverter
         };
         final prawnFont = _fonts.font(conumFont.family, conumFont.style);
         // A marker box as wide as `callout_list_marker_width` (modern
-        // engine; Typst's enum numbers in a box 1em wide), its marker
+        // engine), its marker
         // aligned in it by `callout_list_marker_text_align`.
         final fixedWidth = _length(
           'callout_list_marker_width',
@@ -7650,9 +7651,9 @@ final class PdfConverter extends BuiltInConverter
                 CustomBox(
                   _MinRoom(
                     _Marked(box, marker, markerWidth, -markerWidth),
-                    // (Under Typst's model, a line is as tall as its cap
-                    // height.)
-                    _typstLeading(_font) != null
+                    // (With lines set from their cap heights, a line is as
+                    // tall as its cap height.)
+                    _capLeading(_font) != null
                         ? _fonts
                               .font(_font.family, _font.style)
                               .capHeightAt(_font.size)
@@ -7698,7 +7699,8 @@ final class PdfConverter extends BuiltInConverter
     );
   }
 
-  /// The body indent of the list being converted (Typst's lists), if any.
+  /// The body indent of the list being converted (`list_body_indent`), if
+  /// any.
   double? _listBodyIndent;
 
   /// The widest marker of the list being converted.
@@ -7733,7 +7735,7 @@ final class PdfConverter extends BuiltInConverter
       markerFont,
       align: fixed == null ? 'right' : 'left',
       normalize: false,
-      // (The gem's tighter marker; not under Typst's list model.)
+      // (The gem's tighter marker; not with `list_body_indent`.)
       characterSpacing: fixed == null && _listBodyIndent == null ? -0.5 : 0,
       features: features,
       // (A marker set at the end of its box doesn't hang into the gap.)
@@ -7916,7 +7918,8 @@ final class PdfConverter extends BuiltInConverter
     var text = hyphenate ? _hyphenated(taken, align) : taken;
     if (normalize) text = text.replaceAll(RegExp('[ \t\n]+'), ' ');
     // `footnotes_reference_space: collapse`: no space before a footnote's
-    // reference (Typst's weak space before its marker).
+    // reference (a note's number follows its word or punctuation without
+    // a space, as The Chicago Manual of Style has it).
     if (_footnoteSpaceCollapses && text.contains('<sup class="wj"><a ')) {
       text = text.replaceAll(_spaceBeforeFootnoteRx, '');
     }
@@ -7925,7 +7928,7 @@ final class PdfConverter extends BuiltInConverter
     text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
 
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
-    // (`www.` links too, Typst's; not as asciidoctor-pdf breaks.)
+    // (`www.` links too; not as asciidoctor-pdf breaks.)
     final www = !asciidoctorCompat(_document, CompatFormat.pdf);
     if (text.contains('://') || (www && text.contains('www.'))) {
       text = _breakUrls(text, markup: inlineFormat, www: www);
@@ -7984,7 +7987,7 @@ final class PdfConverter extends BuiltInConverter
         at: _at,
         skew: skew,
         overhang: overhang ? _overhangAmount() : 0,
-        capLines: _typstLeading(font) != null,
+        capLines: _capLeading(font) != null,
         dropLines: dropLines,
         dropIndent: dropIndent,
         justifyWidest:
@@ -8099,8 +8102,8 @@ final class PdfConverter extends BuiltInConverter
       hyphenator,
       skipCode: true,
       lettersOnly: true,
-      // A word goes on across formatting, as Typst reads it; the gem
-      // hyphenates each text between tags alone.
+      // A word goes on across formatting (its letters in two styles are
+      // one word); the gem hyphenates each text between tags alone.
       acrossTags: !asciidoctorCompat(_document, CompatFormat.pdf),
     );
   }
@@ -8138,9 +8141,10 @@ final class PdfConverter extends BuiltInConverter
       ..textDecorationWidth = _n(key('text_decoration_width'));
   }
 
-  /// The Typst leading of [font]'s text (`<category>_leading`, else
-  /// `base_leading`), in the modern engine.
-  double? _typstLeading(_FontState font) =>
+  /// The leading of [font]'s text when its lines are set from their cap
+  /// heights (`<category>_leading`, else `base_leading`), in the modern
+  /// engine.
+  double? _capLeading(_FontState font) =>
       _length(font.leadingKey ?? 'base_leading', font.size);
 
   /// The gem's `calc_line_metrics`: the leading of the line height, half
@@ -8149,14 +8153,15 @@ final class PdfConverter extends BuiltInConverter
     _FontState font,
   ) {
     final prawnFont = _fonts.font(font.family, font.style);
-    // The modern engine with `base_leading`: Typst's model. Each line's box
+    // The modern engine with `base_leading`: lines set from their cap
+    // heights (as CSS's `text-box-edge: cap alphabetic`). Each line's box
     // runs from its cap height to its baseline, the leading between boxes;
     // a text's first line has its cap height at the top, its last line
     // ends at its baseline (the space between blocks from baseline to cap
     // height).
-    if (_typstLeading(font) case final typst?) {
+    if (_capLeading(font) case final leading?) {
       // The text box sets the lines on their cap heights (capLines).
-      return (leading: typst, paddingTop: 0.0, paddingBottom: 0.0);
+      return (leading: leading, paddingTop: 0.0, paddingBottom: 0.0);
     }
 
     final leading = font.lineHeight * font.size - font.size;
@@ -8828,7 +8833,8 @@ final class PdfConverter extends BuiltInConverter
     attributes['section-or-chapter-title'] = section.isNotEmpty
         ? section
         : chapter;
-    // As Typst's headers see it, at the page's top: the last part or
+    // As a running head sees it at the page's top (TeX's `\topmark`): the
+    // last part or
     // chapter that started before the page, else the document's title.
     // (A section without a shown title, a dedication, has no heading.)
     int shown(String? mark) => switch (int.tryParse(mark ?? '')) {
@@ -9280,12 +9286,13 @@ final class PdfConverter extends BuiltInConverter
   final Set<String> _bibrefRefs = {};
 
   /// [text] (markup when [markup]) with a zero-width space where each URL
-  /// in it may break, as Typst breaks a link (typst-layout's
-  /// `linebreak_link`): after its `://`, then where a run of letters or of
-  /// digits begins, and between two other characters, but never after an
-  /// opening bracket; a run of 16 characters or more anywhere in it. The
-  /// modern engine's, in place of the gem's breaks after `/`, `?`, `&`
-  /// and `#`.
+  /// in it may break, as The Chicago Manual of Style (17th ed.) has a URL
+  /// broken: after its `://`, after a colon or a double slash;
+  /// before a single slash, a tilde, a period, a comma, a hyphen, an
+  /// underscore, a question mark, a number sign or a percent sign; before
+  /// or after an equals sign or an ampersand; never with a hyphen added.
+  /// The modern engine's, in place of the gem's breaks after `/`, `?`, `&`
+  /// and `#`. [www] reads a word that starts with `www.` as a URL too.
   static String _breakUrls(String text, {bool markup = true, bool www = true}) {
     final out = StringBuffer();
     // The text between tags only (an href stays whole).
@@ -9300,13 +9307,11 @@ final class PdfConverter extends BuiltInConverter
       }
       out.write(
         piece.replaceAllMapped(_urlRx, (m) {
-          // A link after its scheme, or from its `www.` (Typst reads
-          // both as links).
           if (m[4] case final link?) {
             return www ? '${m[3]}${_linkBreaks(link)}' : m[0]!;
           }
           final link = m[2]!;
-          return '${m[1]}​${_linkBreaks(link)}';
+          return '${m[1]}\u200b${_linkBreaks(link)}';
         }),
       );
     }
@@ -9314,11 +9319,10 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// [text] (markup when [markup]) with a zero-width space after each
-  /// slash that isn't before a digit, a space or another slash: where the
-  /// Unicode line breaking algorithm (UAX #14, a slash's class SY) lets a
-  /// line break, as Typst breaks `and/or` and `/contacts/new`; and after
-  /// each `?` and `!` before a letter or a digit (class EX, as Typst
-  /// breaks `/contacts?rows_only`).
+  /// slash that isn't before a digit, a space or another slash, and after
+  /// each `?` and `!` before a letter or a digit: where the Unicode line
+  /// breaking algorithm (UAX #14: a slash's class SY, `?` and `!`'s EX)
+  /// lets a line break (`and/or`, `/contacts?rows_only`).
   static String _breakAfterSlashes(String text, {bool markup = true}) {
     final pieces = markup
         ? RegExp('<[^>]*>|[^<]+').allMatches(text).map((m) => m[0]!)
@@ -9337,8 +9341,8 @@ final class PdfConverter extends BuiltInConverter
         .join();
   }
 
-  /// A URL's scheme and `://`, then its address (Typst's `link_prefix`:
-  /// the characters a link takes, trailing punctuation left out).
+  /// A URL's scheme and `://`, then its address, trailing punctuation left
+  /// out (a sentence's period after it is not the URL's).
   static final RegExp _urlRx = RegExp(
     '([a-zA-Z][a-zA-Z0-9+.-]*://)'
     r"((?:[0-9A-Za-z!#$%*+,\-./:;=?@_~'\[\]()]|&amp;)*"
@@ -9349,47 +9353,32 @@ final class PdfConverter extends BuiltInConverter
     r'(?:[0-9A-Za-z#$%*+\-/=@_~\[\]()]|&amp;))',
   );
 
-  /// [link] (the part after `://`) with a zero-width space at each of
-  /// Typst's break opportunities.
+  /// [link] (the part after `://`, or from `www.`) with a zero-width space
+  /// at each of The Chicago Manual of Style's break points (see
+  /// [_breakUrls]); `&amp;` is one character.
   static String _linkBreaks(String link) {
-    int classOf(String c) => RegExp(r'\p{L}', unicode: true).hasMatch(c)
-        ? 0
-        : RegExp(r'\p{N}', unicode: true).hasMatch(c)
-        ? 1
-        : c == '(' || c == '['
-        ? 2
-        : 3;
-    // Entities count as one character.
     final chars = RegExp(
       '&amp;|.',
       dotAll: true,
     ).allMatches(link).map((m) => m[0]!).toList();
+    const before = {'/', '~', '.', ',', '-', '_', '?', '#', '%', '=', '&amp;'};
+    const after = {'=', '&amp;'};
     final out = StringBuffer();
-    var offset = 0;
-    var previous = 3;
-    for (var end = 0; end < chars.length; end++) {
-      final c = chars[end];
-      final current = classOf(c);
-      if (end > 0 &&
-          previous != 2 &&
-          (current == 3 ? previous == 3 : current != previous)) {
-        final piece = chars.sublist(offset, end);
-        if (piece.join().replaceAll('&amp;', '&').length < 16) {
-          out
-            ..writeAll(piece)
-            ..write('​');
-        } else {
-          for (final p in piece) {
-            out
-              ..write(p)
-              ..write('​');
-          }
-        }
-        offset = end;
-      }
-      previous = current;
+    for (var i = 0; i < chars.length; i++) {
+      final c = chars[i];
+      final previous = i > 0 ? chars[i - 1] : '';
+      // (Not at the start, after an opening bracket, or between two
+      // slashes; never twice in one place.)
+      final allowed = i > 0 && previous != '(' && previous != '[';
+      final breakBefore =
+          allowed &&
+          ((before.contains(c) && !(c == '/' && previous == '/')) ||
+              after.contains(previous) ||
+              (previous == ':' && c != '/') ||
+              (previous == '/' && i > 1 && chars[i - 2] == '/' && c != '/'));
+      if (breakBefore) out.write('\u200b');
+      out.write(c);
     }
-    out.writeAll(chars.sublist(offset));
     return out.toString();
   }
 
@@ -9604,15 +9593,6 @@ final class PdfConverter extends BuiltInConverter
         final termStyle =
             _fontStyle(_s('description_list_term_font_style')) ?? _font.style;
         final proseMargin = (_n('prose_margin_bottom') ?? 0).toDouble();
-        // `index_sort: code-point` (modern engine): every term in one
-        // list, keyed by its terms joined with commas, in code point
-        // order (as Typst's in-dexter index).
-        if ((_choice('index_sort', const ['letter', 'code-point']) ??
-                _document.attr('index-sort')) ==
-            'code-point') {
-          _flatIndex(style);
-          return;
-        }
         for (final category in _index.categories) {
           final letter = category.name.text;
           if (headings) {
@@ -9656,62 +9636,8 @@ final class PdfConverter extends BuiltInConverter
       );
   }
 
-  /// The index as one list (`index_sort: code-point`): each term with an
-  /// entry of its own keyed by its terms and its parents' joined with
-  /// commas, the keys in code point order; a subterm's entry its terms
-  /// after the first, indented (`index_subterm_indent`), under a line
-  /// with the first when the entry before has another; each entry
-  /// followed by `index_item_spacing`.
-  void _flatIndex(String? style) {
-    final entries = <(List<IndexName>, IndexTerm)>[];
-    void walk(IndexTerm term, List<IndexName> parents) {
-      final names = [...parents, term.name];
-      if (!term.isContainer) entries.add((names, term));
-      for (final subterm in term.terms) {
-        walk(subterm, names);
-      }
-    }
-
-    for (final category in _index.categories) {
-      for (final term in category.terms) {
-        walk(term, const []);
-      }
-    }
-    String key(List<IndexName> names) => names.map((n) => n.text).join(', ');
-    entries.sort((a, b) => key(a.$1).compareTo(key(b.$1)));
-    final spacing = _length('index_item_spacing', _font.size) ?? 0;
-    final subtermIndent = _length('index_subterm_indent', _font.size) ?? 0;
-    String? previous;
-    for (final (names, term) in entries) {
-      if (names.length > 1 && names.first.text != previous) {
-        _indexTerm(term, style, flat: (names.first.markup, 0, false));
-        if (spacing > 0) _out.add(SpacerBox(spacing));
-      }
-      _indexTerm(
-        term,
-        style,
-        flat: names.length == 1
-            ? (term.name.markup, 0, true)
-            : (
-                names.skip(1).map((n) => n.markup).join(', '),
-                subtermIndent,
-                true,
-              ),
-      );
-      if (spacing > 0) _out.add(SpacerBox(spacing));
-      previous = names.first.text;
-    }
-  }
-
-  /// Adds the entry of index [term] (the gem's `convert_index_term`); in
-  /// a flat index ([flat]), with the given name and first line's indent,
-  /// and its page numbers if asked (else the name alone), without its
-  /// subterms.
-  void _indexTerm(
-    IndexTerm term,
-    String? style, {
-    (String, double, bool)? flat,
-  }) {
+  /// Adds the entry of index [term] (the gem's `convert_index_term`).
+  void _indexTerm(IndexTerm term, String? style) {
     final markup = StringBuffer();
     // `index_pagenum_text_align: right` (modern engine): the page numbers
     // in a column at the right, in tabular figures, as books set them.
@@ -9723,12 +9649,11 @@ final class PdfConverter extends BuiltInConverter
     final screen = (_document.attr('media') ?? 'screen') == 'screen';
     String link(String anchor, String text) =>
         screen ? '<a anchor="$anchor">$text</a>' : text;
-    final pages = flat == null || flat.$3;
-    if (!term.isContainer && screen && pages) {
+    if (!term.isContainer && screen) {
       markup.write('<a id="${term.anchor}">$_dummyText</a>');
     }
-    markup.write(flat?.$1 ?? term.name.markup);
-    if (!term.isContainer && pages) {
+    markup.write(term.name.markup);
+    if (!term.isContainer) {
       if (term.see case (final target, final name)) {
         markup
           ..write(' (see ')
@@ -9787,11 +9712,8 @@ final class PdfConverter extends BuiltInConverter
     }
     final indent =
         _length('description_list_description_indent', _font.size) ?? 0;
-    // (A flat index's lines after the first: `index_hanging_indent`.)
-    final hanging = flat == null
-        ? indent * 2
-        : _length('index_hanging_indent', _font.size) ?? indent * 2;
-    final first = flat?.$2 ?? 0;
+    final hanging = indent * 2;
+    const first = 0.0;
     void entry(String text, double left, [String? numbers]) {
       final box = _textBox(
         text,
@@ -9821,12 +9743,6 @@ final class PdfConverter extends BuiltInConverter
     }
 
     entry(markup.toString(), 0, pagenums);
-    if (flat != null) {
-      for (final item in seeAlso) {
-        entry(item, first);
-      }
-      return;
-    }
     if (seeAlso.isEmpty && term.isLeaf) return;
     final nested = _collect(() {
       for (final item in seeAlso) {
@@ -10135,7 +10051,7 @@ final class PdfConverter extends BuiltInConverter
       'page';
 
   /// The space between footnotes (`footnotes_item_spacing`, an em of the
-  /// body's size, as Typst's `footnote.entry(gap)`).
+  /// body's size).
   double get _footnoteItemSpacing =>
       _length('footnotes_item_spacing', _rootFontSize) ?? 0;
 
@@ -10149,9 +10065,10 @@ final class PdfConverter extends BuiltInConverter
     );
     final length = _s('footnotes_separator_length') ?? '33.33%';
     final spacing = _footnoteItemSpacing;
-    // Under Typst's model (base_leading) the rule takes no room: drawn
+    // With lines from their cap heights (base_leading) the rule takes no
+    // room: drawn
     // on its line, the space above and below it from there.
-    final flat = _typstLeading(_font) != null;
+    final flat = _capLeading(_font) != null;
     return DrawingBox(
       flat ? 0 : width,
       (canvas, rect) {

@@ -1,4 +1,0 @@
-:lang: pt
-:hyphens: pt
-
-Alguma coisa no _arco-da-velha_ é algo que está muito longe.

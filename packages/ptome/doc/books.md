@@ -3,9 +3,7 @@
 One AsciiDoc source gives a print PDF, a website, an EPUB and DocBook,
 each from one command and with no post-processing. This guide shows how,
 and how to move a book from asciidoctor-pdf or from an HTML-to-print
-pipeline (Paged.js and a browser). The Hypermedia Systems book is the test
-case: `benchmark/HS.md` records what `tool/hs_acceptance.dart` checks on
-it.
+pipeline (Paged.js and a browser).
 
 ## One source, every format
 
@@ -72,10 +70,9 @@ Mark terms where they are discussed: `((term))` shows the term,
 
 The PDF lists page numbers; HTML, the website and EPUB link to each
 section the term is used in (the EPUB's marked up as an EPUB index).
-`:index-sort: code-point` orders the terms by code point (capitals
-first) instead of alphabetically, and `:index-category-headings!:` leaves
-out the letter above each group, in every format (a PDF theme's
-`index_sort` and `index_category_headings` take precedence).
+`:index-category-headings!:` leaves out the letter above each group, in
+every format (a PDF theme's `index_category_headings` takes
+precedence).
 `Document.index` gives the same entries to programs (`doc/api.md`).
 
 ## Print pages in the EPUB
@@ -121,8 +118,8 @@ attribute's value; `{sp}` at the end does too.) Cross references keep
 their text: `Listing 36` with `:xrefstyle: short`, a figure's or an
 image's too.
 
-A book whose every code block is a numbered listing, titled or not (as
-Typst numbers every figure, showing a caption only where it has one),
+A book whose every code block is a numbered listing, titled or not
+(showing a caption only where it has one),
 counts the untitled ones too with `<kind>-numbering: all`
 (`listing-numbering`, `figure-numbering`, `table-numbering`,
 `example-numbering`): they show no caption, but the titled ones after
@@ -263,29 +260,4 @@ source:
 Move the print CSS's choices into a theme (`extends: default`, then page
 size and margins, fonts, `prose`, `code`, running content); `doc/pdf.md`
 and asciidoctor-pdf's theming guide document the keys.
-
-## From Typst
-
-The Hypermedia Systems book moved from AsciiDoc to Typst; its Typst
-edition's features in AsciiDoc (`benchmark/HS.md` checks the whole book):
-
-| Typst | AsciiDoc |
-| --- | --- |
-| `#index[term]`, `#indexed[term]` | `(((term)))`, `((term))` |
-| `#figure(caption: [...], ...)` | `.Title` above the listing or image (`listing-caption`, `figure-caption`) |
-| `#set figure(placement: auto)` | `image_placement: auto` (theme) |
-| `#footnote[...]` | `footnote:[...]`, at the bottom of the page |
-| `#show link: ... footnote(it.dest)` | `:show-link-uri: footnote` |
-| `#smallcaps[...]` | `[.sc]#...#` and `role_sc_font_variant: small-caps` |
-| `#quote(block: true, attribution: [...])` | `[quote, Author, Source]` |
-| A boxed note in the contents (`html-note`) | A section with a role, `section_role_<role>_*` (theme) |
-| `#important[Title][...]` | `[IMPORTANT]` with a `.Title`, `:important-caption:` empty |
-| `@label`, `<label>` | `<<id>>`, `[#id]` |
-| `set page(header: ...)` | `header_recto_*`, `header_verso_*` (theme), `{part-title}`, `{chapter-title}` |
-| `pagebreak(to: "odd")` before chapters | `:media: prepress` |
-| A chapter's label above its title | `heading_h2_content` (theme): a template with `{{signifier}}`, `{{numeral}}` and `{{title}}` |
-| `#make-index()` in two columns | `[index]`, `index_columns`, `index_pagenum_text_align: right` (theme) |
-| `#show raw: ...` highlighting | `:source-highlighter: highlight.js` |
-| pandoc for the EPUB | `-b epub3` (`isbn`, `editor`, `front-cover-image`) |
-| A site generator (muteferrika) | `-b multipage_html5`, `page-path`, docinfo |
 

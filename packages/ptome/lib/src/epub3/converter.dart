@@ -1608,7 +1608,6 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
       index,
       level: node.level ?? 1,
       epub: true,
-      codePoint: indexInCodePointOrder(document),
       headings: indexHasCategoryHeadings(document),
       label: (section) => indexUseLabel(section, document),
       href: (use) {

@@ -539,8 +539,8 @@ abstract class AbstractBlock extends AbstractNode {
 
   /// Ptome's `<kind>-numbering: all` (`listing-numbering`,
   /// `figure-numbering`...): a block without a title takes a number too,
-  /// without a caption, so the numbers of those with one count it (as
-  /// Typst numbers every figure, captioned or not), unless it has the
+  /// without a caption, so the numbers of those with one count it (every
+  /// figure numbered, captioned or not), unless it has the
   /// `unnumbered` option.
   void _countUntitled({required bool figure}) {
     final attrName = figure ? 'figure-caption' : captionAttributeName(context);

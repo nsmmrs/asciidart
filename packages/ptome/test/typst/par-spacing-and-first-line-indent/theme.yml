@@ -1,4 +1,0 @@
-extends: ./../base-theme.yml
-prose:
-  text-indent-inner: 12
-  margin-bottom: 12

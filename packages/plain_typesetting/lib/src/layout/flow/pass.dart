@@ -597,7 +597,8 @@ final class _Pass {
             !continued &&
             available.isFinite) {
       // (Its margin below is outside it, and the space its last child
-      // leaves below, as Typst drops the spacing at a container's end.)
+      // leaves below, as CSS's margins collapse through a container's
+      // end.)
       final whole =
           _measure(BlockBox(box.children, style: style._lowered(0)), width) -
           style.margin.bottom -

@@ -2243,7 +2243,6 @@ class Html5Converter extends BuiltInConverter {
       index,
       level: node.level!,
       label: (section) => indexUseLabel(section, document),
-      codePoint: indexInCodePointOrder(document),
       headings: indexHasCategoryHeadings(document),
     );
   }

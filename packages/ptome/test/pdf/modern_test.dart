@@ -135,8 +135,7 @@ void main() {
       ).first;
       final optimal = _pages(_pdf(_paragraph)).first;
       // Each line as full as it goes, hyphenated where a word no longer
-      // fits (here the optimal breaks too; tool/typst_parity.dart's
-      // simple-breaking cases check it line by line against Typst's).
+      // fits (here the optimal breaks too).
       expect(greedy, hasLength(4));
       expect(_words(greedy), _words(optimal));
     });
@@ -1304,7 +1303,7 @@ base:
     );
   }, skip: _tools ? false : 'needs poppler');
 
-  test("base_leading: Typst's lines, cap height plus leading apart", () {
+  test('base_leading: lines from cap height, leading apart', () {
     List<double> tops(String pdf) => [
       for (final m in RegExp(r'<line xMin="[\d.]+" yMin="([\d.]+)"').allMatches(
         Process.runSync('pdftotext', ['-bbox-layout', pdf, '-']).stdout
@@ -1353,7 +1352,7 @@ base:
     expect(x1 - x2, closeTo(0.17633 * (y2 - y1), 0.5));
   }, skip: _tools ? false : 'needs poppler');
 
-  group("Typst's text keys", () {
+  group('text keys', () {
     List<(double, double, double, String)> words(String pdf) => [
       for (final m
           in RegExp(
@@ -1944,7 +1943,7 @@ base:
     });
   }, skip: _tools && _has('qpdf') ? false : 'needs poppler and qpdf');
 
-  group('Typst parity keys', () {
+  group('layout keys', () {
     /// Each word of [pdf] with its box: (page, left, top, right, bottom).
     List<(String, int, double, double, double, double)> words(String pdf) {
       final xml =
@@ -2111,16 +2110,22 @@ base:
       expect(_pages(pdf).first.join(' '), contains('When HTML was.'));
     });
 
-    test('a URL breaks where Typst breaks a link', () {
+    test('a URL breaks as The Chicago Manual of Style has it', () {
       final pdf = _pdf(
         '${'word ' * 12}https://example.org/2016/01/18/a-long-path-here.html\n',
       );
       final lines = _pages(pdf).first;
-      // Broken inside the address, after a slash before a digit (where
-      // the gem's breaks after every slash would too, but not before the
-      // hyphen's word: 'a-long' stays whole).
-      expect(lines.first, endsWith('/01/'));
-      expect(lines[1], startsWith('18/a-long'));
+      // Broken inside the address before a slash (the slash starts the
+      // next line, as the rule has it, so the break can't be taken for
+      // the URL's end), with no hyphen added.
+      expect(lines.first, isNot(endsWith('/')));
+      expect(lines.first, contains('example.org'));
+      expect(lines[1], startsWith('/'));
+      expect(lines.join(), isNot(contains('-\n')));
+      expect(
+        lines.take(2).join().replaceAll(RegExp(r'\s'), ''),
+        contains('example.org/2016/01/18/a-long-path-here.html'),
+      );
     });
 
     test('a run-in term: its gap breaks, an index term adds no space', () {
@@ -2282,28 +2287,6 @@ base:
       expect(word(pdf, 'first').$3 - word(pdf, 'second').$3, closeTo(20, 0.5));
     });
 
-    test('index_sort: code-point, one list keyed by the joined terms', () {
-      const source =
-          '= Book\n:doctype: book\n\n== Chapter\n\n'
-          '(((HTTP, cookies)))\n(((HTTP methods)))\n(((Alpha)))\n'
-          'Text.\n\n[index]\n== Index\n';
-      List<String> entries(String pdf) => [
-        for (final line in _pages(pdf).lastWhere((p) => p.contains('Index')))
-          if (line != 'Index') line.split(RegExp(r',? \d')).first,
-      ];
-      final flat = _pdf(
-        source,
-        theme: 'index_sort: code-point\nindex_category_headings: false\n',
-      );
-      // `HTTP methods` before `HTTP, cookies`: a space before a comma.
-      expect(entries(flat), ['Alpha', 'HTTP methods', 'HTTP', 'cookies']);
-      final grouped = _pdf(source, theme: 'index_category_headings: false\n');
-      expect(
-        entries(grouped).indexOf('HTTP'),
-        lessThan(entries(grouped).indexOf('HTTP methods')),
-      );
-    });
-
     test('in print, index-pagenum-sequence-style: page lists each page', () {
       const body =
           '(((Widget)))\nOne.\n\n<<<\n\n(((Widget)))\nTwo.\n\n'
@@ -2348,7 +2331,7 @@ base:
       final logger = MemoryLogger();
       _pdf(
         ':nofooter:\n\nText.\n',
-        theme: 'base_line_breaking: optimum\nindex_sort: letter\n',
+        theme: 'base_line_breaking: optimum\nimage_placement: here\n',
         logger: logger,
       );
       final messages = logger.messages.map((m) => m.message.text).toList();
@@ -2360,36 +2343,7 @@ base:
         ),
       );
       // A value in the set is not.
-      expect(messages.where((m) => m.contains('index_sort')), isEmpty);
-    });
-
-    test('the example Typst-like theme converts a book without warnings', () {
-      final input = File('${_dir.path}/typst-like.adoc')
-        ..writeAsStringSync(
-          '= Book\n:doctype: book\n\n== One\n\n'
-          'Text.footnote:[A note.] ((Term))\n\n. First\n. Second\n\n'
-          '[index]\n== Index\n',
-        );
-      final logger = MemoryLogger();
-      convertFile(
-        input.path,
-        AsciidoctorOptions(
-          safe: SafeMode.unsafe,
-          backend: 'pdf',
-          toFile: '${input.path}.pdf',
-          attributes: {
-            'pdf-theme':
-                '${Directory.current.path}/example/themes/'
-                'book-typst-like-theme.yml',
-          },
-          logger: logger,
-        ),
-      );
-      expect(
-        logger.messages.where((m) => m.severity.index >= Severity.warn.index),
-        isEmpty,
-      );
-      expect(_pages('${input.path}.pdf').expand((p) => p), contains('Index'));
+      expect(messages.where((m) => m.contains('image_placement')), isEmpty);
     });
 
     test("the book's ISBN, editors and copyright in the XMP metadata", () {

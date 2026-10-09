@@ -352,12 +352,16 @@ final class InlineImage extends InlineContent
   double height
   double width
 final class KnuthPlassLineBreaker extends ItemLineBreaker
-  KnuthPlassLineBreaker({double tolerance = 2, double linePenalty = 10, double flaggedDemerits = 100, double fitnessDemerits = 100})
+  KnuthPlassLineBreaker({double tolerance = 1.26, double linePenalty = 10, double flaggedDemerits = 10000, double fitnessDemerits = 10000, double finalHyphenDemerits = 5000, double emergencyStretch = 0, double? raggedStretch})
   List<int> breakItems(List<LineItem> items, double Function(int) widths)
+  double demeritsOf(List<LineItem> items, double Function(int) widths, List<int> breaks)
+  double emergencyStretch
+  double finalHyphenDemerits
   double fitnessDemerits
   double flaggedDemerits
   double linePenalty
   double tolerance
+  double? raggedStretch
 final class LayoutResult
   List<P> render<P extends LayoutPage>(LayoutDocument<P> document, {String Function(String)? destinationName})
   List<String> unsetSideNotes
@@ -583,14 +587,6 @@ final class TextStyle
   double widthOf(List<ShapedGlyph> glyphs)
   double wordSpacing
   int hashCode
-final class TypstLineBreaker extends ItemLineBreaker
-  List<int> breakItems(List<LineItem> items, double Function(int) widths)
-  TypstLineBreaker({bool justify = true, double fontSize = 10, double hyphenationCost = 135, double runtCost = 100})
-  bool justify
-  double costOf(List<LineItem> items, double Function(int) widths, List<int> breaks)
-  double fontSize
-  double hyphenationCost
-  double runtCost
 final class UriTarget extends LinkTarget
   String uri
   UriTarget(String uri)

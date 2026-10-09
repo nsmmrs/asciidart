@@ -34,7 +34,7 @@ String _html(String source, {Map<String, String> attributes = const {}}) =>
     );
 
 void main() {
-  test('index-sort: code-point and index-category-headings!', () {
+  test('the index by letter, and index-category-headings!', () {
     const source =
         '= Book\n:doctype: book\n\n== One\n\n((htmx)) ((HTTP)) ((Alpine))\n\n'
         '[index]\n== Index\n';
@@ -48,13 +48,10 @@ void main() {
     final letter = _html(source);
     expect(terms(letter), ['Alpine', 'htmx', 'HTTP']);
     expect(letter, contains('<h3>A</h3>'));
-    // Code point order, one list.
-    final codePoint = _html(
-      source,
-      attributes: {'index-sort': 'code-point', 'index-category-headings!': ''},
-    );
-    expect(terms(codePoint), ['Alpine', 'HTTP', 'htmx']);
-    expect(codePoint, isNot(contains('<h3>')));
+    // One list, no letters above the groups.
+    final flat = _html(source, attributes: {'index-category-headings!': ''});
+    expect(terms(flat), ['Alpine', 'htmx', 'HTTP']);
+    expect(flat, isNot(contains('<h3>')));
   });
 
   test('a term indexed in a section title is in the index', () {

@@ -1,3 +1,0 @@
-extends: ./../base-theme.yml
-base:
-  text-align: justify

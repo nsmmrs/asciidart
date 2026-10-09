@@ -111,16 +111,19 @@ Asciidoctor project.
   - `media=prepress` books (recto starts and inner and outer margins) and
     man pages.
 
-  By default the layout is Ptome's own: justified paragraphs are
-  broken as Typst's optimizer breaks them (its costs: even spacing, few
-  hyphens, no lone word on the last line), other text one line at a
-  time, never inside a word at a style change, and
+  By default the layout is Ptome's own: justified and left-aligned
+  paragraphs are broken by Knuth and Plass's total fit with TeX's costs
+  (even spacing, few hyphens, an emergency-stretch pass; ragged lines
+  with even ends), other text one line at a time, never inside a word at
+  a style change, and
   hyphenated in the document's language (hyph-utf8's patterns, 72
   languages; `:hyphens!:` turns it off; code spans stay whole; a word
   across formatting hyphenated whole), a compound's hyphen repeated at
   the next line's start in Portuguese, Spanish and the other languages
-  whose typography has it so, URLs broken between their parts as Typst
-  breaks them (`benchmark/TYPST.md`), and a
+  whose orthography has it so, URLs broken where The Chicago Manual of
+  Style breaks them (after `//` and colons, before slashes, periods and
+  the other separators, around `=` and `&`), punctuation hung into the
+  margin by microtype's protrusion amounts (`base_overhang`), and a
   paragraph leaves at least two lines on either side of a page break
   (`prose_orphans`, `prose_widows`). Text is kerned by the font's GPOS
   pairs and set with its standard ligatures (`base_font_ligatures: none`
@@ -292,7 +295,7 @@ Asciidoctor project.
   jobs=N`, `1` for none), with the same bytes at any number of workers;
   the index and page-numbered footnotes lay out again only from the
   pages they change; line breaks are kept per paragraph. The Hypermedia
-  Systems PDF takes 2.1 s, from 3.8 s (Typst 0.15.1: 3.7 s); `-j` batches
+  Systems PDF takes 2.1 s, from 3.8 s; `-j` batches
   run on the same pool, each worker taking the next file as it finishes
   one, with every backend the executable has (PDF and EPUB included).
 - The same core builds as the npm package `ptome` for Node.js and

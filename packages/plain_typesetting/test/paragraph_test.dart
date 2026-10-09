@@ -116,7 +116,7 @@ void main() {
     for (final breaker in [
       const FirstFitLineBreaker(),
       const KnuthPlassLineBreaker(),
-      const TypstLineBreaker(),
+      const KnuthPlassLineBreaker(raggedStretch: 20),
     ]) {
       List<String> lines(String text, HyphenRepetition repetition) => [
         for (final line in breaker.breakLines(

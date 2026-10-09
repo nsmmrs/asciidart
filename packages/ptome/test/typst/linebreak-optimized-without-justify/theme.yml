@@ -1,9 +1,0 @@
-extends: ./../base-theme.yml
-page:
-  size: [207pt, 2000pt]
-  margin: 15
-base:
-  font-size: 11
-  line-breaking: optimal
-prose:
-  margin-bottom: 13.2

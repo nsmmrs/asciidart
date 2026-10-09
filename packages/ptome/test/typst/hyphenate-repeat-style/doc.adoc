@@ -1,3 +1,0 @@
-:lang: es
-
-Hello-[.red]#world#

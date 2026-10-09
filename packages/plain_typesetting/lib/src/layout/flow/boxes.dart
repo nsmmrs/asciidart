@@ -175,18 +175,18 @@ final class BoxStyle {
 
   /// Whether each piece of a block split across regions has the block's
   /// padding and border at its top and bottom (CSS's `box-decoration-break:
-  /// clone`, as Typst's breakable blocks have their inset), rather than
+  /// clone`), rather than
   /// the first piece alone at its top and the last at its bottom.
   final bool cloneEdges;
 
   /// The space between a floating box set at the top or bottom of a
   /// region and the content (below it at the top, above it at the
-  /// bottom: Typst's `clearance`).
+  /// bottom: LaTeX's `\textfloatsep`).
   final double floatClearance;
 
   /// Whether the floating box, in columns, leaves them for the top or
-  /// bottom of the region across all of them (Typst's `scope: "parent"`):
-  /// a map across a two-column page.
+  /// bottom of the region across all of them (LaTeX's `figure*`, CSS's
+  /// `column-span: all`): a map across a two-column page.
   final bool floatSpan;
 
   /// The side the block floats to, [sideWidth] wide, the blocks after it

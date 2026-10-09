@@ -1,5 +1,0 @@
-Two consecutive +
-{empty} +
-breaks and three +
-{empty} +
-more.

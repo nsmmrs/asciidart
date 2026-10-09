@@ -1,6 +1,0 @@
-extends: ./../base-theme.yml
-page:
-  size: [60pt, 2000pt]
-# (#h(6pt): the first line's indent.)
-prose:
-  text-indent: 6

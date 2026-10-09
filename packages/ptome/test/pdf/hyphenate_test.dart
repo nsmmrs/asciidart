@@ -19,8 +19,8 @@ void main() {
     expect(marks('hyphenation'), 'hy-phen-ation');
   });
 
-  test('a word across formatting tags, whole (Typst)', () {
-    // Typst's case hyphenate-between-shape-runs: Tree-beard.
+  test('a word across formatting tags, whole', () {
+    // A word whose letters are in two formats is still one word: Tree-beard.
     expect(
       marks("It's a <em>Tree</em>beard.", acrossTags: true),
       "It's a <em>Tree-</em>beard.",

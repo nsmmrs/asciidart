@@ -1,6 +1,0 @@
-extends: ./../base-theme.yml
-page:
-  size: [45mm, 2000pt]
-base:
-  text-align: justify
-  font-size: 12

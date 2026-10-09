@@ -1,6 +1,6 @@
 # ADR-0013: Typst's Layout as Settings, Not a Mode
 
-**Status:** Final. Decided on 2026-10-07.
+**Status:** Superseded by [ADR-0021](0021-typography-from-research.md) on 2026-10-09 (typography from research, not from another engine). Decided on 2026-10-07.
 
 ## Context
 

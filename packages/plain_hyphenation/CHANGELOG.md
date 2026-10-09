@@ -15,6 +15,6 @@
   yet cached); the data is 22% smaller (631 KiB of base64, from 808 KiB).
   A frozen copy of the old algorithm is the oracle of a randomized
   equivalence test over all 72 languages.
-- Tested against hypher, Hyphenopoly and pub.dev's `hyphenation` package
+- Tested against Hyphenopoly and pub.dev's `hyphenation` package
   (given the same patterns: every word the same) on the UDHR's words in
   19 languages.

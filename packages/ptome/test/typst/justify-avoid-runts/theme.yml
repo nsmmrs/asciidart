@@ -1,5 +1,0 @@
-extends: ./../base-theme.yml
-page:
-  size: [124pt, 2000pt]
-base:
-  text-align: justify

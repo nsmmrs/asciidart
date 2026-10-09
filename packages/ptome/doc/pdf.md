@@ -39,9 +39,8 @@ headings in the sans, code in a tint and tables with rows only.
 
 Every setting has a default. Each one is a key of the theme (as written
 in the YAML, `prose_orphans` is `prose: { orphans: 2 }`) or an attribute
-of the document. `doc/typst-look.md` lists the keys that set a book as
-Typst sets it, with the values that do. A key that takes one of a set of values
-(`image_placement`, `index_sort`...) reports a value it doesn't know, once,
+of the document. A key that takes one of a set of values
+(`image_placement`, `base_line_breaking`...) reports a value it doesn't know, once,
 and is read as unset.
 
 Text the engine generates (a heading's label, a running head, a contents
@@ -58,11 +57,11 @@ its title.
 
 | Key | Default | What it does |
 | --- | --- | --- |
-| `base_line_breaking` | `auto` | How lines break: `auto` breaks justified text where the lines' costs are least (even spacing, few hyphens, no lone word on the last line: Knuth and Plass's method, with Typst's costs) and other text one line at a time; `optimal` optimizes any text (ragged lines balanced); `greedy` fills one line at a time. A style change inside a word is never a break. |
-| `base_leading` | none | Lines measured from cap height to baseline: each line's box runs from its tallest cap height to its baseline, with this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are the visible space between their text (Typst's model; CSS's `text-box-trim`). In place of `base_line_height`; a category's own (`title_page_title_leading`, `code_leading`...) for its text. |
-| `base_overhang` | `0` | How far punctuation and dashes at the end of a justified line hang into the margin, so the edge looks straight: the line stretches into a part of the character's width (0.55 of a hyphen, 0.8 of a period or comma, 0.3 of a colon, 0.2 of a dash), times this amount. `1` (or `true`) hangs them that far, as Typst's `overhang` and microtype's protrusion; `0.5` half as far; `0` (or `false`) not at all. |
-| `base_typographic_scripts` | `false` | Superscripts and subscripts (footnote references) in the font's own glyphs for them (its `sups` and `subs` features) at the text's size, when it has them for every character, as Typst's `super` and `sub`; else smaller and raised as usual. |
-| `base_justify_width` | room | `widest`: justified lines are set to the width of the paragraph's widest line (an overfull line shrunk to the room), as a paragraph in a block sized to its content is (CSS's `width: fit-content`, Typst's content-sized blocks); in a quote or a section role: `quote_base_justify_width`, `section_role_<role>_base_justify_width`. |
+| `base_line_breaking` | `auto` | How lines break: `auto` breaks justified and left-aligned text where the lines' demerits are least (Knuth and Plass's total fit with TeX's costs: even spacing, few hyphens, never two hyphens in a row if it can help it; ragged lines with even ends, as plain TeX's `\raggedright`) and centered or right-aligned text one line at a time; `optimal` optimizes any text; `greedy` fills one line at a time. A style change inside a word is never a break. |
+| `base_leading` | none | Lines measured from cap height to baseline: each line's box runs from its tallest cap height to its baseline, with this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are the visible space between their text (CSS's `text-box-trim` and `text-box-edge: cap alphabetic`). In place of `base_line_height`; a category's own (`title_page_title_leading`, `code_leading`...) for its text. |
+| `base_overhang` | `0` | How far a justified line's last character hangs into the margin, so the edge looks straight (margin kerning, Hàn Thế Thành's character protrusion): the line stretches into a part of the character's width, as LaTeX's microtype package's default protrusion has it (0.7 of a period; 0.5 of a comma, colon or hyphen; 0.3 of a semicolon; 0.2 of an en dash, 0.15 of an em dash; a little of some letters), times this amount. `1` (or `true`) hangs them that far, `0.5` half as far, `0` (or `false`) not at all. |
+| `base_typographic_scripts` | `false` | Superscripts and subscripts (footnote references) in the font's own glyphs for them (its `sups` and `subs` features) at the text's size, when it has them for every character (true superior and inferior figures); else smaller and raised as usual. |
+| `base_justify_width` | room | `widest`: justified lines are set to the width of the paragraph's widest line (an overfull line shrunk to the room), as a paragraph in a block sized to its content is (CSS's `width: fit-content`); in a quote or a section role: `quote_base_justify_width`, `section_role_<role>_base_justify_width`. |
 | `base_text_align_last` | `left` | Where a justified paragraph's last line goes (`center`, `right`), as CSS's `text-align-last` (`table_base_text_align_last: center`: table cells justified, their last lines centered). |
 | `prose_orphans` | `2` | The fewest lines of a paragraph left at the bottom of a page. |
 | `prose_widows` | `2` | The fewest lines of a paragraph carried to the top of the next page. |
@@ -281,7 +280,7 @@ TeX; `\left` and `\right` grow them.
 | Key | Default | What it does |
 | --- | --- | --- |
 | `image_placement` | `here` | An image (with its caption) floats, as figures do in books: when it doesn't fit the rest of the page, to the top of the next page, the text after it filling the room; when it fits, to the top (`top`) or the bottom (`bottom`) of its page, or the nearer of the two (`auto`), the text flowing around it, or it stays (`next`). Never past a heading or a page break; an image in a list, table, sidebar or other block stays there. An image's own `placement` attribute chooses for it (`image::x.png[placement=bottom]`; `none` keeps it in the flow). |
-| `image_scope`, `image_role_<role>_scope` | `column` | `page`: in columns, an image (with its caption) spans them, floating across the top or the bottom of its page (the nearer, or as its placement says): a map in a two-column book. An image's own `scope` attribute chooses for it (`page` or `parent`, Typst's word). |
+| `image_scope`, `image_role_<role>_scope` | `column` | `page`: in columns, an image (with its caption) spans them, floating across the top or the bottom of its page (the nearer, or as its placement says): a map in a two-column book. An image's own `scope` attribute chooses for it (`page` or `parent`). |
 | `image_text_font_family`, `_font_size`, `_font_color`, `_leading` | the code font's | The font of a text file shown as an image (below). |
 
 An image whose target is a text file (`image::diagram.txt[]`, ASCII art)
@@ -311,10 +310,6 @@ text. In HTML, the same cells can be styled with CSS:
 | `index_pagenum_text_align` | `left` | `right` sets each entry's page numbers in a column at the right, in tabular figures, as books do; `left` follows the term with them. |
 | `index_category_headings` | `true` | `false` leaves out the letter heading above each group of terms. |
 | `index_font_family`, `_font_size`, `_font_color`, `_font_style` | the base font | The index's font. |
-| `index_sort` | `letter` | `letter`: the terms under their first letter's heading (`index_category_headings`), each term's subterms under it. `code-point`: every term in one list (as Typst's in-dexter index): each entry is keyed by its term and its parents' terms joined with commas, and the keys are sorted by code point (`HTTP methods` before `HTTP, cookies`). A subterm's entry shows the terms after the first, under a line with the first when the entry before it starts with another term. |
-| `index_item_spacing` | `0` | The space after each entry (`code-point` index). |
-| `index_subterm_indent` | `0` | How far a subterm's entry is indented (`code-point` index; a length, such as `1em`). |
-| `index_hanging_indent` | twice `description_list_description_indent` | How far an entry's wrapped lines are indented (`code-point` index). |
 
 Each page is listed once (`hypermedia, 13, 20`); the
 `index-pagenum-sequence-style` attribute chooses otherwise as in
@@ -339,8 +334,8 @@ pages `Introduction · 15` (the numeral part left out, where a line that
 refers to a missing `{attribute}` is dropped). `{{top-title}}` and
 `{{top-numeral}}` are the last part or chapter that started before the
 page (on a page where a chapter starts, the one before it), else the
-document's title: a head that names what the page continues (as Typst's
-headers do). With `title_style: basic`,
+document's title: a head that names what the page continues (TeX's
+`\topmark`). With `title_style: basic`,
 the titles come without their numbers.
 
 A part or chapter with the `noheader` or `nofooter` option (as

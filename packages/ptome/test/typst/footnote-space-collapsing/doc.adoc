@@ -1,2 +1,0 @@
-Afootnote:[A] +
-A footnote:[A]

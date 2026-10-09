@@ -16,7 +16,7 @@ const String _softHyphen = '­';
 /// in code spans.
 ///
 /// With [acrossTags], a word goes on across the tags of formatted text
-/// (`__Tree__beard` is one word, hyphenated whole, as Typst does);
+/// (`__Tree__beard` is one word, hyphenated whole);
 /// otherwise each text between tags is hyphenated alone, as
 /// asciidoctor-pdf does.
 String hyphenateMarkup(
@@ -26,7 +26,8 @@ String hyphenateMarkup(
   bool lettersOnly = false,
   bool acrossTags = false,
 }) {
-  // With [lettersOnly] (Typst's rule): a word as Unicode word boundaries
+  // With [lettersOnly] (TeX's rule: only words of letters are hyphenated,
+  // The TeXbook, appendix H): a word as Unicode word boundaries
   // (UAX #29) have it, letters, digits and underscores joined by an
   // apostrophe or a period between them, hyphenated only when it is all
   // letters (not `_hyperscript`, `html5` or `don’t`).
@@ -169,7 +170,7 @@ final RegExp _formattingTagRx = RegExp(
 /// whether they are all letters (and marks). A word is a run of word
 /// characters (`[\p{L}\p{M}\p{N}\p{Pc}]+`); with [lettersOnly], runs
 /// joined by one of `' ’ . : ·` between them make one word (Unicode word
-/// boundaries, UAX #29, as Typst has them).
+/// boundaries, UAX #29).
 ///
 /// A hand scanner (the word regexes cost over 100 ns a character in the
 /// VM's regex interpreter): ASCII by its code, other characters by a

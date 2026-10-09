@@ -125,8 +125,8 @@ final class PageInfo {
   final Map<String, String> _topMarks;
 
   /// The value of the running mark [name] at the top of this page: the last
-  /// one set before it (what a header set at the page's top sees, as
-  /// Typst's headers do).
+  /// one set before it (what a header set at the page's top sees: TeX's
+  /// `\topmark`).
   String? topMark(String name) => _topMarks[name];
 }
 

@@ -1,4 +1,4 @@
-// The flow layout against what plain_typesetting 17001e86 made of the same
+// The flow layout against what plain_typesetting made of the same
 // random documents (test/fixtures/flow_digests.txt): its caches and
 // shortcuts may not change a page, a coordinate or an anchor, in a first
 // layout or in one done again by the same FlowLayout.

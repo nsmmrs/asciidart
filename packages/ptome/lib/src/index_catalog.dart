@@ -199,21 +199,16 @@ List<IndexEntry> _sorted(Iterable<IndexEntry> entries) =>
 /// section it is used in (labeled by [label]) and its see and see-also
 /// references. With [epub], marked up with the EPUB Indexes vocabulary
 /// (`epub:type="index-entry"`...), as an EPUB's reading systems read it.
-/// With [codePoint], the terms in code point order (case first: `HTTP`
-/// before `htmx`) rather than the index's; without [headings], one list,
-/// no letter above each group (`index-sort`, `index-category-headings`).
+/// Without [headings], one list, no letter above each group
+/// (`index-category-headings`).
 String indexHtml(
   IndexCatalog catalog, {
   required int level,
   required String Function(Section? section) label,
   String Function(IndexUse use)? href,
   bool epub = false,
-  bool codePoint = false,
   bool headings = true,
 }) {
-  List<IndexEntry> ordered(List<IndexEntry> entries) => codePoint
-      ? (entries.toList()..sort((a, b) => a.text.compareTo(b.text)))
-      : entries;
   final hrefOf = href ?? (use) => '#${use.anchor}';
   String type(String value) => epub ? ' epub:type="$value"' : '';
   final ids = <IndexEntry, String>{};
@@ -244,7 +239,7 @@ String indexHtml(
   final out = StringBuffer('<div class="index"${type('index')}>\n');
   void write(List<IndexEntry> entries) {
     out.write('<ul class="index-terms"${type('index-entry-list')}>\n');
-    for (final entry in ordered(entries)) {
+    for (final entry in entries) {
       out.write(
         '<li id="${ids[entry]}"${type('index-entry')}>'
         '<span class="index-term"${type('index-term')}>'
@@ -296,11 +291,6 @@ String indexHtml(
   out.write('</div>');
   return out.toString();
 }
-
-/// Whether [document]'s index is in code point order (`index-sort:
-/// code-point`).
-bool indexInCodePointOrder(Document document) =>
-    document.attr('index-sort') == 'code-point';
 
 /// Whether [document]'s index has a heading per letter (unless
 /// `index-category-headings!`).

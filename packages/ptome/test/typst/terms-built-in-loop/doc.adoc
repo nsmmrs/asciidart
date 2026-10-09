@@ -1,4 +1,0 @@
-Lorem:: Latin stuff.
-ipsum:: Latin stuff.
-dolor:: Latin stuff.
-sit:: Latin stuff.

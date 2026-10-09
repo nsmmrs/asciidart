@@ -36,7 +36,7 @@ extension _Floats on _Pass {
         added = true;
         // (Auto: at the top if its middle, placed in the flow, would be
         // in the region's upper half, the floats placed already taking
-        // their room, as Typst's.)
+        // their room; at the bottom otherwise.)
         final atTop = switch (box.style.float) {
           FloatPlacement.top => true,
           FloatPlacement.bottom => false,
@@ -59,7 +59,8 @@ extension _Floats on _Pass {
       place();
       // A box the content no longer reaches in the room left (the text
       // before it now goes on in the next region): it waits for the next
-      // region, as Typst places a float only where its text is.
+      // region: a float never comes before the text it belongs to (as
+      // LaTeX's floats, which never precede their reference point).
       final unreached = [
         for (final box in pinned.keys)
           if (!_floatsReached.contains(box)) box,

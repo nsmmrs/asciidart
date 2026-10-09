@@ -13,22 +13,26 @@
 - Renamed from plain_pdf's names: `PdfRect` to `Rect`, `PdfMatrix` to
   `Matrix`, `PdfColor` to `Color`, `PdfTextStyle` to `TextStyle`.
 - `OpenTypeShaper` is a `Font` on its own, compared with HarfBuzz.
-- `TypstLineBreaker` breaks paragraphs whose line widths vary (an indent,
-  a drop's lines, a runaround) as well as they can be: it keeps the best
-  way to a break for each number of lines until the widths settle, where
-  it kept one (exact only for one width after the first line).
-  `TypstLineBreaker.costOf` gives the cost of any breaks, for checking.
+- `KnuthPlassLineBreaker` is the optimal breaker, with TeX's costs by
+  default (tolerance: a badness of 200; 10000 demerits for two hyphenated
+  lines in a row or adjacent lines far apart in fitness; 5000 for a
+  hyphenated next-to-last line), an emergency-stretch pass
+  (`emergencyStretch`), and ragged lines broken as TeX's `\rightskip`
+  sets them (`raggedStretch`). Fills are counted apart, so lines after a
+  forced break inside a paragraph stretch as they should.
+  `demeritsOf` gives the demerits of any breaks, for checking. It
+  replaces the breaker modeled on another engine's (ADR-0021).
 - Side notes still waiting when the text ends go on pages of their own
   (margin only) instead of being dropped; `LayoutResult.unsetSideNotes`
   names any no page's side column has room for.
 - A compound's hyphen repeated at the next line's start where the
   language's typography has it so (`Paragraph.hyphenRepetition`,
-  `HyphenRepetition.forLanguage`, as Typst does): a `PenaltyItem`'s
+  `HyphenRepetition.forLanguage`): a `PenaltyItem`'s
   `carry` is the width the next line starts with, which every breaker
   counts.
 - Column sets can balance their last region (`ColumnsBox(balance:)`), and
-  a floating box in columns can span them (`BoxStyle.floatSpan`, Typst's
-  `scope: "parent"`): across the top or bottom of the region.
+  a floating box in columns can span them (`BoxStyle.floatSpan`, as
+  LaTeX's `figure*`): across the top or bottom of the region.
 - Blocks floating to a side (`BoxStyle.side`, `sideWidth`, `sideGap`):
   the blocks after one are set beside it, each whole or, where it doesn't
   fit beside it, below it; what doesn't fit in its region goes on at the

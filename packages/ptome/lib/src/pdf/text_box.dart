@@ -101,28 +101,28 @@ final class TextLayout {
   final double dropIndent;
 
   /// Where a justified paragraph's lines that aren't justified (its last
-  /// line) go: `center` or `right`, as CSS's `text-align-last` (Typst's
-  /// alignment of a justified paragraph); left when null.
+  /// line) go: `center` or `right`, as CSS's `text-align-last`; left when
+  /// null.
   final String? alignLast;
 
   /// Whether justified lines are set to the width of the paragraph's
   /// widest line (overfull lines shrunk to the room) rather than to the
-  /// room, as Typst sets a paragraph in a block sized to its content (its
-  /// pages' `show par: it => block(it)` rule).
+  /// room (a paragraph in a block sized to its content).
   final bool justifyWidest;
 
-  /// Typst's lines: each line's box from its tallest cap height to its
+  /// Lines set from their cap heights (CSS's `text-box-edge: cap
+  /// alphabetic`): each line's box from its tallest cap height to its
   /// baseline ([leading] is the space between boxes), the first line's
   /// cap height at the top and the last ending at its baseline.
   final bool capLines;
 
   /// How far punctuation and dashes at a line's end hang into the margin:
   /// a factor of the fraction of each character's width the line may
-  /// stretch into (0, none; 1, Typst's `overhang` amounts).
+  /// stretch into (0, none; 1, microtype's default protrusion).
   final double overhang;
 
-  /// The text sheared as one block about its last baseline (Typst's skew
-  /// of a heading): each glyph slanted by this ratio (the tangent of the
+  /// The text sheared as one block about its last baseline (a heading's
+  /// skew): each glyph slanted by this ratio (the tangent of the
   /// angle, positive leaning right), each line shifted right by it times
   /// its height above the last line's baseline.
   final double? skew;
@@ -219,8 +219,8 @@ final class TextContext {
 
   /// Whether the modern engine sets superscripts and subscripts in the
   /// font's own glyphs for them (its `sups` and `subs` features) at the
-  /// text's size, when it has them for every character (as Typst's
-  /// `super` and `sub` do), rather than smaller and shifted.
+  /// text's size, when it has them for every character, rather than
+  /// smaller and shifted (true superior and inferior figures).
   final bool typographicScripts;
 
   /// The text of the label of a fragment's key ([Fragment.label]), as the
@@ -383,8 +383,8 @@ final class _Line {
   bool wrapped = false;
 }
 
-/// Text laid out in lines (Typst's line breaking, or for code one line at
-/// a time with a hanging indent), as plain_pdf custom content.
+/// Text laid out in lines (Knuth and Plass's line breaking, or for code
+/// one line at a time with a hanging indent), as plain_pdf custom content.
 final class TextBox implements CustomContent {
   /// The text of [fragments] (from the markup) starting from [state],
   /// laid out by [layout].
@@ -1493,7 +1493,8 @@ bool _isSpaces(String text) {
 }
 
 /// The wrap of [items] for [context]'s engine: the modern engine's (whole
-/// words, Typst's breaking), else Prawn's (also for code, whose wrapped
+/// words, Knuth and Plass's breaking), else Prawn's (also for code, whose
+/// wrapped
 /// lines go on with a hanging indent).
 _Wrap _wrapOf(
   List<_Item> items,
@@ -1532,11 +1533,12 @@ _Wrap _wrapOf(
 
 /// How the modern engine breaks a paragraph's lines (`base_line_breaking`).
 enum LineBreaking {
-  /// Optimally when justified, else one line at a time (as Typst does).
+  /// Optimally for justified and left-aligned text, one line at a time
+  /// for text centered or aligned right.
   auto,
 
-  /// Where the lines' costs are least (Typst's optimizer), however the
-  /// text is aligned.
+  /// Where the lines' demerits are least (Knuth and Plass's total fit,
+  /// with TeX's costs), however the text is aligned.
   optimal,
 
   /// One line at a time, each as full as it goes.
@@ -1933,8 +1935,7 @@ base class _Wrap {
       final image = format.image;
       if (_layout.capLines) {
         // (A line break or spaces count only on a line without other
-        // text: an empty line is as tall as its font's cap height, as
-        // Typst's.)
+        // text: an empty line is as tall as its font's cap height.)
         if (!isMarker && image == null && text.trim().isEmpty) {
           blankTop = math.max(blankTop, font.capHeightAt(format.size));
           continue;
@@ -2013,19 +2014,28 @@ base class _Wrap {
   /// ([TextLayout.justifyWidest]).
   double? _justifyTo;
 
-  /// How far the line's last character may hang past its end (Typst's
-  /// amounts: of the character's width, 0.55 for a hyphen, 0.2 for an en
-  /// or em dash, 0.8 for a period or comma, 0.3 for a colon or semicolon).
+  /// How far the line's last character may hang past its end, as a
+  /// fraction of its width: margin kerning (character protrusion, Hàn Thế
+  /// Thành, "Micro-typographic extensions to the TeX typesetting system",
+  /// 2000), with the right-hand amounts of LaTeX's microtype package's
+  /// default set.
   double _overhang() {
     for (final f in _fragments.reversed) {
       final text = f.text.trimRight();
       if (text.isEmpty || text == '\n') continue;
       final char = String.fromCharCode(text.runes.last);
       final factor = switch (char) {
-        '\u2013' || '\u2014' => 0.2,
-        '-' || '\u00ad' => 0.55,
-        '.' || ',' => 0.8,
-        ':' || ';' => 0.3,
+        '.' => 0.7,
+        ',' || ':' || '-' || '\u00ad' || '\u2010' => 0.5,
+        '\u2019' || "'" => 0.4,
+        ';' || '\u201d' || '"' => 0.3,
+        '~' || '+' => 0.25,
+        '\u2013' || '/' || ')' || '*' => 0.2,
+        '\u2014' => 0.15,
+        '!' || '?' => 0.1,
+        'A' || 'F' || 'K' || 'L' || 'T' || 'V' || 'W' || 'X' || 'Y' => 0.05,
+        'k' || 'r' || 'v' || 'w' || 'x' || 'y' => 0.05,
+        '1' || '4' || '7' || '@' || '%' => 0.05,
         _ => 0.0,
       };
       if (factor == 0) return 0;
@@ -2049,8 +2059,8 @@ base class _Wrap {
     var wordSpacing = justify
         ? (measure - indent + hang - _accumulatedWidth) / _spaceCount
         : 0.0;
-    // A last line justified for being too wide only shrinks (as Typst's:
-    // with what hangs past the room it may fit as it is).
+    // A last line justified for being too wide only shrinks (with what
+    // hangs past the room it may fit as it is).
     if (justify &&
         !_layout.forceJustify &&
         _paragraphFinished &&
@@ -2281,9 +2291,9 @@ String destinationName(String anchor) {
   return '0x${hex.join()}';
 }
 
-/// The modern engine's wrap: the breaks Typst's optimizer would choose
-/// (plain_pdf's TypstLineBreaker: the lines' costs, as Knuth and Plass's total
-/// fit), over the same items, and the lines then set as Prawn's wrap sets
+/// The modern engine's wrap: the breaks Knuth and Plass's total fit
+/// chooses (with TeX's costs), over the same items, and the lines then set
+/// as Prawn's wrap sets
 /// them (justified by word spacing when justified).
 final class _OptimalWrap extends _Wrap {
   new(
@@ -2435,7 +2445,7 @@ final class _OptimalWrap extends _Wrap {
           final width = _widthOf(spaces, format);
           // No break after an opening bracket or before a closing one or
           // other punctuation, spaces between or not (UAX #14's LB14 and
-          // LB13, as Typst breaks: `{{ x }}` stays whole).
+          // LB13: `{{ x }}` stays whole).
           final before = p > 0 ? pieces[p - 1].$2 : '';
           final after = p + 1 < pieces.length ? pieces[p + 1].$2 : '';
           if ((before.isNotEmpty &&
@@ -2479,26 +2489,38 @@ final class _OptimalWrap extends _Wrap {
           !_isBlank(pieces[p + 1].$2) &&
           pieces[p + 1].$2 != '\n') {
         // After a hyphen of the text, before a word (a space or the end
-        // breaks the line anyway, UAX #14's LB7): an ordinary break, as
-        // Typst has it (the breaker counts the dash for two lines ending
-        // in one), the hyphen repeated at the next line's start where the
-        // language has it so.
+        // breaks the line anyway, UAX #14's LB7): a hyphenated break, as
+        // TeX's explicit hyphens (\exhyphenpenalty, 50), the hyphen
+        // repeated at the next line's start where the language has it so.
         final next = pieces[p + 1].$2;
         final repeat = _context.hyphenRepetition.repeatsBefore(next);
-        add(PenaltyItem(0, 0, carry: repeat ? _widthOf('-', format) : 0), p);
+        add(
+          PenaltyItem(
+            0,
+            50,
+            flagged: true,
+            carry: repeat ? _widthOf('-', format) : 0,
+          ),
+          p,
+        );
       }
     }
     add(const GlueItem.fill(), pieces.length);
     add(const PenaltyItem(0, PenaltyItem.forced), pieces.length);
-    // Typst's breaking: optimal (its costs; ragged lines that don't
-    // shrink) or one line at a time.
+    // Knuth and Plass's total fit with TeX's costs (The TeXbook, ch. 14):
+    // justified lines with a third pass of 2em more stretch (LaTeX's
+    // \sloppy has 3em), ragged ones as plain TeX's \raggedright (each may
+    // fall 2em short at a badness of 100, so their ends are even); or one
+    // line at a time.
     final justify = _layout.align == 'justify';
+    final size = _state.size;
     final breaker = switch (_context.lineBreaking) {
-      LineBreaking.optimal => TypstLineBreaker(
-        justify: justify,
-        fontSize: _state.size,
+      LineBreaking.optimal || LineBreaking.auto when justify =>
+        KnuthPlassLineBreaker(emergencyStretch: 2 * size),
+      LineBreaking.optimal => KnuthPlassLineBreaker(raggedStretch: 2 * size),
+      LineBreaking.auto when _layout.align == 'left' => KnuthPlassLineBreaker(
+        raggedStretch: 2 * size,
       ),
-      LineBreaking.auto when justify => TypstLineBreaker(fontSize: _state.size),
       _ => const FirstFitLineBreaker(),
     };
     // The same paragraph is broken at the same width again and again (as
@@ -2657,13 +2679,12 @@ typedef _BreaksKey = (String breaker, double first, double rest);
 /// [breaker] and its costs, and a drop's lines and their width.
 String _describeBreaker(ItemLineBreaker breaker, (int, double)? drop) {
   final costs = switch (breaker) {
-    TypstLineBreaker(
-      :final justify,
-      :final fontSize,
-      :final hyphenationCost,
-      :final runtCost,
+    KnuthPlassLineBreaker(
+      :final tolerance,
+      :final emergencyStretch,
+      :final raggedStretch,
     ) =>
-      'typst $justify $fontSize $hyphenationCost $runtCost',
+      'knuth-plass $tolerance $emergencyStretch $raggedStretch',
     _ => breaker.runtimeType.toString(),
   };
   return drop == null ? costs : '$costs drop ${drop.$1} ${drop.$2}';

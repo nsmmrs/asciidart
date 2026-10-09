@@ -12,7 +12,7 @@ feature the format has no use for.
 | Feature | PDF | HTML | Website | EPUB 3 | DocBook 5 |
 | --- | --- | --- | --- | --- | --- |
 | Index (`[index]`, `((term))`) | page numbers | links to sections, by letter | its own page, links across pages | links, by letter, as an EPUB index (`epub:type`, a landmark) | `<indexterm>`, `<index/>` |
-| Index order and headings (`index-sort`, `index-category-headings`) | the attributes, or theme keys (and a flat Typst-like list) | the attributes | the attributes | the attributes | the processor's |
+| Index order and headings (`index-category-headings`) | the attributes, or theme keys | the attributes | the attributes | the attributes | the processor's |
 | Contents (`:toc:`, `toc::[]` in a section) | yes | yes | a page of its own | navigation; `toc::[]` lists the contents there | a chapter of `toc::[]` alone is `<toc>` |
 | `%notoc` sections | yes | yes | yes | yes | n/a |
 | Footnotes | bottom of the page | end of the page | end of each page | pop-up notes | `<footnote>` |

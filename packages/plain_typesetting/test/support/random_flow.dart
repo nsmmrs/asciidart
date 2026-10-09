@@ -172,7 +172,7 @@ final class RandomFlow {
     lineBreaker: switch (random.nextInt(5)) {
       0 => const FirstFitLineBreaker(),
       1 => const KnuthPlassLineBreaker(),
-      2 => TypstLineBreaker(fontSize: 9, justify: chance(50)),
+      2 => KnuthPlassLineBreaker(raggedStretch: chance(50) ? 18 : null),
       _ => null,
     },
   );
@@ -331,7 +331,7 @@ final class RandomFlow {
       lineBreaker: switch (random.nextInt(3)) {
         0 => const FirstFitLineBreaker(),
         1 => const KnuthPlassLineBreaker(),
-        _ => const TypstLineBreaker(),
+        _ => const KnuthPlassLineBreaker(raggedStretch: 18),
       },
       notes: notes,
       noteSeparator: chance(50) ? DrawingBox(0.5, (c, r) {}) : null,
