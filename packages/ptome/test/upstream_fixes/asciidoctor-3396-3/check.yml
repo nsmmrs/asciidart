@@ -1,0 +1,5 @@
+description: "unchanged: a stray ] at the end of an attribute list. asciidoctor#3396: a paragraph that starts with formatted text with a role and ends with a macro (`[.red]#Bbb# bbb.footnote:[Bbb.]`) was taken for a block attribute line, since it starts with `[` and ends with `]`, and disappeared from the output (its text became the role of the next block)."
+format: html5
+standalone: false
+contains:
+  - "data-lang=\"xml]\""

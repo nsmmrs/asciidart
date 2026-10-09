@@ -1,0 +1,6 @@
+source: "gen:gen-45"
+formats: [html5]
+safe: safe
+doctype: book
+attributes:
+  "idprefix": "x_"

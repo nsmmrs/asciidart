@@ -1,0 +1,5 @@
+description: "tabs in a literal cell expand to tabsize. asciidoctor#3412: tabs in a literal table cell were not expanded when the document sets tabsize, as they are in a literal block."
+format: html5
+standalone: false
+contains:
+  - "<div class=\"literal\"><pre>a   b</pre></div>"

@@ -1,0 +1,3 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:1959.1"
+formats: [html5]
+safe: safe

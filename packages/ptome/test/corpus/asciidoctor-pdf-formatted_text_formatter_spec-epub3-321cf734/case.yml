@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/formatted_text_formatter_spec.rb:574"
+formats: [pdf, epub3]
+safe: safe

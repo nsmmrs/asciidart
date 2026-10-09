@@ -1,0 +1,5 @@
+description: "unchanged: an underscore inside a word is not emphasis. asciidoctor#2128: curved quotes and constrained emphasis blocked each other at their boundaries: `_\"`text`\"_` kept its straight quotes (the underscore, a word character, stopped the curved quotes) and `\"`_text_`\"` kept its underscores (emphasis came after the curved quotes, and their character reference ends with `;`, which emphasis doesn't start after). Both nest now, with single curved quotes too."
+format: html5
+standalone: false
+contains:
+  - "<p>snake_case and &#8220;quoted&#8221;</p>"

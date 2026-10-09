@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/attributes_test.rb:611.6"
+formats: [docbook5]
+safe: safe
+attributes:
+  "toc": "right"
+  "linkcss": ""

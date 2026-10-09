@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/toc_spec.rb:42"
+formats: [pdf]
+safe: safe

@@ -1,8 +1,0 @@
-description = "Parity with Asciidoctor (the former test/parity): a block style above the document title (#4151)"
-source = "handmade:test/parity/doctitle-style.adoc"
-features = ["parity"]
-formats = ["html5", "docbook5", "manpage"]
-
-[options]
-standalone = true
-safe = "unsafe"

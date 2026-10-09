@@ -1,0 +1,5 @@
+source: "pool:asciidoc-lang/spec/sdrs/sdr-004-use-peg-for-formal-grammar.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

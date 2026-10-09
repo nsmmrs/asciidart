@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-2.0.26/docs/modules/api/pages/options.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

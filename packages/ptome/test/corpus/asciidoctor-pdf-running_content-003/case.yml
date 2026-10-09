@@ -1,0 +1,4 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/running_content_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"

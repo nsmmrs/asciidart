@@ -1,8 +1,0 @@
-description = "Parity with Asciidoctor (the former test/parity): TOML front matter (#4300) and front matter in includes (#3437)"
-source = "handmade:test/parity/front-matter.adoc"
-features = ["parity"]
-formats = ["html5", "docbook5", "manpage"]
-
-[options]
-standalone = true
-safe = "unsafe"

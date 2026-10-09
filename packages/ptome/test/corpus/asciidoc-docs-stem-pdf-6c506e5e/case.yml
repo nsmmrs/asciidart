@@ -1,0 +1,5 @@
+source: "pool:asciidoc-docs/docs/modules/stem/examples/stem.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

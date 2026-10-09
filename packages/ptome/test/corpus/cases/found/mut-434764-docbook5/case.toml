@@ -1,5 +1,0 @@
-description = "Found by the fuzzer: reaches code no other case did."
-source = "gen:mut-434764"
-formats = ["docbook5"]
-
-[attributes]

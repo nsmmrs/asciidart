@@ -1,0 +1,5 @@
+source: "gen:mut-5137"
+formats: [html5]
+safe: safe
+attributes:
+  "hardbreaks-option": ""

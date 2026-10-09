@@ -1,0 +1,5 @@
+source: "gen:mut-203867"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

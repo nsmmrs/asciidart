@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/samples/asciidoctor-js-browser-extension.adoc"
+formats: [epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

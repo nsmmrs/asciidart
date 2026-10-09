@@ -1,0 +1,5 @@
+description: "quotes in a block image target are escaped. asciidoctor#2862: a quote in an image target (`image::\"foo.png\"[]`) was written into the src attribute as is, ending it early (invalid HTML)."
+format: html5
+standalone: false
+contains:
+  - "<img src=\"&quot;foo.png&quot;\" alt=\"Foo\">"

@@ -1,5 +1,0 @@
-description = "asciidoctor#3877: unchanged: an attribute set before the block. asciidoctor#3877: an attribute entry inside a delimited block wasn't seen by the preprocessor directives after it in the same block: the block's lines were preprocessed (its ifdef, ifndef and include directives evaluated) before the entries in them were read, so `ifdef` reported the attribute as unset. Directives in a block now run in document order, as they do outside blocks."
-source = "bugfix:asciidoctor#3877"
-features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/3877 (ptome benchmark/PARITY.md)"
-formats = ["html5"]

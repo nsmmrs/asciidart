@@ -1,0 +1,6 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/outline_spec.rb"
+formats: [pdf]
+doctype: book
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""

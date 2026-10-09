@@ -1,0 +1,5 @@
+source: "pool:hypermedia-systems/book/CH13_ExtendingTheHyperviewClient.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

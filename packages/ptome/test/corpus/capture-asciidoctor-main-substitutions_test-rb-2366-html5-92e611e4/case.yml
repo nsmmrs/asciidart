@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:2366.1"
+formats: [html5]
+safe: safe
+attributes:
+  "stem": "asciimath"

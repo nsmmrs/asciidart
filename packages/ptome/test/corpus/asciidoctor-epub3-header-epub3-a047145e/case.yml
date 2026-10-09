@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/spec/fixtures/docinfo/header.adoc"
+formats: [epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

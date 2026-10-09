@@ -1,7 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:capture-asciidoctor-2.0.26/links_test.rb:219.1"
-formats = ["manpage"]
-
-[options]
-input = "./input.adoc"
-standalone = false

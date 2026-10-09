@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/stem_spec.rb:23"
+formats: [pdf]
+safe: safe

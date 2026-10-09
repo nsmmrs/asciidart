@@ -1,0 +1,6 @@
+# The corpus (test/corpus_test.dart) compares ptome with Asciidoctor's own
+# files; it is red until compatibility settings close every difference, so
+# it runs on its own (`dart test -t corpus`) and the rest without it.
+tags:
+  corpus:
+    timeout: 2x

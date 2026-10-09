@@ -1,0 +1,5 @@
+source: "pool:asciidoc-lang/docs/modules/pass/examples/pass.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

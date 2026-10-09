@@ -1,0 +1,6 @@
+description: "rows under a rowspan keep the alignment of their columns. asciidoctor#2889: in DocBook, cells in the rows under a rowspan were aligned like the column on their left."
+format: docbook5
+standalone: false
+contains:
+  - "<entry align=\"left\" valign=\"top\"><simpara>PHD</simpara></entry>"
+  - "<entry align=\"left\" valign=\"top\"><simpara>SQAP</simpara></entry>"

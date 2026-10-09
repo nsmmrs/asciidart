@@ -1,0 +1,2 @@
+source: "vendor:vendor/asciidoctor/test/fixtures/subs.adoc"
+formats: [html5, docbook5, manpage]

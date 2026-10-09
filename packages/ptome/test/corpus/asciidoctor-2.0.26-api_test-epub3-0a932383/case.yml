@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-2.0.26/test/api_test.rb:625"
+formats: [xhtml5, epub3]
+safe: safe

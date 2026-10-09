@@ -1,0 +1,5 @@
+source: "pool:asciidoc-py/doc/faq.txt"
+formats: [manpage]
+safe: safe
+attributes:
+  "linkcss": "@"

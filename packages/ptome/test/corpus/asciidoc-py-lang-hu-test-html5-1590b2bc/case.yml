@@ -1,0 +1,5 @@
+source: "pool:asciidoc-py/tests/inputs/lang-hu-test.txt"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

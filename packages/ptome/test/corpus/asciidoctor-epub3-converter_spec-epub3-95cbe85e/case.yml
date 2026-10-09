@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-epub3/spec/converter_spec.rb:242"
+formats: [epub3]
+safe: safe

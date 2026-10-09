@@ -1,5 +1,0 @@
-description = "asciidoctor#2128: curved double quotes inside emphasis. asciidoctor#2128: curved quotes and constrained emphasis blocked each other at their boundaries: `_\"`text`\"_` kept its straight quotes (the underscore, a word character, stopped the curved quotes) and `\"`_text_`\"` kept its underscores (emphasis came after the curved quotes, and their character reference ends with `;`, which emphasis doesn't start after). Both nest now, with single curved quotes too."
-source = "bugfix:asciidoctor#2128"
-features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/2128 (ptome benchmark/PARITY.md)"
-formats = ["html5"]

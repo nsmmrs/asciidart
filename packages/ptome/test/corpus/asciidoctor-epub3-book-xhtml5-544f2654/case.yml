@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/spec/fixtures/image-dimensions/book.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,5 @@
+source: "pool:quarkus/docs/src/main/asciidoc/security-authentication-mechanisms.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

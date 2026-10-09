@@ -1,0 +1,5 @@
+description: "unchanged: a trailing ; or ); is moved out of the URL. asciidoctor#3128: a bare URL ending with a placeholder in angle brackets (`http://<host>:<port>`) lost the `;` of the escaped `>` (`&gt;`): the link ended with `&gt` and a stray `;` followed it."
+format: html5
+standalone: false
+contains:
+  - "<a href=\"https://example.org\" class=\"bare\">https://example.org</a>; or (<a href=\"https://example.org\" class=\"bare\">https://example.org</a>);"

@@ -1,0 +1,5 @@
+description: "a duplicate anchor in section titles is reported. asciidoctor#3633: inline anchors in section titles were not registered in the catalog, so a duplicate went unreported (and tools reading the catalog couldn't resolve them)."
+format: html5
+standalone: false
+warns:
+  - "id assigned to anchor already in use: foo"

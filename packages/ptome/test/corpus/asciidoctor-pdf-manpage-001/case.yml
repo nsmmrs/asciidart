@@ -1,0 +1,6 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/manpage_spec.rb"
+formats: [pdf]
+doctype: manpage
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""

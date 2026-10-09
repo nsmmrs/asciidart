@@ -1,0 +1,5 @@
+description: "and in DocBook. asciidoctor#3788: a closing square bracket couldn't be escaped in the reference text of an inline anchor shorthand: `[[id,[reftext\\]]]` ended at the escaped bracket, kept the backslash in the reference text and left a stray `]` in the text."
+format: docbook5
+standalone: false
+contains:
+  - "<anchor xml:id=\"id\" xreflabel=\"[reftext]\"/>text that follows"

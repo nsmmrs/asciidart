@@ -1,0 +1,5 @@
+source: "pool:progit2/book/04-git-server/sections/generating-ssh-key.asc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

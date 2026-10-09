@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/spec/fixtures/bmp.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

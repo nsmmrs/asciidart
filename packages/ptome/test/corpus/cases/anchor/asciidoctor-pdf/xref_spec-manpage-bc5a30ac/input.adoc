@@ -1,8 +1,0 @@
-= Xwmyofxd Mzwbi
-:doctype: book
-:sectnums:
-:xrefstyle: basic
-
-Khndl keqi <<_a>>.
-
-== A

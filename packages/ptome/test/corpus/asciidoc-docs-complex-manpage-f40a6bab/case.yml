@@ -1,0 +1,5 @@
+source: "pool:asciidoc-docs/docs/modules/lists/examples/complex.adoc"
+formats: [manpage]
+safe: safe
+attributes:
+  "linkcss": "@"

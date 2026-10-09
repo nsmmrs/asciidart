@@ -1,4 +1,0 @@
-description = "Tagged include regions, plus a missing include that logs an error."
-source = "handmade"
-features = ["preprocessor.include.tags", "diagnostics.include-not-found"]
-formats = ["html5"]

@@ -1,3 +1,0 @@
-:imagesdir: assets
-
-video::cats-vs-dogs.avi[nvpl-pob-nufb.rbu, 200, 300]

@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-2.0.26/blocks_test.rb:2459.1, pool:capture-asciidoctor-main/blocks_test.rb:2541.1"
+formats: [html5, pdf]
+safe: safe
+attributes:
+  "docdir": "/asciidoctor/test"
+  "imagesdir": "fixtures"

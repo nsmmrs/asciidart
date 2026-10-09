@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/icon_spec.rb:125"
+formats: [pdf]
+safe: safe

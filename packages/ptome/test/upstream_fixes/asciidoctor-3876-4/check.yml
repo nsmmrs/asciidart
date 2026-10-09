@@ -1,0 +1,5 @@
+description: "unchanged: mark text beside a link. asciidoctor#3876: a `#` in a URL and a `#` in a cross reference's target on the same line were paired as constrained mark text (quotes are substituted before macros), breaking both. Formatting marks inside a link's URL or a cross reference's target no longer pair with anything."
+format: html5
+standalone: false
+contains:
+  - "<mark>marked</mark>"

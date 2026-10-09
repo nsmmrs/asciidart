@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-2.0.26/manpage_test.rb:935.1"
+formats: [html5]
+safe: safe
+attributes:
+  "xrefstyle": "full"

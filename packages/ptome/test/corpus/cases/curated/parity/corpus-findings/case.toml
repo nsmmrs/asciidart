@@ -1,8 +1,0 @@
-description = "Parity with Asciidoctor (the former test/parity): differences found by the corpus parity check (`tool/corpus_parity.dart`): `cols=\"\"`, `%autowidth` with a width, a nested description list item with an attached block, line breaks in AsciiMath blocks, special case mappings in generated ids (`ß`, `Σ`), no-break and ideographic spaces"
-source = "handmade:test/parity/corpus-findings.adoc"
-features = ["parity"]
-formats = ["html5", "docbook5", "manpage"]
-
-[options]
-standalone = true
-safe = "unsafe"

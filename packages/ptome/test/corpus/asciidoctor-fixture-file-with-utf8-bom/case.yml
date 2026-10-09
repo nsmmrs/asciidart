@@ -1,0 +1,2 @@
+source: "vendor:vendor/asciidoctor/test/fixtures/file-with-utf8-bom.adoc"
+formats: [html5, docbook5, manpage]

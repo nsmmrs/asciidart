@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/font_spec.rb:41"
+formats: [pdf]
+safe: safe

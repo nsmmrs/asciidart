@@ -1,9 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:capture-asciidoctor-2.0.26/blocks_test.rb:3205.1"
-formats = ["html5"]
-# Original words left in place (replacing them changed the conversion).
-kept-words = ["youtube"]
-
-[options]
-input = "./input.adoc"
-standalone = false

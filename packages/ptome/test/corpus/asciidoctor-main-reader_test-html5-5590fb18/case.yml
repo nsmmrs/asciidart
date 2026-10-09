@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-main/test/reader_test.rb:1541"
+formats: [html5]
+safe: safe

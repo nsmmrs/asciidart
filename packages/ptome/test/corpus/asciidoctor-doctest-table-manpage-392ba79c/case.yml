@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-doctest/data/examples/asciidoc/table.adoc"
+formats: [manpage]
+safe: safe
+attributes:
+  "linkcss": "@"

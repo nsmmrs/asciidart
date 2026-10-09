@@ -1,0 +1,8 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/formatted_text_formatter_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""
+  "experimental": ""
+  "pdf-theme": "theme.yml"
+  "pdf-themesdir": "{docdir}"

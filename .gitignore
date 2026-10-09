@@ -13,3 +13,5 @@ dist/
 .DS_Store
 # npm test tooling dependencies (test/npm)
 node_modules/
+# The corpus test's scratch output inside a case (packages/ptome/test/corpus)
+.ptome/

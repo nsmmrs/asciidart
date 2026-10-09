@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-intellij-plugin/src/test/resources/testData/inspections/linkResolve/fileDoesntExist.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

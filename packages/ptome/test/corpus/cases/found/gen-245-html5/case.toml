@@ -1,9 +1,0 @@
-description = "Found by the fuzzer: reaches code no other case did."
-source = "gen:gen-245"
-formats = ["html5"]
-
-[options]
-standalone = true
-
-[attributes]
-"hardbreaks-option" = ""

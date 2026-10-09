@@ -1,9 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:capture-asciidoctor-main/substitutions_test.rb:888.1"
-formats = ["docbook5"]
-# Original words left in place (replacing them changed the conversion).
-kept-words = ["image", "link"]
-
-[options]
-input = "./input.adoc"
-standalone = false

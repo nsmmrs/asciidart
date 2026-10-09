@@ -1,0 +1,5 @@
+description: "a link in a superscript nests in DocBook. asciidoctor#4076: a superscript around a link whose text ends with the `^` shorthand (`^link:fn.html[2^]^`) ended at that `^`, leaving the link markup across the end of the superscript (invalid XML and HTML)."
+format: docbook5
+standalone: false
+contains:
+  - "<literal>X</literal><superscript><link xl:href=\"fn2.html\">2</link></superscript> and more."

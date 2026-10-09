@@ -1,8 +1,0 @@
-description = "Parity with Asciidoctor (the former test/parity): full substitutions in titles that feed generated IDs, quote credits (paragraph and Markdown), single-quoted attribute values, reftext and the author line (BUG-fwc380)"
-source = "handmade:test/parity/substitutions.adoc"
-features = ["parity"]
-formats = ["html5", "docbook5", "manpage"]
-
-[options]
-standalone = true
-safe = "unsafe"

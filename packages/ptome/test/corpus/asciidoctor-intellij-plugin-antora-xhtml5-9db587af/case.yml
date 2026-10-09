@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-intellij-plugin/doc/users-guide/modules/ROOT/pages/features/advanced/antora.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

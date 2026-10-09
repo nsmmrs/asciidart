@@ -1,0 +1,5 @@
+description: "and with curved single quotes. asciidoctor#2128: curved quotes and constrained emphasis blocked each other at their boundaries: `_\"`text`\"_` kept its straight quotes (the underscore, a word character, stopped the curved quotes) and `\"`_text_`\"` kept its underscores (emphasis came after the curved quotes, and their character reference ends with `;`, which emphasis doesn't start after). Both nest now, with single curved quotes too."
+format: html5
+standalone: false
+contains:
+  - "<p><em>&#8216;single&#8217;</em> and &#8216;<em>single</em>&#8217;</p>"

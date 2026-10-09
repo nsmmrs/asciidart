@@ -1,0 +1,7 @@
+source: "pool:capture-asciidoctor-main/attributes_test.rb:216.1"
+formats: [html5]
+safe: safe
+doctype: inline
+attributes:
+  "max-attribute-value-size": "8"
+  "linkcss": ""

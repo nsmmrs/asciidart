@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-main/test/tables_test.rb:2254"
+formats: [docbook5]
+safe: safe

@@ -1,0 +1,5 @@
+source: "gen:gen-5030"
+formats: [html5]
+safe: safe
+attributes:
+  "attribute-missing": "skip"

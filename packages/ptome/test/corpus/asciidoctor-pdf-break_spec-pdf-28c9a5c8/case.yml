@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/break_spec.rb:264"
+formats: [pdf]
+safe: safe

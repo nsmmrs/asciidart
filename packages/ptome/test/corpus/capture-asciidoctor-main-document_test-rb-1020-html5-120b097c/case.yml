@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/document_test.rb:1020.1"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": ""

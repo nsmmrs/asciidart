@@ -1,0 +1,7 @@
+source: "pool:capture-asciidoctor-2.0.26/syntax_highlighter_test.rb:242.1"
+formats: [html5]
+safe: safe
+doctype: inline
+attributes:
+  "compat-mode": ""
+  "linkcss": ""

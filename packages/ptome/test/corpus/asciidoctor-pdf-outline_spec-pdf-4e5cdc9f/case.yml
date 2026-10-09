@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/outline_spec.rb:212"
+formats: [pdf]
+safe: safe

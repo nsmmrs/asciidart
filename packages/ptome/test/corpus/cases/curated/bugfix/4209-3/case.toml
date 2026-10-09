@@ -1,5 +1,0 @@
-description = "asciidoctor#4209: unchanged: names from an implicit author line can still be overridden by author. asciidoctor#4209: when the author comes from the author or authors attribute, only an assigned authorinitials survived; an assigned firstname, middlename or lastname was replaced by the computed one. They all win now, as they do over an implicit author line."
-source = "bugfix:asciidoctor#4209"
-features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/4209 (ptome benchmark/PARITY.md)"
-formats = ["html5"]

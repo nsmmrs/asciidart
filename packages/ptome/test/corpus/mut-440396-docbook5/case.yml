@@ -1,0 +1,6 @@
+source: "gen:mut-440396"
+formats: [docbook5]
+safe: safe
+doctype: inline
+attributes:
+  "attribute-missing": "drop-line"

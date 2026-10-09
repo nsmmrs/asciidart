@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-main/test/blocks_test.rb:2482"
+formats: [pdf]
+safe: safe

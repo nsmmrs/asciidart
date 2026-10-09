@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/reader_test.rb:2114.1"
+formats: [docbook5]
+safe: safe
+attributes:
+  "max-include-depth": "0"

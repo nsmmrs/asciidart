@@ -1,0 +1,8 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/footnote_spec.rb"
+formats: [pdf]
+doctype: book
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""
+  "pdf-theme": "theme.yml"
+  "pdf-themesdir": "{docdir}"

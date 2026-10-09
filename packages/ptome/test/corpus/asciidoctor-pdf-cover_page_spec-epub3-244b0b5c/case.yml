@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/cover_page_spec.rb:243"
+formats: [pdf, epub3]
+safe: safe

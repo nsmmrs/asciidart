@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/hyphens_spec.rb:134"
+formats: [pdf]
+safe: safe

@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-2.0.26/test/blocks_test.rb:3879, pool:asciidoctor-main/test/blocks_test.rb:3989"
+formats: [html5, docbook5]
+safe: safe

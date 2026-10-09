@@ -1,0 +1,5 @@
+source: "pool:hibernate/documentation/src/main/asciidoc/quickstart/guides/index.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-2.0.26/attributes_test.rb:356.2"
+formats: [docbook5]
+safe: safe
+attributes:
+  "!cash@": ""
+  "linkcss": ""

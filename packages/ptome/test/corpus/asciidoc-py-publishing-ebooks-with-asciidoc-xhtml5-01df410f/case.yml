@@ -1,0 +1,5 @@
+source: "pool:asciidoc-py/doc/publishing-ebooks-with-asciidoc.txt"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,6 +1,0 @@
-.sp
-Uzx Figure 1.
-.sp
-.B Figure 1. Mzwbi of Jpfgs
-.br
-[tux]

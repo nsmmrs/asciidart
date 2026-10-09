@@ -1,0 +1,5 @@
+source: "pool:progit2/progit.asc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

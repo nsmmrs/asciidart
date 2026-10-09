@@ -1,0 +1,5 @@
+source: "pool:asciidoc-py/doc/testasciidoc.1.txt"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

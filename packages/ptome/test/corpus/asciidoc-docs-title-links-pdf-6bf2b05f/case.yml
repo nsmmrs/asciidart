@@ -1,0 +1,5 @@
+source: "pool:asciidoc-docs/docs/modules/sections/pages/title-links.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

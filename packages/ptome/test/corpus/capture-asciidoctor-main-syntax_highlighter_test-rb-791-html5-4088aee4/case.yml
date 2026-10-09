@@ -1,0 +1,3 @@
+source: "pool:capture-asciidoctor-main/syntax_highlighter_test.rb:791.1"
+formats: [html5]
+safe: safe

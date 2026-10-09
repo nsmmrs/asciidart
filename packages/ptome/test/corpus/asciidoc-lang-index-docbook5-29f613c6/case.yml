@@ -1,0 +1,5 @@
+source: "pool:asciidoc-lang/docs/modules/pass/pages/index.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

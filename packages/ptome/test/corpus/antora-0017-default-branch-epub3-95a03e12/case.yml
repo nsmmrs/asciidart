@@ -1,0 +1,5 @@
+source: "pool:antora/devdocs/adr/0017-default-branch.adoc"
+formats: [epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

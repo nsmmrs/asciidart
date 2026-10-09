@@ -1,0 +1,6 @@
+description: "unchanged: section levels up to 5. asciidoctor#2032: a leveloffset that pushed a section past level 5 produced heading elements HTML doesn't have (<h9>, <h10>)."
+format: html5
+standalone: false
+contains:
+  - "<h2 id=\"_one\">One</h2>"
+  - "<h6 id=\"_five\">Five</h6>"

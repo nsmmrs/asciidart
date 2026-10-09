@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-2.0.26/reader_test.rb:681.1"
+formats: [manpage]
+safe: safe
+attributes:
+  "compat-mode": ""

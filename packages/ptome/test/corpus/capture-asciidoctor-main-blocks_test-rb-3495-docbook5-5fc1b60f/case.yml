@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/blocks_test.rb:3495.3"
+formats: [docbook5]
+safe: safe
+attributes:
+  "icons": "jpg"
+  "linkcss": ""

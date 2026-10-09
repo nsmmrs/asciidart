@@ -1,0 +1,3 @@
+source: "pool:capture-asciidoctor-main/lists_test.rb:3338.1"
+formats: [html5]
+safe: safe

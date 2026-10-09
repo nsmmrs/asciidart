@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:816.1"
+formats: [html5]
+safe: server
+attributes:
+  "imagesdir": "images"

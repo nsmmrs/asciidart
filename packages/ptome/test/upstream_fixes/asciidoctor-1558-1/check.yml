@@ -1,0 +1,6 @@
+description: "the style of the last column applies to its cells after a colspan. asciidoctor#1558: in DocBook, a cell after a colspan or beside a rowspan got the style of the wrong column (emphasis applied to the wrong cell)."
+format: docbook5
+standalone: false
+contains:
+  - "<simpara><emphasis>Emphasis</emphasis></simpara>"
+  - "namest=\"col_1\" nameend=\"col_2\"><simpara>Plain</simpara>"

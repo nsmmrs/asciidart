@@ -1,0 +1,8 @@
+source: "pool:capture-asciidoctor-2.0.26/invoker_test.rb:153.1"
+formats: [html5]
+attributes:
+  "stylesheet!": ""
+  "docfile": "/asciidoctor/test/fixtures/sample-pipe.adoc"
+  "docdir": "/asciidoctor/test/fixtures"
+  "docfilesuffix": ".adoc"
+  "docname": "sample-pipe"

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-doctest/data/examples/asciidoc/inline_anchor.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

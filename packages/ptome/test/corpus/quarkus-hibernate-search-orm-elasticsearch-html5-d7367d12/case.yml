@@ -1,0 +1,5 @@
+source: "pool:quarkus/docs/src/main/asciidoc/hibernate-search-orm-elasticsearch.adoc"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

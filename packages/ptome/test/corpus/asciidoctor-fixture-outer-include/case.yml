@@ -1,0 +1,2 @@
+source: "vendor:vendor/asciidoctor/test/fixtures/outer-include.adoc"
+formats: [html5, docbook5, manpage]

@@ -1,0 +1,5 @@
+source: "pool:quarkus/docs/src/main/asciidoc/security-openid-connect-providers.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

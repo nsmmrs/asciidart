@@ -1,0 +1,5 @@
+description: "unchanged: spans that are not nested still close with the previous font. asciidoctor#4875: the man page converter closed every font span with `\\fP`, roff's single \"previous font\", so after a span nested in another the text that followed stayed in the inner span's font."
+format: manpage
+standalone: true
+contains:
+  - "\\fBbold\\fP and \\fIit\\fP here."

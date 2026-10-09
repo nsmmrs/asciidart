@@ -1,0 +1,5 @@
+source: "pool:asciidoctor.js/packages/core/test/fixtures/semantic-html5-scenarios/image-block-caption-link-with-id-role.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

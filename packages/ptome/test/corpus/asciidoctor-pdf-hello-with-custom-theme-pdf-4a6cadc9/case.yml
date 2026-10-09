@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/spec/fixtures/hello-with-custom-theme.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

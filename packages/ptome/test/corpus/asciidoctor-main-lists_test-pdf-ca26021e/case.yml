@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-main/test/lists_test.rb:2039"
+formats: [pdf]
+safe: safe

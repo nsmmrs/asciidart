@@ -1,0 +1,5 @@
+description: "unchanged: one empty line in a two-level list attaches to the parent. asciidoctor#2293: a list continuation after empty lines attached its block to the outermost list item, whatever the number of empty lines. Each empty line moves up one level from the innermost item, so one empty line attaches to the parent of the innermost item."
+format: html5
+standalone: false
+contains:
+  - "</ul>\n</div>\n<div class=\"paragraph\">\n<p>attached</p>\n</div>\n</li>\n<li>\n<p>another</p>"

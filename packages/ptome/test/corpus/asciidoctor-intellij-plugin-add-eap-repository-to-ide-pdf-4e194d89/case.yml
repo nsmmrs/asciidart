@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-intellij-plugin/doc/contributors-guide/modules/ROOT/pages/user/add-eap-repository-to-ide.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

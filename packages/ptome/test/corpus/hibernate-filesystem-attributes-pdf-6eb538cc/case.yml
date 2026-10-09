@@ -1,0 +1,5 @@
+source: "pool:hibernate/documentation/src/main/asciidoc/shared/filesystem-attributes.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -6,7 +6,6 @@ import 'package:ptome_corpus_tools/ptome_corpus_tools.dart';
 Future<void> main(List<String> args) async {
   final runner =
       CommandRunner<int>('corpus', "The tools that build ptome's corpus.")
-        ..addCommand(RegenCommand())
         ..addCommand(PoolCommand())
         ..addCommand(AnchorCommand())
         ..addCommand(GenCommand())

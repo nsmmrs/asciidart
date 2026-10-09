@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/sections_test.rb:1812.1"
+formats: [html5]
+safe: safe
+attributes:
+  "numbered": ""
+  "linkcss": ""

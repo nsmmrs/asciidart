@@ -1,3 +1,0 @@
-.sp
-Khndl keqi Section 1, \(lqA\(rq.
-.SH "A"

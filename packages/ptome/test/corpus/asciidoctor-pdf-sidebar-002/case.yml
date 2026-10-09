@@ -1,0 +1,6 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/sidebar_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""
+  "pdf-theme": "base"

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-doctest/data/examples/asciidoc/inline_image.adoc"
+formats: [epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

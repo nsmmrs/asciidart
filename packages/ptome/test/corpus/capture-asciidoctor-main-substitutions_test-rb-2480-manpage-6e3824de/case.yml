@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:2480.1"
+formats: [manpage]
+safe: safe
+attributes:
+  "hardbreaks": ""

@@ -1,0 +1,5 @@
+description: "nested formatting restores the outer font, then roman. asciidoctor#4875: the man page converter closed every font span with `\\fP`, roff's single \"previous font\", so after a span nested in another the text that followed stayed in the inner span's font."
+format: manpage
+standalone: true
+contains:
+  - "\\f(CRdemonstration \\fIof\\f(CR the issue\\fR where text follows."

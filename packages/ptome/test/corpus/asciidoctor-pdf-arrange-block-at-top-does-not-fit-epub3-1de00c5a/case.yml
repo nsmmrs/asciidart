@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/spec/fixtures/arrange-block-at-top-does-not-fit.adoc"
+formats: [pdf, epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor.js/CONTRIBUTING-CODE.adoc"
+formats: [pdf, epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

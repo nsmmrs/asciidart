@@ -1,0 +1,5 @@
+source: "pool:asciidoc-parser/ref/asciidoc-lang/docs/modules/macros/pages/image-svg.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-2.0.26/manpage_test.rb:105.1"
+formats: [html5]
+safe: safe
+attributes:
+  "manname": "foobar"
+  "manpurpose": "puts some foo on the bar"

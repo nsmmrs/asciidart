@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/README.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

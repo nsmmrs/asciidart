@@ -1,0 +1,7 @@
+description: "unchanged: comments around rows don't change the implicit header or the cells. asciidoctor#2496: the table parser dropped every line comment in the table, including the lines of a verbatim block in an AsciiDoc cell that look like one (`// some comment` in a literal block)."
+format: html5
+standalone: false
+quiet: true
+counts:
+  "<th ": 2
+  "<td ": 2

@@ -1,0 +1,6 @@
+description: "and the term keeps its text in DocBook. Index terms are self-contained: a quote mark inside one (`_hyperscript`) doesn't pair with a mark after it. Asciidoctor 2.0.26 lets the emphasis open inside the term and close in the text (`an _event filter</em>`), and the term loses its underscore. Found in the Hypermedia Systems book. Fails on the gem."
+format: docbook5
+standalone: false
+contains:
+  - "<primary>_hyperscript</primary><secondary>event filter</secondary>"
+  - "We can use an <emphasis>event filter</emphasis> syntax."

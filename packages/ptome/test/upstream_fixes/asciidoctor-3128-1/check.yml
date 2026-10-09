@@ -1,0 +1,5 @@
+description: "the escaped > stays in the URL. asciidoctor#3128: a bare URL ending with a placeholder in angle brackets (`http://<host>:<port>`) lost the `;` of the escaped `>` (`&gt;`): the link ended with `&gt` and a stray `;` followed it."
+format: html5
+standalone: false
+contains:
+  - "<p>at the end of <a href=\"http://&lt;host&gt;:&lt;port&gt;\" class=\"bare\">http://&lt;host&gt;:&lt;port&gt;</a></p>"

@@ -1,0 +1,5 @@
+source: "gen:mut-417590"
+formats: [html5]
+safe: safe
+attributes:
+  "source-highlighter": "prettify"

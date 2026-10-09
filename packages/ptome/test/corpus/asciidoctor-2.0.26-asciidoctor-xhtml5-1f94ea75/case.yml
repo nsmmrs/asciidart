@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-2.0.26/docs/modules/cli/pages/man1/asciidoctor.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

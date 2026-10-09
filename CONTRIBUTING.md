@@ -4,7 +4,7 @@ The bar for every change is unchanged output: Ptome must convert
 documents exactly as the Asciidoctor gem built from the vendored upstream
 commit (`main` at `30fb8cd5`, `packages/ptome/tool/vendor.sh`) does (ADR-0001, ADR-0017),
 unless the difference is deliberate and listed in `benchmark/PARITY.md`
-(a fixed upstream bug, with its case in the corpus's `curated/bugfix`; diagnostics, which
+(a fixed upstream bug, with its test in `test/upstream_fixes/`; diagnostics, which
 read like a Dart tool's).
 
 ## Layout
@@ -12,7 +12,7 @@ read like a Dart tool's).
 The repository is a pub workspace ([ADR-0018](adr/0018-ptome-and-the-plain-workspace.md)):
 ptome is `packages/ptome`, and the libraries it is built on are
 `packages/plain_*`, each published on its own; `packages/ptome_corpus_tools`
-builds ptome's test corpus and is not published. `dart pub get` anywhere
+makes the test corpus's goldens and is not published. `dart pub get` anywhere
 resolves the whole workspace. Paths and commands below are relative to a
 package's folder, `packages/ptome` unless they say otherwise.
 [RELEASING.md](RELEASING.md) says how each package is released.
@@ -40,12 +40,11 @@ dart test                   # the library and CLI tests, and the corpus
 dart run tool/api_check.dart  # the public API is closed and matches tool/api_surface.txt
 ```
 
-The corpus (`test/corpus`, `test/corpus_test.dart`) is the black-box
-suite: about a thousand documents with the result Asciidoctor and ptome
-give each, checked in seconds. `packages/ptome_corpus_tools` builds it;
-after a deliberate change of output, record ptome's new results with
-`dart run bin/corpus.dart regen -p ptome` there and review the diff
-(`test/corpus/README.md`).
+The corpus (`test/corpus`, `dart test -t corpus`) checks ptome against the
+files the Asciidoctor command line writes for about 1,700 documents; it is
+red until compatibility settings close every difference, so `dart test -x
+corpus` is the rest (`test/corpus/README.md`). ptome's fixes of upstream
+bugs are tested in `test/upstream_fixes/`.
 
 The command line, on a built executable:
 
@@ -79,7 +78,7 @@ dart run tool/corpus_parity.dart --exe-a asciidoctor \
 
 Use a gem install without optional gems as `--exe-a`, and run Ptome
 with `-a highlightjs-mode=client` (see `benchmark/PARITY.md`). Every
-difference it finds deserves a case in the corpus (`test/corpus/cases/curated`).
+difference it finds deserves a case in the corpus (`test/corpus`).
 
 ## The npm package
 
@@ -138,5 +137,6 @@ dart test test/cli/help_topics_test.dart
 ## Pull requests
 
 Keep each change focused, with a test. For a behavior change, show that the
-gem agrees: a corpus case recorded on the gem, or an e2e test, makes it
-permanent.
+gem agrees: a corpus case (its goldens are the gem's files), or an e2e
+test, makes it permanent; a fix of a bug the gem has goes in
+`test/upstream_fixes/`.

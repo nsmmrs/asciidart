@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/docs/modules/ROOT/pages/background-images.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

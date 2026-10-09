@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-main/data/reference/syntax.adoc"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor.js/devdocs/semantic-html5-converter.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

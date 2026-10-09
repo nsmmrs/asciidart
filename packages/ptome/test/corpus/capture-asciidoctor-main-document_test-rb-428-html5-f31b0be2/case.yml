@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/document_test.rb:428.3"
+formats: [html5]
+safe: safe
+attributes:
+  "favicon": "/img/favicon.png"
+  "linkcss": ""

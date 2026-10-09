@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Untitled</title>
+<date>2026-01-01</date>
+</info>
+<informaltable frame="all" rowsep="1" colsep="1">
+<?dbhtml table-width="75%"?>
+<?dbfo table-width="75%"?>
+<?dblatex table-width="75%"?>
+<tgroup cols="7">
+<colspec colname="col_1" colwidth="45.5356*"/>
+<colspec colname="col_2" colwidth="45.5356*"/>
+<colspec colname="col_3" colwidth="45.5356*"/>
+<colspec colname="col_4" colwidth="45.5356*"/>
+<colspec colname="col_5" colwidth="45.5356*"/>
+<colspec colname="col_6" colwidth="45.5356*"/>
+<colspec colname="col_7" colwidth="45.5359*"/>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara>lhggz</simpara></entry>
+<entry align="left" valign="top"><simpara>x</simpara></entry>
+<entry align="left" valign="top"><simpara>27</simpara></entry>
+<entry align="left" valign="top"><simpara>27</simpara></entry>
+<entry align="left" valign="top"><simpara>LhGGZ:Tzxsla</simpara></entry>
+<entry align="left" valign="top"><simpara>/eav/nxm/lhggz</simpara></entry>
+<entry align="left" valign="top"><simpara>/gpg/scrp</simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara>zhn</simpara></entry>
+<entry align="left" valign="top"><simpara>x</simpara></entry>
+<entry align="left" valign="top"><simpara>42</simpara></entry>
+<entry align="left" valign="top"><simpara>42</simpara></entry>
+<entry align="left" valign="top"></entry>
+<entry align="left" valign="top"><simpara>/eav/nxm/zhn</simpara></entry>
+<entry align="left" valign="top"><simpara>/gqwa/igtfsms</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+</article>

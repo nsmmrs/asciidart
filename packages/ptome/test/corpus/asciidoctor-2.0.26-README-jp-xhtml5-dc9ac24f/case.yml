@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-2.0.26/README-jp.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

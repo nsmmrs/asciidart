@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/spec/fixtures/front-matter-multi/book.adoc"
+formats: [epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

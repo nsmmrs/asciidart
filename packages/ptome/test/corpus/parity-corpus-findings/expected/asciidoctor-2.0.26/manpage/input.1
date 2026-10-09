@@ -1,0 +1,111 @@
+'\" t
+.\"     Title: Corpus findings
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor 2.0.26
+.\"      Date: 2026-01-01
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "INPUT" "1" "2026-01-01" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.sp
+An empty column list takes the columns from the first row.
+.TS
+allbox tab(:);
+lt lt.
+T{
+.sp
+one
+T}:T{
+.sp
+two
+T}
+T{
+.sp
+1
+T}:T{
+.sp
+2
+T}
+T{
+.sp
+a
+T}:T{
+.sp
+b
+T}
+.TE
+.sp
+.sp
+Autowidth with an explicit table width leaves the columns unsized.
+.TS
+allbox tab(:);
+lt lt lt.
+T{
+.sp
+A
+T}:T{
+.sp
+B
+T}:T{
+.sp
+C
+T}
+T{
+.sp
+a
+T}:T{
+.sp
+b
+T}:T{
+.sp
+c
+T}
+.TE
+.sp
+.sp
+A nested description list item with an attached block.
+.sp
+category
+.RS 4
+.sp
+term 1
+.RS 4
+.sp
+def 1
+.RE
+.RE
+.sp
+f: bbb"N" \-> bbb"N" \(rs
+\(rs
+f: x |\-> x + 1 (asciimath)
+.SH "DAS GROSSE GANZE: ΩΜΈΓΑ ΑΣ"
+.sp
+A link before a no\-break space and colon: \c
+.URL "https://ruby\-lang.org" "Ruby" " :"
+text with an ideographic space at the end of a line
+and more text.
+.sp
+Spaces that are not ASCII do not delimit text: a \fBb\fP c, x \fIy\fP z, and
+a \fBb\fP　c.
+.sp
+Pass\-through spacing: \f(CRcode\fP and x + 1.

@@ -63,8 +63,8 @@ Asciidoctor project.
 - Fixes 25 bugs reported upstream that Asciidoctor (upstream `main` at
   `30fb8cd5`) still has, chosen by triaging
   all 610 open upstream issues (`doc/upstream-triage.md`). Each fix has a
-  case in the test corpus recorded on the gem, whose result shows the bug,
-  and on ptome (ADR-0022), and the output differences are listed in
+  test in `test/upstream_fixes/` (what ptome's output must contain where
+  the gem's shows the bug), and the output differences are listed in
   `benchmark/PARITY.md`: section IDs for punctuation-only titles and titles
   with footnotes; nested fonts in man pages; table cells after colspans and
   beside rowspans taking the right column spec, invalid column specs, tabs
@@ -74,16 +74,18 @@ Asciidoctor project.
   formatted text and curved quotes; URLs ending in `>`; paragraphs that look
   like attribute lines; ancestor list continuations; headings beyond `<h6>`;
   quotes in image attributes.
-- PDFs with `asciidoctor-compat` have asciidoctor-pdf's pages, pixel for
-  pixel, on 730 of its 790 spec documents (ADR-0022): the test corpus
-  holds the gem's PDFs and compares the pages. `base_glyph_widths:
+- The test corpus (ADR-0022): about 1,700 documents with the files the
+  Asciidoctor 2.0.26 command line writes for them (asciidoctor-pdf's PDFs
+  and asciidoctor-epub3's EPUBs too); ptome with `asciidoctor-compat` must
+  write the same files, PDFs compared by their pages pixel for pixel.
+  Compatibility is settings of the engine, such as `base_glyph_widths:
   thousandths` (a glyph as wide as its advance in whole thousandths of the
-  em) is one of the settings compatibility sets.
+  em).
 - Converts AsciiDoc to HTML 5, DocBook 5 and man pages. Output is
   byte-identical to the Asciidoctor gem (built from upstream `main` at
-  `30fb8cd5`) on every backend, apart from the bugs fixed, checked in
-  CI by the test corpus (about 1,200 documents with the gem's results,
-  ADR-0022) on the Dart VM and Node.js; the end-to-end
+  `30fb8cd5`) on every backend, apart from the bugs fixed, as the
+  parity gate (`tool/parity.sh`, retired for the test corpus) found it on
+  every backend; the end-to-end
   CLI suite (134 tests) passes against both Ptome and the gem.
 - A small, typed public API designed from usage scenarios
   (`doc/api.md`): a `Ptome` configuration (safe mode, attributes,

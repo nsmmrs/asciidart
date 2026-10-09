@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/spec/fixtures/deep-include/book.adoc"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

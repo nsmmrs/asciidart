@@ -1,0 +1,8 @@
+description: "repeated cells in the first row number the columns in order. asciidoctor#4500: a cell after one spanning columns took the column spec of the column with its index in the row (counting cells, not columns), so it was aligned like the wrong column."
+format: docbook5
+standalone: false
+contains:
+  - "<colspec colname=\"col_1\""
+  - "<colspec colname=\"col_2\""
+  - "<colspec colname=\"col_3\""
+  - "<colspec colname=\"col_4\""

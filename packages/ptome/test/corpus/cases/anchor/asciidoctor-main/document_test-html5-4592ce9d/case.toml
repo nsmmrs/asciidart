@@ -1,8 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:asciidoctor-main/test/document_test.rb:2080"
-formats = ["html5"]
-# Original words left in place (replacing them changed the conversion).
-kept-words = ["synopsis"]
-
-[options]
-input = "./input.adoc"

@@ -1,0 +1,5 @@
+description: "and precedes it. asciidoctor#1578: a double hyphen between a word and formatted text (`_italicized_--but`) was not replaced with an em dash: the markup of the formatted text, already converted, is not a word character."
+format: html5
+standalone: false
+contains:
+  - "this&#8212;&#8203;<em>that</em> one"

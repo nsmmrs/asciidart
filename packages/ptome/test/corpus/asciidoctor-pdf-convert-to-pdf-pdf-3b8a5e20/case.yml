@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/docs/modules/ROOT/pages/convert-to-pdf.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

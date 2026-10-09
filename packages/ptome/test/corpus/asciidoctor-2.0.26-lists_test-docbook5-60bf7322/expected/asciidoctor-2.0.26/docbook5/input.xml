@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Untitled</title>
+<date>2026-01-01</date>
+</info>
+<simpara>Kpze is a ifyyg-xhxhkzuqk to <xref linkend="inl-udbnfyo"/>.</simpara>
+<programlisting language="ruby" linenumbering="unnumbered">get '/hi' do <co xml:id="CO1-1"/> <co xml:id="CO1-2"/>
+end</programlisting>
+<calloutlist>
+<callout arearefs="">
+<para>Fewtues ladtis</para>
+</callout>
+<callout arearefs="CO1-1">
+<para><anchor xml:id="inl-udbnfyo" xreflabel="inl udbnfyo"/>INL udbnfyo</para>
+</callout>
+</calloutlist>
+</article>

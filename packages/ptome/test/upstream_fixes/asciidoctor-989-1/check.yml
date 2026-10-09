@@ -1,0 +1,6 @@
+description: "cells beside a rowspan get the specs of their own columns. asciidoctor#989: the cells next to one spanning rows took the column spec of the column on their left."
+format: html5
+standalone: false
+contains:
+  - "<td class=\"tableblock halign-left valign-top\"><p class=\"tableblock\">Digital Systems</p></td>"
+  - "<td class=\"tableblock halign-right valign-top\"><p class=\"tableblock\">18</p></td>"

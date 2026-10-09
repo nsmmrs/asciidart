@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/attributes_test.rb:370.1"
+formats: [html5]
+safe: safe
+attributes:
+  "sectids!@": ""
+  "linkcss": ""

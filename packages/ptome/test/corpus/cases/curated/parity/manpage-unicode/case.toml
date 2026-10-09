@@ -1,8 +1,0 @@
-description = "Parity with Asciidoctor (the former test/parity): the same in a man page: upper-cased headings (`ß` → `SS`), a link followed by a no-break space, a trailing ideographic space, `cols=\"\"`"
-source = "handmade:test/parity/manpage-unicode.adoc"
-features = ["parity"]
-formats = ["html5", "docbook5", "manpage"]
-
-[options]
-standalone = true
-safe = "unsafe"

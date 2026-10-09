@@ -1,0 +1,5 @@
+description: "the xref macro. asciidoctor#1678: a cross reference to an ID with `__` in it was turned into emphasis (quotes are substituted before the xref macro), and the other `__` could pair with one later in the line. The target of an xref (macro or shorthand) is no longer formatted."
+format: html5
+standalone: false
+contains:
+  - "<a href=\"#foo__bar__baz\">the part</a>"

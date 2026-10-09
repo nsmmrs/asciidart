@@ -1,0 +1,5 @@
+source: "pool:libasciidoc/test/includes/parent-include.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

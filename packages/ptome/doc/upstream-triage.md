@@ -2,7 +2,7 @@
 
 The 610 open issues of [asciidoctor/asciidoctor](https://github.com/asciidoctor/asciidoctor/issues) on 2026-10-05, triaged for fixing (step 9 of the roadmap; the fixes were made on a `bugfix` branch, merged into `master` on 2026-10-07). Every issue that reports a bug (labeled `bug` or `regression`, or reading as one) was tried on both the Ruby CLI (the gem built from upstream `main` at `30fb8cd5`, 2.1.0.alpha.0) and the Ptome CLI of the time, which matched it. The rest were sorted by their labels, or, for the 252 unlabeled issues, by reading them.
 
-A bug fixed here has a case in the corpus's `curated/bugfix` (`test/corpus`), named after the issue, recorded on the gem, whose result shows the bug, and on Ptome ([ADR-0022](../../../adr/0022-the-corpus-is-the-gate.md)); it replaced the bats tests that were run on both CLIs. The fixes are listed in [`benchmark/PARITY.md`](../benchmark/PARITY.md#upstream-bugs-fixed).
+A bug fixed here has a test in `test/upstream_fixes/`, named after the issue, that failed on both CLIs before the fix and says what ptome's output must contain ([ADR-0022](../../../adr/0022-the-corpus-is-the-gate.md)). The fixes are listed in [`benchmark/PARITY.md`](../benchmark/PARITY.md#upstream-bugs-fixed).
 
 | Category | Issues |
 |---|---|

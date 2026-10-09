@@ -1,0 +1,5 @@
+source: "pool:asciidoc-py/doc/latexmathml.txt"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

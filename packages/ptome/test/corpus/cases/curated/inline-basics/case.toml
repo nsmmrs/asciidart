@@ -1,4 +1,0 @@
-description = "Constrained and unconstrained quotes, replacements and an escaped mark."
-source = "handmade"
-features = ["inline.quotes", "inline.replacements", "inline.escape"]
-formats = ["html5", "docbook5"]

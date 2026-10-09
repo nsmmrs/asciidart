@@ -1,0 +1,4 @@
+source: "pool:capture-asciidoctor-2.0.26/blocks_test.rb:3471.1"
+formats: [pdf]
+attributes:
+  "docdir": "/asciidoctor/test"

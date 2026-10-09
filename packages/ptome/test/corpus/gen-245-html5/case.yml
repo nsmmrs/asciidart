@@ -1,0 +1,5 @@
+source: "gen:gen-245"
+formats: [html5]
+safe: safe
+attributes:
+  "hardbreaks-option": ""

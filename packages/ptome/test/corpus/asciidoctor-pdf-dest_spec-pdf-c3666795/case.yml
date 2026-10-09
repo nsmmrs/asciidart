@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/dest_spec.rb:7"
+formats: [pdf]
+safe: safe

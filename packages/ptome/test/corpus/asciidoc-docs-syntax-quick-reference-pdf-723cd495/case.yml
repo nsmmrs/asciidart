@@ -1,0 +1,5 @@
+source: "pool:asciidoc-docs/docs/modules/ROOT/pages/syntax-quick-reference.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,5 @@
+description: "and in a man page. asciidoctor#1578: a double hyphen between a word and formatted text (`_italicized_--but`) was not replaced with an em dash: the markup of the formatted text, already converted, is not a word character."
+format: manpage
+standalone: true
+contains:
+  - "\\fIitalicized\\fP\\(embut nevertheless"

@@ -1,0 +1,4 @@
+source: "pool:capture-asciidoctor-2.0.26/invoker_test.rb:610.1"
+formats: [html5]
+attributes:
+  "doctype": "inline"

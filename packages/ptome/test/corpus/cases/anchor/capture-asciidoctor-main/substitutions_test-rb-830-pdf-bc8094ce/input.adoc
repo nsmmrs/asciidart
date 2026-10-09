@@ -1,1 +1,0 @@
-image:circle.svg[Qayzx,100,opts=inline,link=self]

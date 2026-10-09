@@ -1,0 +1,6 @@
+description: "unchanged: attribute references in a title resolve where it is. asciidoctor#2903: a footnote in a section title was numbered when the parser converted the title to generate the section's ID, before the footnotes of the blocks above it: two footnotes got number 1, and the number ended up in the ID."
+format: html5
+standalone: false
+contains:
+  - "<h2 id=\"_title_one\">Title one</h2>"
+  - "<p>Text two.</p>"

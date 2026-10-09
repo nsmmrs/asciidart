@@ -1,0 +1,5 @@
+source: "pool:asciidoc-docs/docs/modules/macros/examples/footnote.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

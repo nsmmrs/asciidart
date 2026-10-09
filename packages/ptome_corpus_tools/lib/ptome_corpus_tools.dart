@@ -4,7 +4,6 @@
 library;
 
 export 'src/cli.dart';
-export 'src/commands/regen.dart';
 export 'src/oracle/ptome_runner.dart';
 export 'src/oracle/ruby_pool.dart';
 export 'src/spec/case.dart';

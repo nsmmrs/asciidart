@@ -1,0 +1,6 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/audio_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""
+  "icons": "font"

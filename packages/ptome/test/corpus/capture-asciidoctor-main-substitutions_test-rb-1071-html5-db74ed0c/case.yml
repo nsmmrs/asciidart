@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:1071.1"
+formats: [html5]
+safe: safe
+attributes:
+  "iconsdir": "assets/icons"
+  "icons": "image"

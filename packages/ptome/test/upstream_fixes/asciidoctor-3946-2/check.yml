@@ -1,0 +1,5 @@
+description: "and precedes one. asciidoctor#3946: a double hyphen after a curved quote (\"`hello`\"--world) was not replaced with an em dash."
+format: html5
+standalone: false
+contains:
+  - "hello&#8212;&#8203;&#8220;world&#8221;"

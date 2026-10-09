@@ -1,0 +1,7 @@
+source: "gen:gen-207085"
+formats: [docbook5]
+safe: safe
+doctype: inline
+attributes:
+  "sectnums": ""
+  "attribute-missing": "warn"

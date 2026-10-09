@@ -1,0 +1,4 @@
+source: "gen:gen-205389"
+formats: [docbook5]
+safe: safe
+doctype: inline

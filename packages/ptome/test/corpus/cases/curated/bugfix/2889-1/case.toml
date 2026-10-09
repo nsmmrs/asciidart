@@ -1,5 +1,0 @@
-description = "asciidoctor#2889: rows under a rowspan keep the alignment of their columns. asciidoctor#2889: in DocBook, cells in the rows under a rowspan were aligned like the column on their left."
-source = "bugfix:asciidoctor#2889"
-features = ["bugfix"]
-divergence = "https://github.com/asciidoctor/asciidoctor/issues/2889 (ptome benchmark/PARITY.md)"
-formats = ["docbook5"]

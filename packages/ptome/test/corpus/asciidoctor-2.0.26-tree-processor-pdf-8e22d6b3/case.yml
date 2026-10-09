@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-2.0.26/docs/modules/extensions/pages/tree-processor.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

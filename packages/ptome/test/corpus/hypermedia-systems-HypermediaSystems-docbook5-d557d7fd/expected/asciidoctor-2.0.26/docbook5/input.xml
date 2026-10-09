@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc maxdepth="2"?>
+<?asciidoc-numbered maxdepth="4"?>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title><phrase role="allcaps big">Mjbbjqctbd Higbzxb</phrase></title>
+<date>2026-01-01</date>
+<author>
+<personname>
+<firstname>Ksvo Mxgaekrpb, Nvfick Ixbec, Qaxhy Zqųqnŗlt</firstname>
+</personname>
+</author>
+<authorinitials>K</authorinitials>
+</info>
+<part xml:id="_mjbbjqctbd_fpwsxmgr">
+<title>Mjbbjqctbd Fpwsxmgr</title>
+<partintro>
+<simpara>Unresolved directive in input.adoc - include::book/CH00_Introduction.adoc[leveloffset=1]
+Unresolved directive in input.adoc - include::book/CH03_BuildingASimpleWebApplication.adoc[leveloffset=1]</simpara>
+</partintro>
+</part>
+<part xml:id="_uotqpchyas">
+<title>Uotqpchyas</title>
+<partintro>
+<simpara>Unresolved directive in input.adoc - include::book/CH14_Conclusion.adoc[leveloffset=1]</simpara>
+</partintro>
+</part>
+</book>

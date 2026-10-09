@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-2.0.26/syntax_highlighter_test.rb:639.1"
+formats: [html5, epub3]
+safe: safe
+attributes:
+  "source-highlighter": "prettify"

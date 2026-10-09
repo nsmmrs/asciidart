@@ -1,0 +1,5 @@
+source: "pool:asciidoc-parser/ref/asciidoc-lang/docs/modules/ROOT/pages/syntax-quick-reference.adoc"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -110,8 +110,8 @@ jobs:
       run: dart analyze --fatal-infos .
     - name: Check Dart formatting
       run: dart format --output=none --set-exit-if-changed .
-    - name: Run Dart tests
-      run: dart test
+    - name: Run Dart tests (the corpus has a job of its own)
+      run: dart test -x corpus
     - name: Check that the public API is closed
       run: dart run tool/api_check.dart
     - name: Check that the JavaScript projection is up to date
@@ -171,6 +171,22 @@ jobs:
         --exe-b "$PTOME_EXE"
         --epubcheck "$RUNNER_TEMP/epubcheck-5.4.0/epubcheck.jar"
         $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc' | sort)
+  corpus:
+    # ptome against the files the Asciidoctor command line writes
+    # (test/corpus, ADR-0022): red until compatibility settings close every
+    # difference, so apart from the rest.
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Install poppler and unzip (PDF pages, EPUB files)
+      run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils unzip
+    - name: Compare with Asciidoctor's files
+      run: dart test -t corpus
   npm:
     strategy:
       fail-fast: false
@@ -207,7 +223,7 @@ jobs:
       working-directory: packages/ptome/build/npm
       run: npm publish --dry-run
     - name: Run the Dart tests on Node.js
-      run: dart test -p node
+      run: dart test -p node -x corpus
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)

@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/section_spec.rb:1068"
+formats: [pdf]
+safe: safe

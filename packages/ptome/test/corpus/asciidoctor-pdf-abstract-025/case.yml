@@ -1,0 +1,7 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/abstract_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""
+  "pdf-theme": "theme.yml"
+  "pdf-themesdir": "{docdir}"

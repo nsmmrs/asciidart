@@ -1,0 +1,5 @@
+source: "pool:antora/docs/modules/playbook/pages/content-edit-url.adoc"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

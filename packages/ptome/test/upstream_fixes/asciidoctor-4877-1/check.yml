@@ -1,0 +1,8 @@
+description: "a punctuation-only section title gets a non-empty id. asciidoctor#4877: a section title made only of punctuation got an empty generated id (`<h2 id=\"\">`); it keeps the separator instead."
+format: html5
+standalone: false
+excludes:
+  - "id=\"\""
+contains:
+  - "<h2 id=\"_\">"
+  - "<h2 id=\"__2\">"

@@ -1,0 +1,4 @@
+source: "handmade"
+formats: [html5, manpage]
+safe: safe
+doctype: manpage

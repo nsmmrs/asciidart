@@ -1,0 +1,5 @@
+source: "pool:asciidoc-docs/docs/modules/tables/pages/add-header-row.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

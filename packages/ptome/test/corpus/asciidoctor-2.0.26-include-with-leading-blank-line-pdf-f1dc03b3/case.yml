@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-2.0.26/test/fixtures/include-with-leading-blank-line.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

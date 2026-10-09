@@ -1,0 +1,4 @@
+source: "gen:mut-5004"
+formats: [html5]
+safe: safe
+doctype: book

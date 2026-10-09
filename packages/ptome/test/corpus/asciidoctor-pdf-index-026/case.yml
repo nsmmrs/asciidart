@@ -1,0 +1,7 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/index_spec.rb"
+formats: [pdf]
+doctype: book
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""
+  "media": "print"

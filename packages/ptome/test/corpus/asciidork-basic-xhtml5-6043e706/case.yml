@@ -1,0 +1,5 @@
+source: "pool:asciidork/cli/tests/all/fixtures/docinfo/basic.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

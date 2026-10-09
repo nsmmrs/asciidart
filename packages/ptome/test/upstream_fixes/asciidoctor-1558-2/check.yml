@@ -1,0 +1,5 @@
+description: "and in the rows under a rowspan. asciidoctor#1558: in DocBook, a cell after a colspan or beside a rowspan got the style of the wrong column (emphasis applied to the wrong cell)."
+format: docbook5
+standalone: false
+counts:
+  "<simpara><emphasis>Emphasis</emphasis></simpara>": 2

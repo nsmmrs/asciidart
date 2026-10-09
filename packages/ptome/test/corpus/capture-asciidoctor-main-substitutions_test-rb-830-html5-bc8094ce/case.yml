@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:830.1"
+formats: [html5, pdf]
+safe: server
+attributes:
+  "imagesdir": "fixtures"
+  "docdir": "/asciidoctor/test"

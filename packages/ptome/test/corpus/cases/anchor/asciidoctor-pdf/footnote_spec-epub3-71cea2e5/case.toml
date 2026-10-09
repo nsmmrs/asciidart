@@ -1,6 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:asciidoctor-pdf/spec/footnote_spec.rb:388"
-formats = ["epub3"]
-
-[options]
-input = "./input.adoc"

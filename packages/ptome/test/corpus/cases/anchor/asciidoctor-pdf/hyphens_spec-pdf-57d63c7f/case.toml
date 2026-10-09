@@ -1,6 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:asciidoctor-pdf/spec/hyphens_spec.rb:170"
-formats = ["pdf"]
-
-[options]
-input = "./input.adoc"

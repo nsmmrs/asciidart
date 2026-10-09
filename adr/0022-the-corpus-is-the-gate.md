@@ -1,79 +1,64 @@
-# ADR-0022: The Corpus Is the Black-Box Gate
+# ADR-0022: The Corpus: ptome Against Asciidoctor's Own Files
 
-**Status:** Accepted on 2026-10-09. Amends [ADR-0017](0017-follow-main-fix-bugs.md) decision 3.
+**Status:** Accepted on 2026-10-09, and simplified the same day (this
+text). Amends [ADR-0017](0017-follow-main-fix-bugs.md) decision 3.
 
 ## Context
 
-ptome's behavior was checked from the outside by five suites with five
-harnesses: the parity documents and Asciidoctor's fixtures diffed against
-the gem's CLI (`tool/parity.sh`, on the native and the Node.js CLI), the
-upstream bug reproductions in bats (`test/bugfix`, `tool/bugfix_check.sh`
-running each on both CLIs), the deliberate differences in bats
-(`test/divergences`), and the ascii-docs corpus in its own repository. Each
-needed a built executable and the gem at check time; together they made the
-gate slow.
+ptome's behavior was checked from the outside by several suites with
+several harnesses (the parity documents against the gem's CLI, the upstream
+bug reproductions and deliberate differences in bats, the ascii-docs
+corpus), each needing the gem and a built executable at check time. The
+first corpus that replaced them recorded every implementation's results
+(three Asciidoctor profiles and ptome's own), logs, divergence notes and
+page comparisons: more bookkeeping than the question it answers.
 
 ## Decision
 
-1. **One corpus** (`packages/ptome/test/corpus`): documents with the result
-   each implementation gives them (Asciidoctor 2.0.26, Asciidoctor main,
-   ptome), recorded in advance. ptome's test suite reads it
-   (`test/corpus_test.dart`) on the Dart VM and on Node.js, in seconds,
-   with neither the gem nor an executable.
-2. **The tools that write it** are `packages/ptome_corpus_tools` (not
-   published): they run the gem, record results, and refuse a ptome result
-   that differs from Asciidoctor main without a divergence note.
-3. **A fixed upstream bug is a corpus case** in `curated/bugfix`, named after
-   the issue, recorded on the gem (whose result shows the bug) and on ptome
-   (with the divergence note). A behavior around the fix that must not move
-   is a case whose ptome result equals the gem's. Deliberate differences
-   that aren't upstream bugs are in `curated/divergence`; documents of our
-   own that pin parity are in `curated/parity`; Asciidoctor's own fixtures,
-   converted as the CLI does, are in `curated/asciidoctor-fixtures`.
-4. **Results don't depend on the machine**: the case directory and the
-   working directory are normalized, the clock and the home directory are
-   fixed, PDFs and EPUBs are set in the vendored fonts only, and the
-   recorder converts each binary result again from another directory and
-   fails if it changes.
-5. The CLI end-to-end suite (`test/e2e`, bats) stays: it checks the command
-   line itself, which the corpus doesn't.
+1. **A flat list of cases** (`packages/ptome/test/corpus/<case>/`): the
+   document (`input.adoc`) with the files it reads, an optional `case.yml`
+   (formats, safe mode, doctype, attributes, provenance), and the
+   **goldens**: the literal files the Asciidoctor command line writes for
+   it, in `expected/<release>/<format>/`. Only the latest stable release
+   is generated (`asciidoctor-2.0.26`: Asciidoctor 2.0.26, asciidoctor-pdf
+   2.3.27, asciidoctor-epub3 2.3.0); a later release gets a folder of its
+   own beside it.
+2. **Every case is a whole document**, as `asciidoctor input.adoc` writes it,
+   with the attributes in `goldens.yml` (a fixed clock and home) and the
+   case's own.
+3. **ptome converts each case the same way**, with `asciidoctor-compat`.
+   - **Text formats** (html5, xhtml5, docbook5, manpage) match the golden
+     file's bytes; the only normalization is the generator's name in its
+     stamp.
+   - **PDF and EPUB** are compared by what can be seen: a PDF's pages,
+     rendered at 50 dpi, pixel for pixel; an EPUB's files, byte for byte.
+     That comparison is expensive, so the hash of the last ptome file found
+     equal is kept (`ptome.yml`): the test passes at once on that hash, and
+     a new file that compares equal replaces it.
+4. **Compatibility is settings of the engine.** Where ptome's output
+   differs, the fix is a value of a setting of the modern engine (or a new
+   setting) that `asciidoctor-compat` sets for that format, never a mode
+   that switches the engine. The corpus is red until every difference is
+   closed; it runs as a job of its own (`dart test -t corpus`), and the
+   rest of the suite without it.
+5. **ptome's deliberate differences are not in the corpus.** A fix of a bug
+   Asciidoctor still has, or another deliberate difference, is a folder of
+   `test/upstream_fixes` with what ptome's output must contain
+   (`upstream_fixes_test.dart`).
+6. **Goldens come from the gem's own command-line code**
+   (`packages/ptome_corpus_tools/goldens/generate.rb`, in the bundle pinned
+   in `goldens/<release>/Gemfile.lock`, with the optional gems for what
+   ptome implements: asciimath, text-hyphen). Each case is converted from
+   two directories, and a result that differs between them is refused; a
+   conversion that fails has no golden; a release's goldens are not
+   rewritten without `--replace`.
 
 ## Consequences
 
-- `test/bugfix`, `test/divergences`, `test/parity`, `tool/bugfix_check.sh`
-  and `tool/parity.sh` are removed; their tests are corpus cases, each
-  checked against the assertions of the test it replaces.
-- Recording needs the gem (the tools' `setup.sh`); checking doesn't.
-- PDF results are byte hashes, which depend on the platform's compression:
-  they are checked on the Dart VM only.
-
-## PDF parity: the gem's pages, pixel for pixel
-
-Added on 2026-10-09.
-
-6. **Golden PDFs come from the gem**, recorded in advance: the
-   `asciidoctor-pdf` profile (asciidoctor-pdf 2.3.27 on Asciidoctor 2.0.26,
-   with text-hyphen and no other optional gems) converts every PDF case,
-   among them asciidoctor-pdf's own spec documents
-   (`curated/asciidoctor-pdf-specs`).
-7. **ptome's PDF is checked by its pages**: with `asciidoctor-compat`, its
-   pages rendered at 50 dpi (`pdftoppm -gray`) must equal the gem's pixel
-   for pixel. The recorder notes each PDF's comparison (`pixels =
-   'identical'`, or where the pages first differ: the cases still to
-   close).
-8. **The hash is the fast path, the pixels the contract.** The test passes
-   at once when ptome's PDF is the one recorded (its pixels were checked
-   when it was). When the bytes change, it renders both PDFs and compares
-   the pages; identical pages pass, and the new PDF is promoted: its hash
-   is recorded in the case, to be committed. ptome's PDFs (and EPUBs) are
-   recorded by their hashes alone; the gem's, which can't be made again
-   without it, are kept. Pages that differ
-   fail. A change that only reorders bytes costs one rendering, once.
-9. **Compatibility is settings of the engine, not a second engine.** What
-   makes the pages match asciidoctor-pdf's is a value of a setting of the
-   modern engine that `asciidoctor-compat` sets (such as
-   `base_glyph_widths: thousandths`, each glyph as wide as its advance in
-   whole thousandths of the em, as the gem writes its fonts' widths). An
-   engine change that would move the compatible pages comes with a setting
-   whose compatible value keeps them; the pixel check shows when one
-   doesn't.
+- No profiles, divergence notes, logs or ptome results are recorded;
+  diagnostics are not compared (their wording is ptome's own).
+- The corpus started with 1,679 cases and 1,854 goldens, from the earlier
+  corpus (anchors from real documents, the fuzzer's finds, Asciidoctor's
+  fixtures, asciidoctor-pdf's spec documents, our parity documents).
+- The EPUB goldens hold the fonts asciidoctor-epub3 embeds (about 450 KB
+  each).

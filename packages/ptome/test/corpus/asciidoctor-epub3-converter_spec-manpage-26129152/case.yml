@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-epub3/spec/converter_spec.rb:401"
+formats: [manpage]
+safe: safe

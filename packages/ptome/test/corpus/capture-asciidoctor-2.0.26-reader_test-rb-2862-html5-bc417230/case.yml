@@ -1,0 +1,3 @@
+source: "pool:capture-asciidoctor-2.0.26/reader_test.rb:2862.1"
+formats: [html5]
+safe: safe

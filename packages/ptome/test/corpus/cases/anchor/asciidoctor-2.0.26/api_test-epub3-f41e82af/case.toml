@@ -1,8 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:asciidoctor-2.0.26/test/api_test.rb:725"
-formats = ["epub3"]
-# Original words left in place (replacing them changed the conversion).
-kept-words = ["note"]
-
-[options]
-input = "./input.adoc"

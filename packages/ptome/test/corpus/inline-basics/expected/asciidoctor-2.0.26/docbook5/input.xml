@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Untitled</title>
+<date>2026-01-01</date>
+</info>
+<simpara>Some <emphasis role="strong">strong</emphasis>, <emphasis>emphasis</emphasis>, <literal>mono</literal> and <emphasis role="strong">un</emphasis>constrained <emphasis>mid</emphasis>word text.
+It&#8217;s&#8201;&#8212;&#8201;&#169; &#8230;&#8203; &#8594; done, and *not strong*.</simpara>
+</article>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Doc <emphasis role="strong">Title</emphasis>&#8201;&#8212;&#8201;with article</title>
+<date>2026-01-01</date>
+<author>
+<personname>
+<firstname>Jane</firstname>
+<surname>Doe</surname>
+</personname>
+<email>jane@example.org</email>
+</author>
+<authorinitials>JD</authorinitials>
+</info>
+<section xml:id="_ab">
+<title>A&#8201;&#8212;&#8201;B</title>
+
+</section>
+<section xml:id="_emphasis_and_strong_title">
+<title><emphasis>Emphasis</emphasis> and <emphasis role="strong">strong</emphasis> Title</title>
+
+</section>
+<section xml:id="_title_with_1_counter">
+<title>Title with 1 counter</title>
+
+</section>
+<section xml:id="_link_site_and_code">
+<title>Link <link xl:href="https://example.org">site</link> and <literal>code</literal></title>
+
+</section>
+<section xml:id="_quotes_double_and_single">
+<title>Quotes <quote>double</quote> and <quote>single</quote> &#169; &#174; &#8230;&#8203;</title>
+<bridgehead xml:id="_floatingtitle_bold" renderas="sect2">Floating&#8201;&#8212;&#8201;title <emphasis role="strong">bold</emphasis></bridgehead>
+</section>
+<section xml:id="explicit">
+<title>Explicit article&#8201;&#8212;&#8201;id</title>
+<blockquote>
+<attribution>
+<emphasis role="strong">Bold</emphasis> Author
+<citetitle><emphasis>Book</emphasis>&#8201;&#8212;&#8201;Part</citetitle>
+</attribution>
+<simpara>quoted</simpara>
+</blockquote>
+<blockquote>
+<attribution>
+Poet &lt;tag&gt;
+<citetitle>Title &amp; co</citetitle>
+</attribution>
+<literallayout>line</literallayout>
+</blockquote>
+<simpara>"Quote" said <emphasis>x</emphasis>&#8201;&#8212;&#8201;yes&#8201;&#8212;&#8201;<emphasis role="strong">Credit</emphasis> Name, <emphasis>Work</emphasis>&#8201;&#8212;&#8201;Vol</simpara>
+<blockquote>
+<attribution>
+<emphasis role="strong">Md</emphasis> Author
+<citetitle><emphasis>Md Book</emphasis></citetitle>
+</attribution>
+<simpara>markdown quote</simpara>
+</blockquote>
+<example xml:id="blk">
+<title>Title&#8201;&#8212;&#8201;with <emphasis role="strong">bold</emphasis></title>
+<simpara>example</simpara>
+</example>
+<simpara xml:id="anchor" xreflabel="Ref&#8201;&#8212;&#8201;text">Para with <xref linkend="anchor"/> and <xref linkend="_a_b"/>.</simpara>
+</section>
+</article>

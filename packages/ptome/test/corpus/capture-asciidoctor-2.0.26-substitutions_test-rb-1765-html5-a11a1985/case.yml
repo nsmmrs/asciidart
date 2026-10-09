@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-2.0.26/substitutions_test.rb:1765.1"
+formats: [html5]
+safe: safe
+attributes:
+  "experimental": ""
+  "icons": "font"

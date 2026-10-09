@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-2.0.26/test/sections_test.rb:797"
+formats: [pdf]
+safe: safe

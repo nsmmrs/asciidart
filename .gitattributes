@@ -1,6 +1,7 @@
 * text=auto eol=lf
 # The test corpus is stored byte for byte: inputs, expected outputs and PDFs
 # (ADR-0022).
-packages/ptome/test/corpus/cases/** -text
+packages/ptome/test/corpus/** -text
+packages/ptome/test/upstream_fixes/** -text
 *.pdf binary
 *.epub binary

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-intellij-plugin/src/test/resources/testData/psi/antoraRelativeResources/modules/ROOT/pages/sub/test.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

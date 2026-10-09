@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-2.0.26/test/tables_test.rb:2126"
+formats: [epub3]
+safe: safe

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor.js/packages/core/test/fixtures/semantic-html5-scenarios/image-inline-with-align.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

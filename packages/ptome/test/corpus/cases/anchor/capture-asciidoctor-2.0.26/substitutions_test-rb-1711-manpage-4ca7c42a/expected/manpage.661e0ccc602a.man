@@ -1,2 +1,0 @@
-.sp
-\f(CRCtrl\0+\0]\fP

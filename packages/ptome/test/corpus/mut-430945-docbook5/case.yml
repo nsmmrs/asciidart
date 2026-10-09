@@ -1,0 +1,7 @@
+source: "gen:mut-430945"
+formats: [docbook5]
+safe: safe
+doctype: inline
+attributes:
+  "hide-uri-scheme": ""
+  "linkcss": ""

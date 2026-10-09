@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/samples/sample-book.adoc"
+formats: [xhtml5, pdf, epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

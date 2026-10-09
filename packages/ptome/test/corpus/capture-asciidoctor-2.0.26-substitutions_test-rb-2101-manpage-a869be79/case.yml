@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-2.0.26/substitutions_test.rb:2101.1"
+formats: [manpage, pdf]
+safe: safe
+attributes:
+  "author": "Dan"

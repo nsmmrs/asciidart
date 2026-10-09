@@ -17,7 +17,6 @@ import 'oracle/dart_coverage.dart';
 import 'fuzz/triage.dart';
 import 'gen/generator.dart';
 import 'gen/serialize.dart';
-import 'commands/regen.dart';
 import 'pool/capture.dart';
 import 'pool/entry.dart';
 import 'pool/index.dart';
@@ -28,83 +27,6 @@ import 'pool/dart_measure.dart';
 import 'spec/conversion.dart';
 import 'spec/corpus.dart';
 import 'spec/profile.dart';
-
-final class RegenCommand extends Command<int> {
-  RegenCommand() {
-    argParser
-      ..addMultiOption(
-        'profile',
-        abbr: 'p',
-        help: 'Profiles to run (default: all).',
-      )
-      ..addFlag(
-        'check',
-        help: 'Write nothing; fail if a recorded result changed.',
-      )
-      ..addOption(
-        'jobs',
-        abbr: 'j',
-        defaultsTo: '4',
-        help: 'Ruby workers per profile.',
-      );
-  }
-
-  @override
-  String get name => 'regen';
-
-  @override
-  String get description =>
-      'Convert cases with each profile and record the results.\n'
-      'Arguments limit the cases to those whose id starts with one of them.';
-
-  @override
-  Future<int> run() async {
-    final args = argResults!;
-    final corpus = Corpus.open()..enterPackage();
-    final names = args.multiOption('profile');
-    final profiles = [
-      for (final MapEntry(:key, :value) in corpus.profiles.entries)
-        if (names.isEmpty || names.contains(key)) value,
-    ];
-    final check = args.flag('check');
-    final cases = corpus.cases(args.rest);
-    final report = await regen(
-      corpus,
-      cases,
-      profiles: profiles,
-      check: check,
-      jobs: int.parse(args.option('jobs')!),
-    );
-    stdout.writeln(
-      '${report.converted} conversions, ${cases.length} cases, '
-      '${report.changed.length} ${check ? 'mismatched' : 'changed'}',
-    );
-    for (final id in report.changed) {
-      stdout.writeln('  ${check ? 'mismatch' : 'changed'}: $id');
-    }
-    for (final id in report.undocumented) {
-      stdout.writeln(
-        '  differs from its reference without a divergence note: $id',
-      );
-    }
-    for (final id in report.located) {
-      stdout.writeln('  depends on the directory it is converted in: $id');
-    }
-    if (report.logOnly.isNotEmpty) {
-      stdout.writeln(
-        '  ${report.logOnly.length} with the same output but a different log (triage/log-differences.txt)',
-      );
-      File(p.join(corpus.toolsRoot, 'triage', 'log-differences.txt'))
-        ..parent.createSync(recursive: true)
-        ..writeAsStringSync('${report.logOnly.join('\n')}\n');
-    }
-    return (check && report.changed.isNotEmpty) ||
-            report.undocumented.isNotEmpty ||
-            report.located.isNotEmpty
-        ? 1
-        : 0;
-  }
-}
 
 /// `corpus pool ...`: the raw pool (fetch, index, capture, measure).
 final class PoolCommand extends Command<int> {

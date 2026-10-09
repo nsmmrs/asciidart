@@ -1,0 +1,5 @@
+source: "pool:hibernate/documentation/src/main/asciidoc/introduction/Querying.adoc"
+formats: [xhtml5]
+safe: safe
+attributes:
+  "linkcss": "@"

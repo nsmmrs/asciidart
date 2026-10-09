@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Untitled</title>
+<date>2026-01-01</date>
+</info>
+<informaltable frame="all" rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col_1" colwidth="50*"/>
+<colspec colname="col_2" colwidth="50*"/>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara>fpvqun hnjo</simpara></entry>
+<entry align="left" valign="top"><informaltable frame="all" rowsep="1" colsep="1">
+<tgroup cols="1">
+<colspec colname="col_1" colwidth="100*"/>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara>tiiqel hnjo</simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+</article>

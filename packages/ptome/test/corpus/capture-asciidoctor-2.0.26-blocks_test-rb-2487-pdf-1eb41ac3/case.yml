@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-2.0.26/blocks_test.rb:2487.1, pool:capture-asciidoctor-2.0.26/blocks_test.rb:2500.2"
+formats: [pdf]
+safe: safe
+attributes:
+  "allow-uri-read": ""
+  "cache-uri": ""

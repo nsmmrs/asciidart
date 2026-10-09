@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/links_test.rb:1144.1"
+formats: [manpage]
+safe: safe
+attributes:
+  "docname": "test"

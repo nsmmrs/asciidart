@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:1833.1"
+formats: [html5]
+safe: safe
+attributes:
+  "experimental": ""

@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-2.0.26/substitutions_test.rb:2020.1, pool:capture-asciidoctor-main/substitutions_test.rb:2093.1"
+formats: [html5]
+safe: safe
+doctype: inline
+attributes:
+  "linkcss": ""

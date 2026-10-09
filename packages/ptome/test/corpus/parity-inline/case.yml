@@ -1,0 +1,2 @@
+source: "handmade:test/parity/inline.adoc"
+formats: [html5, docbook5, manpage]

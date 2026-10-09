@@ -1,0 +1,19 @@
+# The goldens the corpus test compares ptome with: <case>/expected/<release>/
+# <format>/, the files the Asciidoctor command line writes (made by
+# packages/ptome_corpus_tools/goldens/generate.rb, from the bundle pinned in
+# goldens/<release>/Gemfile.lock).
+release: asciidoctor-2.0.26
+
+# Given to every conversion, Asciidoctor's and ptome's, as `-a` options: a
+# fixed clock and home, so the files don't depend on when or where they
+# are made.
+attributes:
+  docdate: "2026-01-01"
+  doctime: "00:00:00 +0000"
+  docyear: "2026"
+  docdatetime: "2026-01-01 00:00:00 +0000"
+  localdate: "2026-01-01"
+  localtime: "00:00:00 +0000"
+  localyear: "2026"
+  localdatetime: "2026-01-01 00:00:00 +0000"
+  user-home: "/home/user"

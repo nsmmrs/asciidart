@@ -1,0 +1,5 @@
+source: "pool:hypermedia-systems/book/HypermediaSystems.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

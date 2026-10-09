@@ -1,0 +1,6 @@
+description: "the paragraph is kept. asciidoctor#3396: a paragraph that starts with formatted text with a role and ends with a macro (`[.red]#Bbb# bbb.footnote:[Bbb.]`) was taken for a block attribute line, since it starts with `[` and ends with `]`, and disappeared from the output (its text became the role of the next block)."
+format: html5
+standalone: false
+contains:
+  - "<p><span class=\"red\">Bbb</span> bbb.<sup class=\"footnote\">"
+  - "<div class=\"paragraph\">\n<p>Ccc.</p>"

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-2.0.26/docs/modules/extensions/pages/compound-block-processor.adoc"
+formats: [epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

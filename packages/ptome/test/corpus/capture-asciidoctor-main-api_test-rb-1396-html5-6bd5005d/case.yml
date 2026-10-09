@@ -1,0 +1,7 @@
+source: "pool:capture-asciidoctor-main/api_test.rb:1396.1"
+formats: [html5]
+safe: server
+attributes:
+  "allow-uri-read": ""
+  "stylesdir": "http://127.0.0.1:9876/fixtures"
+  "stylesheet": "custom.css"

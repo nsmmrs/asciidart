@@ -1,5 +1,0 @@
-description = "and the term keeps its text in DocBook. Index terms are self-contained: a quote mark inside one (`_hyperscript`) doesn't pair with a mark after it. Asciidoctor 2.0.26 lets the emphasis open inside the term and close in the text (`an _event filter</em>`), and the term loses its underscore. Found in the Hypermedia Systems book. Fails on the gem."
-source = "handmade:test/divergences/index_terms.bats"
-features = ["divergence"]
-divergence = "ptome benchmark/PARITY.md"
-formats = ["docbook5"]

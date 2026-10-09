@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-2.0.26/docs/modules/install/pages/supported-platforms.adoc"
+formats: [pdf, epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

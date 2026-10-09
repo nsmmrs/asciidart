@@ -1,0 +1,7 @@
+description: "unchanged: a trailing anchor is the section id. asciidoctor#3633: inline anchors in section titles were not registered in the catalog, so a duplicate went unreported (and tools reading the catalog couldn't resolve them)."
+format: html5
+standalone: false
+quiet: true
+contains:
+  - "<h2 id=\"sec\">Section 1</h2>"
+  - "<a href=\"#sec\">Section 1</a>"

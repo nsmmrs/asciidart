@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/attributes_test.rb:327.1"
+formats: [html5]
+safe: safe
+attributes:
+  "cash@": "heroes"
+  "linkcss": ""

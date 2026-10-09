@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/substitutions_test.rb:630.1"
+formats: [html5]
+safe: safe
+doctype: inline
+attributes:
+  "rolename": "red"

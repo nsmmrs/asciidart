@@ -1,0 +1,3 @@
+source: "pool:capture-asciidoctor-2.0.26/substitutions_test.rb:2183.1"
+formats: [docbook5, pdf]
+safe: safe

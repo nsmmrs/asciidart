@@ -1,15 +1,17 @@
-/// Reads the black-box corpus in `test/corpus` (written by
-/// `packages/ptome_corpus_tools`) and converts its cases with ptome.
+/// Reads the corpus in `test/corpus`: AsciiDoc documents with the files the
+/// Asciidoctor command line writes for them (the goldens), and converts
+/// them with ptome the same way.
 ///
 /// ```text
 /// test/corpus/
-///   profiles.toml     the implementations recorded; [ptome] is checked here
-///   defaults.toml     options every case starts from
-///   cases/<set>/<name>/
-///     case.toml       description, source, formats, options, attributes
-///     input.adoc      the document
-///     expected/       <format>.<hash>.<ext>, one blob per distinct output
-///     versions.toml   [<format>.<profile>] output | error, log, divergence
+///   goldens.yml           the release compared with, and the attributes
+///                         every conversion gets (a fixed clock)
+///   <case>/
+///     input.adoc          the document, with the files it reads beside it
+///     case.yml            optional: formats, safe, doctype, attributes, source
+///     expected/<release>/<format>/<file>   what Asciidoctor wrote
+///     ptome.yml           the last ptome PDFs and EPUBs found equal to the
+///                         goldens, by hash
 /// ```
 library;
 
@@ -18,407 +20,211 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
+import 'package:ptome/io.dart';
 import 'package:ptome/ptome.dart';
 import 'package:ptome/src/font_index.dart';
 import 'package:ptome/src/io.dart' as io;
-import 'package:toml/toml.dart';
+import 'package:yaml/yaml.dart';
 
 import '../../tool/vendored_font_directories.dart';
+import 'delete.dart';
 
-/// The corpus directory (tests run from the package root). Files are read
-/// through ptome's I/O seam, so the corpus runs on Node.js too.
+/// The corpus directory (tests run from the package root).
 final String corpusRoot = p.posix.join(io.currentDirectory, 'test', 'corpus');
 
-/// The profile whose recorded results ptome is checked against.
-const ptomeProfile = 'ptome';
-
-/// The output formats a case can name, with their blob extensions.
+/// The formats a case can have goldens of, by their backend names.
 enum Format {
-  html5('html'),
-  xhtml5('xhtml'),
-  docbook5('xml'),
-  manpage('man'),
-  pdf('pdf'),
-  epub3('epub');
+  html5(Backend.html5),
+  xhtml5(Backend.xhtml5),
+  docbook5(Backend.docbook5),
+  manpage(Backend.manpage),
+  pdf(Backend.pdf),
+  epub3(Backend.epub3);
 
-  new(this.extension);
+  new(this.backend);
 
-  final String extension;
+  final Backend backend;
 
-  bool get binary => this == pdf || this == epub3;
-
-  Backend get backend => switch (this) {
-    html5 => Backend.html5,
-    xhtml5 => Backend.xhtml5,
-    docbook5 => Backend.docbook5,
-    manpage => Backend.manpage,
-    pdf => Backend.pdf,
-    epub3 => Backend.epub3,
-  };
+  /// Whether the file is compared by more than its bytes (a PDF by its
+  /// pages, an EPUB by the files in it), with the last ptome file found
+  /// equal kept by its hash.
+  bool get expensive => this == pdf || this == epub3;
 }
 
-/// One logged message: `severity:line: message` in `versions.toml`.
-typedef LogEntry = ({String severity, int? line, String message});
+/// The corpus: the release compared with, and the cases.
+final class Corpus {
+  new _(this.release, this.attributes, this.cases);
 
-String formatLog(LogEntry entry) =>
-    '${entry.severity}:${entry.line ?? ''}: ${entry.message}';
+  /// The goldens compared with (`asciidoctor-2.0.26`).
+  final String release;
 
-/// What a conversion gave, normalized: an output blob's hash or an error.
-final class Result {
-  const new({this.hash, this.error, this.log = const [], this.pixels});
-
-  final String? hash;
-  final String? error;
-  final List<LogEntry> log;
-
-  /// How a PDF's pages compare with the golden PDF's, pixel for pixel, as
-  /// recorded (`identical`, or where they first differ).
-  final String? pixels;
-
-  List<String> get logLines => [for (final entry in log) formatLog(entry)];
-
-  /// Whether this is the result [other] records: the same output and log,
-  /// or both a crash (whose wording is the platform's).
-  bool matches(Result other) =>
-      (error != null && other.error != null) ||
-      hash == other.hash &&
-          error == other.error &&
-          logLines.join('\n') == other.logLines.join('\n');
-}
-
-/// One case: a document, its options, and ptome's recorded result per
-/// format.
-final class Case {
-  new _({
-    required this.id,
-    required this.dir,
-    required this.input,
-    required this.formats,
-    required this.doctype,
-    required this.safe,
-    required this.standalone,
-    required this.attributes,
-    required this.knownIssues,
-    required this.expected,
-    required this.goldenPdf,
-    required this.caseDir,
-  });
-
-  /// The case directory (where `case.toml` is; [dir] is the input's).
-  final String caseDir;
-
-  /// The case directory relative to `cases/`.
-  final String id;
-  final String dir;
-  final String input;
-  final List<Format> formats;
-  final Doctype? doctype;
-  final SafeMode safe;
-  final bool standalone;
+  /// The attributes every conversion gets.
   final Map<String, String> attributes;
 
-  /// Formats ptome can't be checked on yet, with the reason.
-  final Map<Format, String> knownIssues;
+  final List<Case> cases;
+}
 
-  /// ptome's recorded result per format.
-  final Map<Format, Result> expected;
+/// One document, its options and its goldens.
+final class Case {
+  new _({
+    required this.name,
+    required this.dir,
+    required this.safe,
+    required this.doctype,
+    required this.attributes,
+    required this.goldens,
+    required this.verified,
+  });
 
-  /// The hash of the golden PDF (asciidoctor-pdf's, the ptome profile's
-  /// `pdf-compare-to`), whose pages ptome's must equal pixel for pixel.
-  final String? goldenPdf;
+  final String name;
+  final String dir;
+  final SafeMode safe;
+  final Doctype? doctype;
 
-  /// Records [hash] (a PDF whose pages were just found identical to the
-  /// golden PDF's) as ptome's in place of [old] in `versions.toml` (its
-  /// pixels identical), so that the hash passes on later runs. ptome's
-  /// PDFs aren't kept, only their hashes.
-  void promotePdf(String old, String hash) {
-    final path = p.posix.join(caseDir, 'versions.toml');
-    final text = utf8.decode(io.readBytes(path));
-    final start = text.indexOf('[pdf.$ptomeProfile]');
-    final end = switch (text.indexOf('\n[', start + 1)) {
-      -1 => text.length,
-      final at => at,
-    };
-    final section = text
-        .substring(start, end)
-        .replaceFirst("output = '$old'", "output = '$hash'")
-        .replaceFirst(RegExp("pixels = '[^']*'"), "pixels = 'identical'");
-    io.writeString(
-      path,
-      text.substring(0, start) + section + text.substring(end),
-    );
-  }
+  /// The case's own attributes (`name!` unsets).
+  final Map<String, String> attributes;
 
-  /// How the pages of [pdf] (whose hash is [hash]) compare with the golden
-  /// PDF's: `identical`, or where they first differ; null when they can't
-  /// be rendered (no `pdftoppm`).
-  String? comparePages(Uint8List pdf, String hash) {
-    final golden = _pages(
-      io.readBytes(blobPath(Format.pdf, goldenPdf!)),
-      goldenPdf!,
-    );
-    final pages = _pages(pdf, hash);
-    if (golden == null || pages == null) return null;
-    if (golden.length != pages.length) {
-      return 'pages: ${pages.length}, not ${golden.length}';
-    }
-    for (var i = 0; i < golden.length; i++) {
-      final (a, b) = (golden[i], pages[i]);
-      if (a.length != b.length) return 'page ${i + 1}: another size';
-      var differ = 0;
-      for (var j = 0; j < a.length; j++) {
-        if (a[j] != b[j]) differ++;
-      }
-      if (differ > 0) {
-        final share = (differ / a.length * 100).toStringAsFixed(3);
-        return 'page ${i + 1}: $share%';
-      }
-    }
-    return 'identical';
-  }
+  /// The golden file of each format.
+  final Map<Format, String> goldens;
 
-  String blobPath(Format format, String hash) =>
-      p.posix.join(dir, 'expected', '${format.name}.$hash.${format.extension}');
+  /// The hash of the last ptome PDF or EPUB found equal to the golden.
+  final Map<Format, String> verified;
 
-  /// Converts the case to [format] with ptome, normalized as recorded.
-  ({Result result, Object? output}) convert(Format format) {
-    final log = <LogEntry>[];
-    final ptome = Ptome(
-      safe: safe,
-      baseDir: dir,
-      onDiagnostic: (d) => log.add((
-        severity: d.severity.name,
-        line: d.location?.line,
-        message: normalizeText(d.message, baseDir: dir),
-      )),
-    );
+  String get input => p.posix.join(dir, 'input.adoc');
+
+  /// Converts the case to [format] with ptome as the command line does
+  /// (`-b <format> -D <dir> input.adoc`), with [attributes] under the
+  /// case's own; the file written.
+  Future<Uint8List> convert(
+    Format format,
+    Map<String, String> attributes,
+  ) async {
+    // (Inside the case: a safe mode keeps the output there.)
+    final scratch = p.posix.join(dir, '.ptome');
+    final out = p.posix.join(scratch, format.name);
     try {
-      final output = format.binary
-          ? ptome.convertToBytes(
-              input,
-              backend: format.backend,
-              doctype: doctype,
-              attributes: attributes,
-            )
-          : normalizeText(
-              ptome.convert(
-                input,
-                backend: format.backend,
-                doctype: doctype,
-                standalone: standalone,
-                attributes: attributes,
-              ),
-              baseDir: dir,
-            );
-      final bytes = switch (output) {
-        final String text => utf8.encode(text),
-        final Uint8List bytes => bytes,
-        _ => throw StateError('output'),
-      };
-      return (
-        result: Result(hash: contentHash(bytes), log: log),
-        output: output,
+      final document = await Ptome(safe: safe).convertFile(
+        input,
+        toDir: out,
+        mkdirs: true,
+        backend: format.backend,
+        doctype: doctype,
+        attributes: {...attributes, ...this.attributes},
       );
-    } on Object catch (error) {
-      final message = normalizeText(
-        '${error.runtimeType}: $error'.split('\n').first,
-        baseDir: dir,
-      );
-      return (result: Result(error: message), output: null);
+      final written = [
+        if (io.isDirectory(out))
+          for (final entry in io.listDirectory(out))
+            if (entry.isFile && !entry.name.endsWith('.css')) entry.path,
+      ];
+      if (written.length != 1) {
+        throw StateError(
+          'ptome wrote ${written.length} files: '
+          '${document.diagnostics.map((d) => d.message).join('; ')}',
+        );
+      }
+      return Uint8List.fromList(io.readBytes(written.single));
+    } finally {
+      deleteTree(scratch);
     }
   }
-}
 
-/// Where page images are kept, by the hash of their PDF.
-final String _pagesRoot = p.posix.join(
-  io.currentDirectory,
-  '.dart_tool',
-  'corpus-pages',
-);
-
-/// The gray page images of [pdf] (whose hash is [hash]) at 50 dpi, as the
-/// corpus tools render them (`pdftoppm -gray`), rendered once; null
-/// without `pdftoppm`.
-List<List<int>>? _pages(List<int> pdf, String hash) {
-  final dir = p.posix.join(_pagesRoot, hash);
-  final done = p.posix.join(dir, 'done');
-  if (!io.isFile(done)) {
-    io.createDirectories(dir);
-    final file = p.posix.join(dir, 'document.pdf');
-    io.writeBytes(file, pdf);
-    final rendered = io.commandOutput('pdftoppm', [
-      '-r',
-      '50',
-      '-gray',
-      file,
-      p.posix.join(dir, 'p'),
-    ]);
-    if (rendered == null) return null;
-    io.writeString(done, '');
+  /// Records [hash] as the last ptome file of [format] found equal to the
+  /// golden of [release] (`ptome.yml`).
+  void promote(String release, Format format, String hash) {
+    verified[format] = hash;
+    io.writeString(
+      p.posix.join(dir, 'ptome.yml'),
+      '# The last ptome files found equal to the goldens (by their pages,\n'
+      '# or the files in them), by SHA-256; written by the corpus test.\n'
+      '$release:\n'
+      '${[for (final f in Format.values)
+        if (verified[f] case final h?) '  ${f.name}: $h\n'].join()}',
+    );
   }
-  final pages = [
-    for (final entry in io.listDirectory(dir))
-      if (entry.name.endsWith('.pgm')) entry.name,
-  ]..sort((a, b) => _pageNumber(a).compareTo(_pageNumber(b)));
-  return [for (final page in pages) io.readBytes(p.posix.join(dir, page))];
 }
 
-int _pageNumber(String name) =>
-    int.parse(RegExp(r'(\d+)\.pgm$').firstMatch(name)![1]!);
-
-/// Every case under `test/corpus/cases`, in id order. PDFs and EPUBs are
-/// set in the vendored fonts only, never the machine's, so results are the
-/// same on every machine.
-List<Case> loadCases() {
+/// The corpus, with every PDF and EPUB set in the vendored fonts only (never
+/// the machine's).
+Corpus loadCorpus() {
   Fonts.installed = FontIndex([
     for (final dir in vendoredFontDirectories)
       p.posix.join(io.currentDirectory, dir),
   ]);
-  final defaults = _table(_toml(p.posix.join(corpusRoot, 'defaults.toml')));
-  final profile = _table(
-    _toml(p.posix.join(corpusRoot, 'profiles.toml'))[ptomeProfile],
-  );
-  final casesRoot = p.posix.join(corpusRoot, 'cases');
+  final settings = _yaml(p.posix.join(corpusRoot, 'goldens.yml'));
+  final release = settings['release']! as String;
   final cases = <Case>[];
-  void walk(String dir) {
-    if (io.isFile(p.posix.join(dir, 'case.toml'))) {
-      cases.add(_load(dir, casesRoot, defaults, profile));
-      return;
+  for (final entry in io.listDirectory(
+    corpusRoot,
+  )..sort((a, b) => a.name.compareTo(b.name))) {
+    final dir = p.posix.join(corpusRoot, entry.name);
+    if (!entry.isDirectory || !io.isFile(p.posix.join(dir, 'input.adoc'))) {
+      continue;
     }
-    ([
-      for (final entry in io.listDirectory(dir))
-        if (entry.isDirectory) p.posix.join(dir, entry.name),
-    ]..sort()).forEach(walk);
+    final meta = io.isFile(p.posix.join(dir, 'case.yml'))
+        ? _yaml(p.posix.join(dir, 'case.yml'))
+        : const <String, Object?>{};
+    final goldens = <Format, String>{};
+    final expected = p.posix.join(dir, 'expected', release);
+    if (io.isDirectory(expected)) {
+      for (final format in io.listDirectory(expected)) {
+        final files = io.listDirectory(format.path).where((e) => e.isFile);
+        if (files.isNotEmpty) {
+          goldens[Format.values.byName(format.name)] = files.first.path;
+        }
+      }
+    }
+    final ptome = io.isFile(p.posix.join(dir, 'ptome.yml'))
+        ? _yaml(p.posix.join(dir, 'ptome.yml'))
+        : const <String, Object?>{};
+    cases.add(
+      Case._(
+        name: entry.name,
+        dir: dir,
+        safe: SafeMode.values.byName(meta['safe'] as String? ?? 'unsafe'),
+        doctype: switch (meta['doctype']) {
+          final String name => Doctype.values.byName(name),
+          _ => null,
+        },
+        attributes: _attributes(meta['attributes']),
+        goldens: goldens,
+        verified: {
+          for (final MapEntry(:key, :value) in _map(ptome[release]).entries)
+            Format.values.byName(key): '$value',
+        },
+      ),
+    );
   }
-
-  walk(casesRoot);
-  return cases;
+  return Corpus._(release, _attributes(settings['attributes']), cases);
 }
 
-Case _load(
-  String dir,
-  String casesRoot,
-  Map<String, Object?> defaults,
-  Map<String, Object?> profile,
-) {
-  final meta = _toml(p.posix.join(dir, 'case.toml'));
-  final options = _table(meta['options']);
-  final versions = io.isFile(p.posix.join(dir, 'versions.toml'))
-      ? _toml(p.posix.join(dir, 'versions.toml'))
-      : const <String, Object?>{};
-  final input = p.posix.normalize(
-    p.posix.join(dir, options['input'] as String? ?? 'input.adoc'),
-  );
-  return Case._(
-    id: p.posix.relative(dir, from: casesRoot),
-    dir: p.posix.dirname(input),
-    input: utf8.decode(io.readBytes(input), allowMalformed: true),
-    formats: [
-      for (final name in meta['formats'] as List? ?? const ['html5'])
-        Format.values.byName(name as String),
-    ],
-    doctype: switch (options['doctype']) {
-      final String name => Doctype.values.byName(name),
-      _ => null,
-    },
-    safe: SafeMode.values.byName(
-      options['safe'] as String? ?? defaults['safe'] as String? ?? 'safe',
-    ),
-    standalone:
-        options['standalone'] as bool? ??
-        defaults['standalone'] as bool? ??
-        false,
-    // The profile's attributes are soft defaults under the case's own.
-    attributes: _merge(
-      _strings(profile['attributes']),
-      _merge(_strings(defaults['attributes']), _strings(meta['attributes'])),
-    ),
-    knownIssues: {
-      for (final MapEntry(:key, :value) in _table(meta['known-issues']).entries)
-        Format.values.byName(key): value! as String,
-    },
-    expected: {
-      for (final MapEntry(:key, :value) in versions.entries)
-        if (_table(value)[ptomeProfile] case final Map<Object?, Object?> t)
-          Format.values.byName(key): _result(t.cast<String, Object?>()),
-    },
-    caseDir: dir,
-    goldenPdf: switch (profile['pdf-compare-to']) {
-      final String golden =>
-        _table(_table(versions['pdf'])[golden])['output'] as String?,
-      _ => null,
-    },
-  );
-}
+Map<String, Object?> _yaml(String path) =>
+    _map(loadYaml(utf8.decode(io.readBytes(path))));
 
-Result _result(Map<String, Object?> table) => Result(
-  hash: table['output'] as String?,
-  error: table['error'] as String?,
-  pixels: table['pixels'] as String?,
-  log: [
-    for (final line in table['log'] as List? ?? const []) _log(line as String),
-  ],
-);
+Map<String, Object?> _map(Object? value) => {
+  if (value case final Map<Object?, Object?> map)
+    for (final MapEntry(:key, :value) in map.entries) '$key': value,
+};
 
-LogEntry _log(String text) {
-  final first = text.indexOf(':');
-  final second = text.indexOf(':', first + 1);
-  final line = text.substring(first + 1, second);
-  return (
-    severity: text.substring(0, first),
-    line: line.isEmpty ? null : int.parse(line),
-    message: text.substring(second + 2),
-  );
-}
-
-Map<String, Object?> _toml(String path) =>
-    TomlDocument.parse(utf8.decode(io.readBytes(path))).toMap();
-
-Map<String, Object?> _table(Object? value) =>
-    (value as Map? ?? const {}).cast<String, Object?>();
-
-/// A TOML attribute table as API attributes: `name = false` unsets.
-Map<String, String> _strings(Object? table) => {
-  for (final MapEntry(:key, :value) in _table(table).entries)
+/// Attributes as given to the command line: `false` unsets.
+Map<String, String> _attributes(Object? value) => {
+  for (final MapEntry(:key, :value) in _map(value).entries)
     if (value == false) '$key!': '' else key: '$value',
 };
 
-/// [over] on top of [base]; an unset (`name!`) in [over] drops `name`.
-Map<String, String> _merge(
-  Map<String, String> base,
-  Map<String, String> over,
-) => {
-  for (final MapEntry(:key, :value) in base.entries)
-    if (!over.containsKey('$key!') &&
-        !over.containsKey(key.replaceAll('!', '')))
-      key: value,
-  ...over,
-};
-
-final _versionStamp = RegExp('(?:Asciidoctor|Ptome) [0-9][0-9A-Za-z.+_~-]*');
-final _lastUpdated = RegExp(
-  r'Last updated \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}',
+final _generator = RegExp(
+  r'(<meta name="generator" content=")[^"]*(")|^(\.\\" Generator: ).*$',
+  multiLine: true,
 );
-final _manDate = RegExp(r'^(\.\\" +Date: ).*$', multiLine: true);
 
-/// The volatile parts of a text output or message that are not the
-/// document's doing: version stamps, the HTML footer's time, the manpage
-/// date, the case directory (`{base}`) and the working directory (`{cwd}`).
-String normalizeText(String text, {required String baseDir}) => text
-    .replaceAll(_versionStamp, 'Asciidoctor VERSION')
-    .replaceAll(_lastUpdated, 'Last updated DATETIME')
-    .replaceAllMapped(_manDate, (m) => '${m[1]}DATE')
-    .replaceAll(baseDir, '{base}')
-    .replaceAll(_native(baseDir), '{base}')
-    .replaceAll(io.currentDirectory, '{cwd}')
-    .replaceAll(_native(io.currentDirectory), '{cwd}');
+/// [text] with the generator's name and version left out (the only part of
+/// a file that says what wrote it).
+String withoutGenerator(String text) => text.replaceAllMapped(
+  _generator,
+  (m) => m[3] != null ? '${m[3]}GENERATOR' : '${m[1]}GENERATOR${m[2]}',
+);
 
-/// [path] with the platform's separators (on Windows, backslashes).
-String _native(String path) => io.isWindows ? path.replaceAll('/', r'\') : path;
-
-/// 12 hex digits of the SHA-256 of [bytes].
-String contentHash(List<int> bytes) =>
-    sha256.convert(bytes).toString().substring(0, 12);
+/// The SHA-256 of [bytes], in hex.
+String sha256Of(List<int> bytes) => sha256.convert(bytes).toString();
 
 /// The first differing line of [want] and [got].
 String firstDifference(String want, String got) {
@@ -430,4 +236,118 @@ String firstDifference(String want, String got) {
     if (x != y) return 'line ${i + 1}:\n- $x\n+ $y';
   }
   return '(no line differs)';
+}
+
+/// Where page images and unpacked EPUBs are kept, by their file's hash.
+final String _scratch = p.posix.join(
+  io.currentDirectory,
+  '.dart_tool',
+  'corpus',
+);
+
+/// How the pages of [pdf] compare with those of [golden]: `identical`, or
+/// where they first differ; null without `pdftoppm`.
+String? comparePages(List<int> golden, List<int> pdf) {
+  final a = _pages(golden);
+  final b = _pages(pdf);
+  if (a == null || b == null) return null;
+  if (a.length != b.length) return 'pages: ${b.length}, not ${a.length}';
+  for (var i = 0; i < a.length; i++) {
+    if (a[i].length != b[i].length) return 'page ${i + 1}: another size';
+    var differ = 0;
+    for (var j = 0; j < a[i].length; j++) {
+      if (a[i][j] != b[i][j]) differ++;
+    }
+    if (differ > 0) {
+      final share = (differ / a[i].length * 100).toStringAsFixed(3);
+      return 'page ${i + 1}: $share% of its pixels';
+    }
+  }
+  return 'identical';
+}
+
+/// The gray page images of [pdf] at 50 dpi (`pdftoppm -gray`), made once.
+List<List<int>>? _pages(List<int> pdf) {
+  final dir = p.posix.join(_scratch, 'pages', sha256Of(pdf));
+  if (!io.isFile(p.posix.join(dir, 'done'))) {
+    io.createDirectories(dir);
+    final file = p.posix.join(dir, 'document.pdf');
+    io.writeBytes(file, pdf);
+    final rendered = io.commandOutput('pdftoppm', [
+      '-r',
+      '50',
+      '-gray',
+      file,
+      p.posix.join(dir, 'p'),
+    ]);
+    if (rendered == null) return null;
+    io.writeString(p.posix.join(dir, 'done'), '');
+  }
+  int number(String name) =>
+      int.parse(RegExp(r'(\d+)\.pgm$').firstMatch(name)![1]!);
+  final pages = [
+    for (final entry in io.listDirectory(dir))
+      if (entry.name.endsWith('.pgm')) entry.name,
+  ]..sort((a, b) => number(a).compareTo(number(b)));
+  return [for (final page in pages) io.readBytes(p.posix.join(dir, page))];
+}
+
+/// How the files in [epub] compare with those in [golden]: `identical` (the
+/// same names and bytes, generator stamps aside), or the first that
+/// differs; null without `unzip`.
+String? compareEntries(List<int> golden, List<int> epub) {
+  final a = _entries(golden);
+  final b = _entries(epub);
+  if (a == null || b == null) return null;
+  final names = {...a.keys, ...b.keys}.toList()..sort();
+  for (final name in names) {
+    final (x, y) = (a[name], b[name]);
+    if (x == null) return '$name: not in the golden';
+    if (y == null) return '$name: missing';
+    final (want, got) = (_entryText(name, x), _entryText(name, y));
+    if (want == got) continue;
+    return _isText(name)
+        ? '$name: ${firstDifference(want, got)}'
+        : '$name: other bytes';
+  }
+  return 'identical';
+}
+
+bool _isText(String name) =>
+    name.endsWith('.xhtml') ||
+    name.endsWith('.opf') ||
+    name.endsWith('.ncx') ||
+    name.endsWith('.css') ||
+    name.endsWith('.xml');
+
+String _entryText(String name, List<int> bytes) => _isText(name)
+    ? withoutGenerator(utf8.decode(bytes, allowMalformed: true))
+    : base64.encode(bytes);
+
+/// The files in [epub], by their paths, unpacked once (`unzip`).
+Map<String, List<int>>? _entries(List<int> epub) {
+  final hash = sha256Of(epub);
+  final dir = p.posix.join(_scratch, 'epubs', hash);
+  if (!io.isFile(p.posix.join(dir, '.done'))) {
+    io.createDirectories(dir);
+    final file = p.posix.join(_scratch, 'epubs', '$hash.epub');
+    io.writeBytes(file, epub);
+    final unpacked = io.commandOutput('unzip', ['-q', '-o', file, '-d', dir]);
+    if (unpacked == null) return null;
+    io.writeString(p.posix.join(dir, '.done'), '');
+  }
+  final entries = <String, List<int>>{};
+  void walk(String path, String prefix) {
+    for (final entry in io.listDirectory(path)) {
+      final name = prefix.isEmpty ? entry.name : '$prefix/${entry.name}';
+      if (entry.isDirectory) {
+        walk(entry.path, name);
+      } else if (name != '.done') {
+        entries[name] = io.readBytes(entry.path);
+      }
+    }
+  }
+
+  walk(dir, '');
+  return entries;
 }

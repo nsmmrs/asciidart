@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/manpage_test.rb:81.1"
+formats: [manpage]
+safe: safe
+attributes:
+  "cmdname": "foobar"

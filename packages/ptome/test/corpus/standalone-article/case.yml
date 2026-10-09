@@ -1,0 +1,6 @@
+source: "handmade"
+formats: [html5, docbook5, pdf, epub3]
+safe: safe
+attributes:
+  "toc": ""
+  "sectnums": ""

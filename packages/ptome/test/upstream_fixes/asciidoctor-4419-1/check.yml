@@ -1,0 +1,6 @@
+description: "imagesdir with a doubled slash before .. finds the image. asciidoctor#4419: a doubled slash before `..` in a path (here imagesdir) made `..` remove the empty segment between the slashes instead of the directory before them, so `X//../dir` resolved to `X/dir`."
+format: html5
+standalone: false
+quiet: true
+contains:
+  - "src=\"data:image/gif;base64,"

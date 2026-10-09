@@ -1,3 +1,0 @@
-:imagesdir: fixtures
-
-image::circle.svg[Qtxxnq,50%,opts=inline]

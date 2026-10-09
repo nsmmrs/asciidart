@@ -1,0 +1,16 @@
+# The tools that make the asciidoctor-2.0.26 goldens: the latest stable
+# releases, with no optional gems but asciimath (whose conversion ptome
+# ports) and text-hyphen (asciidoctor-pdf's hyphenation). No Rouge,
+# Pygments or CodeRay: ptome behaves as Asciidoctor does without them.
+source 'https://rubygems.org'
+
+gem 'asciidoctor', '2.0.26'
+gem 'asciidoctor-pdf', '2.3.27'
+gem 'asciidoctor-epub3'
+gem 'asciimath', '2.0.6'
+gem 'text-hyphen', '1.5.0'
+# Default gems that Ruby 4 no longer bundles.
+gem 'base64'
+gem 'bigdecimal'
+gem 'logger'
+gem 'ostruct'

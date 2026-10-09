@@ -1,0 +1,7 @@
+description: "a crafted align value stays in the class attribute. asciidoctor#2661: a quote in an image attribute (align, float, width, role, link...) ended the HTML attribute it was written into, letting the rest of the value into the markup."
+format: html5
+standalone: false
+excludes:
+  - "\"><p>this is a paragraph"
+contains:
+  - "class=\"imageblock text-center&quot;><p>this is a paragraph</p>\""

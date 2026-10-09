@@ -1,6 +1,0 @@
-description = "Anchor: a pool document cut down and sanitized."
-source = "pool:asciidoctor-2.0.26/test/blocks_test.rb:4066"
-formats = ["epub3"]
-
-[options]
-input = "./input.adoc"

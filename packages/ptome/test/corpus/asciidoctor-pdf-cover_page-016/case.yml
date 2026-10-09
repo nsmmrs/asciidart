@@ -1,0 +1,5 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/cover_page_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""

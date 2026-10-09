@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/spec/fixtures/i18n-font-test.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

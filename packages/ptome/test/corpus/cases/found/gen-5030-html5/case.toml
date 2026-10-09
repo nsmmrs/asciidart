@@ -1,6 +1,0 @@
-description = "Found by the fuzzer: reaches code no other case did."
-source = "gen:gen-5030"
-formats = ["html5"]
-
-[attributes]
-"attribute-missing" = "skip"

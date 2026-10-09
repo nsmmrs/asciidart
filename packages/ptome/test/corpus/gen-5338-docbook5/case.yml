@@ -1,0 +1,5 @@
+source: "gen:gen-5338"
+formats: [docbook5]
+safe: safe
+attributes:
+  "attribute-missing": "drop-line"

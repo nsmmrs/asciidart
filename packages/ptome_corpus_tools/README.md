@@ -1,50 +1,25 @@
 # ptome_corpus_tools
 
-The tools that build ptome's black-box corpus, `packages/ptome/test/corpus`:
-AsciiDoc documents with the output each implementation gives them. ptome's
-own test suite reads the corpus (`test/corpus_test.dart`, one test per case
-and format, a few seconds); this package only writes it, and is never
-published.
+Tools for ptome's corpus (`packages/ptome/test/corpus`, ADR-0022): the
+goldens, and the pool, sanitizer, generator and fuzzer that found its cases.
+Not published.
 
-Cases come from three places:
-
-- **anchor**: real documents from a large pool, cut down to the parts that
-  reach code, with their words replaced (structure kept). Their output is
-  known to be right, so they catch drift while bugs get fixed.
-- **found**: documents from the random generator and fuzzer that exposed a
-  bug or reached code nothing else did.
-- **curated**: hand-written cases, such as the reproducers of fixed bugs.
-
-The case format is described in `packages/ptome/test/corpus/README.md`.
-Here:
+- **`goldens/`** makes the goldens: the files the Asciidoctor command line
+  writes for each case (see `goldens/README.md`).
+- **The rest** built the corpus's first cases: anchors (real documents from
+  a large pool, cut down to the parts that reach code, with their words
+  replaced, structure kept) and the generator and fuzzer's finds. Those
+  commands still write cases in the earlier corpus's layout (`cases/<set>/
+  <name>/` with `case.toml` and `versions.toml`, recorded by profiles); port
+  them to the flat layout before using them again.
 
 ```text
+goldens/          generate.rb and a bundle per Asciidoctor release
 drivers/ruby/     worker.rb: a long-lived Asciidoctor that converts over NDJSON
 sources.toml      the pool's sources
-tool/setup.sh     clones the Ruby profiles' checkouts and installs their gems
-triage/           fuzz findings and the log differences regen reports
+tool/setup.sh     installs the goldens' bundles, the checkouts and gems the pool uses
+triage/           fuzz findings
 ```
-
-Each (case, format) pair is one test, with id `<case>#<format>`. A ptome
-result that differs from Asciidoctor main must carry a `divergence` note in
-`versions.toml` (a link to the upstream bug ptome fixes); `regen` fails
-otherwise.
-
-## Use
-
-```sh
-tool/setup.sh                       # once: Asciidoctor checkouts + gems in ~/.cache/ascii-docs
-dart run bin/corpus.dart regen      # convert every case with every profile, record results
-dart run bin/corpus.dart regen -p ptome   # only ptome's results (after a deliberate change)
-dart run bin/corpus.dart regen --check    # verify instead of writing
-```
-
-`regen` takes `-p <profile>` and case-id prefixes to limit what it runs.
-It records each ptome PDF's comparison with the gem's (`pixels`), with
-poppler's `pdftoppm`, and fails when a ptome PDF or EPUB changes with the
-directory it is converted from. It runs from ptome's package directory,
-as ptome's tests do.
-Run it from anywhere in the workspace; it finds the corpus.
 
 ## Building the corpus
 

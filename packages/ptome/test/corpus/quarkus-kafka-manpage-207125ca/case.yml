@@ -1,0 +1,5 @@
+source: "pool:quarkus/docs/src/main/asciidoc/kafka.adoc"
+formats: [manpage]
+safe: safe
+attributes:
+  "linkcss": "@"

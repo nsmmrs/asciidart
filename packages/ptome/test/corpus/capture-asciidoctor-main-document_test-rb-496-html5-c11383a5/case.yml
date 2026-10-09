@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/document_test.rb:496.1"
+formats: [html5]
+safe: safe
+attributes:
+  "max-width": "70em"
+  "linkcss": ""

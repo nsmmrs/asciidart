@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-pdf/docs/modules/ROOT/pages/asciidoc-attributes.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

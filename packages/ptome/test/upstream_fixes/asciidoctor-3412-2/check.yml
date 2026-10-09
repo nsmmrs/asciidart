@@ -1,0 +1,5 @@
+description: "unchanged: without tabsize the tab stays. asciidoctor#3412: tabs in a literal table cell were not expanded when the document sets tabsize, as they are in a literal block."
+format: html5
+standalone: false
+contains:
+  - "<pre>a\tb</pre>"

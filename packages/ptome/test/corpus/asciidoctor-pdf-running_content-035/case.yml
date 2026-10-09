@@ -1,0 +1,6 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/running_content_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"
+  "pdf-theme": "theme.yml"
+  "pdf-themesdir": "{docdir}"

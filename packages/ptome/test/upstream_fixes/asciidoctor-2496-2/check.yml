@@ -1,0 +1,10 @@
+description: "unchanged: comments between rows and in other cells are dropped. asciidoctor#2496: the table parser dropped every line comment in the table, including the lines of a verbatim block in an AsciiDoc cell that look like one (`// some comment` in a literal block)."
+format: html5
+standalone: false
+quiet: true
+excludes:
+  - "before"
+  - "in a cell"
+  - "between"
+contains:
+  - "<p class=\"tableblock\">a</p>"

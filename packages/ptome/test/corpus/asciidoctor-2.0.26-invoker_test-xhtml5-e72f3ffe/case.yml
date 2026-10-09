@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-2.0.26/test/invoker_test.rb:184"
+formats: [xhtml5]
+safe: safe

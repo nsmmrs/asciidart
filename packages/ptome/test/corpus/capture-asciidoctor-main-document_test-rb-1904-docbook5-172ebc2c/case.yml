@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-main/document_test.rb:1904.1"
+formats: [docbook5]
+safe: safe
+attributes:
+  "backend": "docbook5"
+  "linkcss": ""

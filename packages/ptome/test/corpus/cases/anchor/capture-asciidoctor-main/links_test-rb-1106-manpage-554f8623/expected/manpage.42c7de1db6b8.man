@@ -1,9 +1,0 @@
-.TS
-allbox tab(:);
-lt.
-T{
-.sp
-Uzx Xwmyofxd Mzwbi
-T}
-.TE
-.sp

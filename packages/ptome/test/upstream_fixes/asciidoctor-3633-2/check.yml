@@ -1,0 +1,6 @@
+description: "an anchor in a title is registered for its reference text. asciidoctor#3633: inline anchors in section titles were not registered in the catalog, so a duplicate went unreported (and tools reading the catalog couldn't resolve them)."
+format: html5
+standalone: false
+quiet: true
+contains:
+  - "<a href=\"#foo\">the first section</a>"

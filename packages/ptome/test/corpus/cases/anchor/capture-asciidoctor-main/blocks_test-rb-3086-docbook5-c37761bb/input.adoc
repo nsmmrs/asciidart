@@ -1,1 +1,0 @@
-image::http://127.0.0.1:9876/fixtures/dot.gif[Zpi]

@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/footnote_spec.rb:388"
+formats: [xhtml5, pdf, epub3]
+safe: safe

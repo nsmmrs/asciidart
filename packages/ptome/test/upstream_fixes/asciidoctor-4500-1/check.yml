@@ -1,0 +1,6 @@
+description: "a cell after a colspan gets the spec of the column it is in. asciidoctor#4500: a cell after one spanning columns took the column spec of the column with its index in the row (counting cells, not columns), so it was aligned like the wrong column."
+format: html5
+standalone: false
+contains:
+  - "<td class=\"tableblock halign-center valign-top\" colspan=\"2\"><p class=\"tableblock\">Test 2.2</p></td>"
+  - "<td class=\"tableblock halign-right valign-top\"><p class=\"tableblock\">Test 3.3</p></td>"

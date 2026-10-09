@@ -1,0 +1,7 @@
+source: "pool:capture-asciidoctor-main/links_test.rb:31.1"
+formats: [html5]
+safe: safe
+doctype: inline
+attributes:
+  "hide-uri-scheme": ""
+  "linkcss": ""

@@ -1,0 +1,5 @@
+source: "pool:asciidoctor.js/packages/core/test/fixtures/semantic-html5-scenarios/document-title-with-id-roles.adoc"
+formats: [html5]
+safe: safe
+attributes:
+  "linkcss": "@"

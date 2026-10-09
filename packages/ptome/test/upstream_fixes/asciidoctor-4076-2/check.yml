@@ -1,0 +1,5 @@
+description: "and in HTML. asciidoctor#4076: a superscript around a link whose text ends with the `^` shorthand (`^link:fn.html[2^]^`) ended at that `^`, leaving the link markup across the end of the superscript (invalid XML and HTML)."
+format: html5
+standalone: false
+contains:
+  - "<code>X</code><sup><a href=\"fn2.html\" target=\"_blank\" rel=\"noopener\">2</a></sup> and more."

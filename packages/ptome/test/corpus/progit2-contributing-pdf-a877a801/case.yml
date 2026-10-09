@@ -1,0 +1,5 @@
+source: "pool:progit2/book/05-distributed-git/sections/contributing.asc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

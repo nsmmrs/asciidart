@@ -1,0 +1,5 @@
+source: "pool:asciidoc-parser/ref/asciidoc-lang/docs/modules/attributes/pages/character-replacement-ref.adoc"
+formats: [manpage]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/reader_test.rb:1199.1"
+formats: [manpage]
+safe: safe
+attributes:
+  "allow-uri-read": ""

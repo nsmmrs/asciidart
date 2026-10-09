@@ -1,8 +1,0 @@
-.sp
-.if n .RS 4
-.nf
-.fam C
-Unresolved directive in <stdin> \- include::http://127.0.0.1:9876/no_such_file[]
-.fam
-.fi
-.if n .RE

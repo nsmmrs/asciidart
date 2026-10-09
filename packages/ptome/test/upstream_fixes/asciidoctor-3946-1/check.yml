@@ -1,0 +1,5 @@
+description: "an em dash follows a curved quote. asciidoctor#3946: a double hyphen after a curved quote (\"`hello`\"--world) was not replaced with an em dash."
+format: html5
+standalone: false
+contains:
+  - "&#8220;hello&#8221;&#8212;&#8203;world and &#8216;it&#8217;&#8212;&#8203;here"

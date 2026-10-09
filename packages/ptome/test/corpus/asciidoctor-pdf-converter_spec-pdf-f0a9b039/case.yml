@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-pdf/spec/converter_spec.rb:301"
+formats: [pdf]
+safe: safe

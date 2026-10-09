@@ -1,0 +1,6 @@
+source: "pool:capture-asciidoctor-2.0.26/document_test.rb:561.1"
+formats: [manpage]
+safe: safe
+attributes:
+  "title-separator": " -"
+  "linkcss": ""

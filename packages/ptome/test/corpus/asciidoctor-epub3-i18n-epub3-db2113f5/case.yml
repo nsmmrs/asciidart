@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/samples/i18n.adoc"
+formats: [epub3]
+safe: safe
+attributes:
+  "linkcss": "@"

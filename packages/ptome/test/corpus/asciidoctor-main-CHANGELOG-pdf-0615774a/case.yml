@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-main/CHANGELOG.adoc"
+formats: [pdf]
+safe: safe
+attributes:
+  "linkcss": "@"

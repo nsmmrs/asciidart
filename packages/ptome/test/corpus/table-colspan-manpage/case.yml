@@ -1,0 +1,7 @@
+source: "fuzz-research:manpage.rb:485"
+formats: [html5]
+safe: safe
+doctype: manpage
+attributes:
+  "manname": "colspan"
+  "manvolnum": "1"

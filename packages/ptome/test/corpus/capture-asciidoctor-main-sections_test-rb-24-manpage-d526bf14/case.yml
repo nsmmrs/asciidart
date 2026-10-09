@@ -1,0 +1,3 @@
+source: "pool:capture-asciidoctor-main/sections_test.rb:24.1"
+formats: [manpage]
+safe: safe

@@ -1,0 +1,5 @@
+description: "emphasis after it in the line pairs on its own. asciidoctor#1678: a cross reference to an ID with `__` in it was turned into emphasis (quotes are substituted before the xref macro), and the other `__` could pair with one later in the line. The target of an xref (macro or shorthand) is no longer formatted."
+format: docbook5
+standalone: false
+contains:
+  - "<xref linkend=\"foo__bar\"/> if b<emphasis>u</emphasis>z."

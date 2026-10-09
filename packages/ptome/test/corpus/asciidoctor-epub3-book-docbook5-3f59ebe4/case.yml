@@ -1,0 +1,5 @@
+source: "pool:asciidoctor-epub3/spec/fixtures/back-cover-image/book.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Zern</title>
+<date>2026-01-01</date>
+</info>
+<part xml:id="_ewgd_1">
+<title>Ewgd 1</title>
+<partintro>
+<simpara></simpara>
+<sidebar>
+
+</sidebar>
+</partintro>
+</part>
+</book>

@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-2.0.26/api_test.rb:1092.1"
+formats: [html5]
+safe: safe
+attributes:
+  "source-highlighter": "github"

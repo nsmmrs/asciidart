@@ -25,8 +25,8 @@ not tied to its release schedule.
 3. The oracle is the gem built from the vendored upstream commit; every
    difference from it is either listed in `benchmark/PARITY.md` (a fixed
    upstream bug, with a test in `test/bugfix/` that fails on the gem and
-   passes here; since [ADR-0022](0022-the-corpus-is-the-gate.md), a case in
-   the corpus's `curated/bugfix`) or a bug. Moving the vendored commit forward is an ordinary
+   passes here; since [ADR-0022](0022-the-corpus-is-the-gate.md), a test in
+   `test/upstream_fixes/`) or a bug. Moving the vendored commit forward is an ordinary
    change, gated like any other.
 4. There is one development branch, `master`.
 

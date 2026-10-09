@@ -1,0 +1,7 @@
+source: "vendor:vendor/asciidoctor-pdf/test/spec/pdf_info_spec.rb"
+formats: [pdf]
+attributes:
+  "imagesdir": "images"
+  "nofooter": ""
+  "authors": "Doc Writer"
+  "author": "Anonymous"

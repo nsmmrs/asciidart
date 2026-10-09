@@ -13,7 +13,10 @@ void main() {
   final files = [
     for (final dir in [
       'vendor/asciidoctor/test/fixtures',
-      'test/corpus/cases/curated/parity',
+      // The corpus's parity documents (our own).
+      for (final c in Directory('test/corpus').listSync())
+        if (c is Directory && c.path.split('/').last.startsWith('parity-'))
+          c.path,
     ])
       ...Directory(dir)
           .listSync(recursive: true)

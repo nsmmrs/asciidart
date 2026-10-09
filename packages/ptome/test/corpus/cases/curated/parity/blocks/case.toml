@@ -1,8 +1,0 @@
-description = "Parity with Asciidoctor (the former test/parity): `~~~~` is not an open block (#1121); empty section ids (#4139); per-section `toclevels` (#2618); thematic-break roles (#4101); page breaks (#4051); `linenums` on source blocks (#3313); ordered list start and marker styles (#2218, #3252); empty list item text before block content (#4182); table widths (#4160) and stripes"
-source = "handmade:test/parity/blocks.adoc"
-features = ["parity"]
-formats = ["html5", "docbook5", "manpage"]
-
-[options]
-standalone = true
-safe = "unsafe"

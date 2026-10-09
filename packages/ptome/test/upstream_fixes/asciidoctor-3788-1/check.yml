@@ -1,0 +1,5 @@
+description: "an escaped bracket belongs to the reference text. asciidoctor#3788: a closing square bracket couldn't be escaped in the reference text of an inline anchor shorthand: `[[id,[reftext\\]]]` ended at the escaped bracket, kept the backslash in the reference text and left a stray `]` in the text."
+format: html5
+standalone: false
+contains:
+  - "<p><a id=\"id\"></a>text that follows <a href=\"#id\">[reftext]</a></p>"

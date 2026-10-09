@@ -1,0 +1,5 @@
+source: "pool:capture-asciidoctor-main/lists_test.rb:5015.2"
+formats: [html5]
+safe: safe
+attributes:
+  "source-highlighter": "coderay"

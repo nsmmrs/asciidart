@@ -1,0 +1,3 @@
+source: "pool:asciidoctor-main/test/attributes_test.rb:1427"
+formats: [html5]
+safe: safe
