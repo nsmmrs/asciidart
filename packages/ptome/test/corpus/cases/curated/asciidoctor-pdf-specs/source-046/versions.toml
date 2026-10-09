@@ -4,5 +4,5 @@ output = 'f58940ba9272'
 
 [pdf.ptome]
 output = '71c317f5234f'
-log = ['info:: laid out 1 page']
+log = ['warning:: Pygments syntax highlighting is not available. Functionality disabled.', 'info:: laid out 1 page']
 pixels = 'identical'

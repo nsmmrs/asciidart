@@ -11,9 +11,10 @@ import 'package:ptome/src/logging.dart';
 
 /// A highlighter whose library is not available.
 ///
-/// It warns once (per highlighter, per process) when the first source block
-/// asks for it, and wraps source blocks in its `<pre>` element without
-/// highlighting them, as Asciidoctor does without the gem.
+/// It warns once (per highlighter and logger: per conversion through the
+/// API) when the first source block asks for it, and wraps source blocks
+/// in its `<pre>` element without highlighting them, as Asciidoctor does
+/// without the gem.
 final class UnavailableHighlighter extends SyntaxHighlighterBase {
   /// The highlighter [name] with [preClass], called [label] in the warning;
   /// [stripLanguageQuery] drops a `?options` suffix of the language in the
@@ -52,15 +53,18 @@ final class UnavailableHighlighter extends SyntaxHighlighterBase {
   /// Whether the language loses a `?options` suffix in the output.
   final bool stripLanguageQuery;
 
-  static final Set<String> _warned = {};
+  /// The highlighters that warned, by the logger they warned to (each
+  /// conversion through the API has its own; the command line has one).
+  static Expando<Set<String>> _warned = Expando();
 
   /// Forgets which highlighters warned, so they warn again.
   @visibleForTesting
-  static void resetWarnings() => _warned.clear();
+  static void resetWarnings() => _warned = Expando();
 
   void _warn() {
-    if (_warned.add(name)) {
-      LoggerManager.logger.warn(
+    final logger = LoggerManager.logger;
+    if ((_warned[logger] ??= {}).add(name)) {
+      logger.warn(
         '$label syntax highlighting is not available. '
         'Functionality disabled.',
       );

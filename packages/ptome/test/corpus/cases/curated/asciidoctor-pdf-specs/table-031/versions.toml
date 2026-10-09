@@ -3,6 +3,6 @@
 output = '609d02f40025'
 
 [pdf.ptome]
-output = 'd3f37be78ffe'
+output = '3ea5ec7cbffa'
 log = ['info:: laid out 1 page']
-pixels = 'page 1: 0.173%'
+pixels = 'page 1: 0.139%'

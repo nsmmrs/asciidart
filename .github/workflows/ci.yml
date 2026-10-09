@@ -97,7 +97,7 @@ jobs:
       run: dart pub get
     - name: Install poppler (the corpus compares a changed PDF's pages)
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get install -y -q poppler-utils
+      run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils
     - name: Analyze Dart code
       run: dart analyze --fatal-infos .
     - name: Check Dart formatting

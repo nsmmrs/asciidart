@@ -7,3 +7,4 @@ output = 'ed6133b2dcc6'
 
 [html5.ptome]
 output = 'ed6133b2dcc6'
+log = ['warning:: Rouge syntax highlighting is not available. Functionality disabled.']

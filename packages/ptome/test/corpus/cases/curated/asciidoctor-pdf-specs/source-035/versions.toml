@@ -5,5 +5,5 @@ log = ["warning:: optional gem 'coderay' is not available. Functionality disable
 
 [pdf.ptome]
 output = 'b853fbae719f'
-log = ['info:: laid out 1 page']
+log = ['warning:: CodeRay syntax highlighting is not available. Functionality disabled.', 'info:: laid out 1 page']
 pixels = 'identical'

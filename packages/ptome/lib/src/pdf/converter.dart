@@ -7234,7 +7234,7 @@ final class PdfConverter extends BuiltInConverter
   };
 
   /// The text of the description list term [term] in [font].
-  CustomContent _term(ListItem term, _FontState font) {
+  TextBox _term(ListItem term, _FontState font) {
     var text = term.text ?? '';
     if (font.transform case final transform? when transform != 'none') {
       text = transformText(text, transform);
@@ -7427,7 +7427,6 @@ final class PdfConverter extends BuiltInConverter
         _caption(node, category: 'description_list', labeled: false);
       }
       final termFont = _themeFont('description_list_term', _font);
-      final prawnFont = _fonts.font(termFont.family, termFont.style);
       final termHeight = _typesetHeight(termFont);
       final proseHeight = _typesetHeight(_font);
       final termSpacing = (_n('description_list_term_spacing') ?? 0).toDouble();
@@ -7435,20 +7434,11 @@ final class PdfConverter extends BuiltInConverter
       const termRight = 10.0;
       const descLeft = 10.0;
       const descRight = 10.0;
+      // The widest term as it is set (its bold and italic words too).
       var widest = 0.0;
       for (final entry in node.entries) {
         for (final term in entry.terms) {
-          var text = term.text ?? '';
-          if (termFont.transform case final transform?
-              when transform != 'none') {
-            text = transformText(text, transform);
-          }
-          final width = prawnFont.widthOf(
-            _plain(text),
-            termFont.size,
-            kerning: termFont.kerning,
-          );
-          if (width > widest) widest = width;
+          widest = math.max(widest, _term(term, termFont).intrinsicWidths().$2);
         }
       }
       final rows = <TableRow>[];

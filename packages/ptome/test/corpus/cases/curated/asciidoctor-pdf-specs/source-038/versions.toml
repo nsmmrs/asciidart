@@ -4,5 +4,5 @@ output = 'b4026cc02936'
 
 [pdf.ptome]
 output = '568b8680be5b'
-log = ['info:: laid out 1 page']
+log = ['warning:: CodeRay syntax highlighting is not available. Functionality disabled.', 'info:: laid out 1 page']
 pixels = 'identical'

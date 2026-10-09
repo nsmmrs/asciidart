@@ -6,4 +6,5 @@ log = ['warning:: could not embed page background image: {cwd}/vendor/asciidocto
 [pdf.ptome]
 output = 'a2de3f2962fe'
 log = ['warning:: could not embed page background image: corrupt.png; not a JPEG or PNG image', 'info:: laid out 1 page']
+divergence = "asciidoctor-pdf sets the text at the edge of the page, not inside its margins, after a page background image it can't embed"
 pixels = 'page 1: 0.087%'

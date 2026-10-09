@@ -106,8 +106,13 @@ Future<RegenReport> regen(
         report.changed.add('${c.id}#${format.name} [${profile.name}]');
       }
       if (!check) {
+        // A PDF whose pages differ from the golden one's carries the
+        // case's note of why (a bug of the gem's ptome doesn't copy).
+        final pagesDiffer = now.pixels != null && now.pixels != 'identical';
         (c.expected[format] ??= {})[profile.name] = now.withDivergence(
-          before?.divergence,
+          pagesDiffer && c.divergence != null
+              ? c.divergence
+              : before?.divergence,
         );
       }
     }

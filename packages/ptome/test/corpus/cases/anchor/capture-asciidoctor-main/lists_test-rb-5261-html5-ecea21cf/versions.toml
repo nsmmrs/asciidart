@@ -7,3 +7,4 @@ output = '2d3049f2ac2e'
 
 [html5.ptome]
 output = '2d3049f2ac2e'
+log = ['warning:: CodeRay syntax highlighting is not available. Functionality disabled.']

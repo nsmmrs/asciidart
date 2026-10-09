@@ -4,6 +4,6 @@ output = '792203ef3086'
 log = ['error:60: include file not found: {base}/example$manpage.adoc']
 
 [pdf.ptome]
-output = '13f015c5ec59'
+output = '925f4898f33d'
 log = ['error:60: include file not found: {base}/example$manpage.adoc', 'info:: laid out 7 pages']
 pixels = 'page 1: 0.521%'

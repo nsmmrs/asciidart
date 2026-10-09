@@ -2,6 +2,7 @@
 /// behind them is missing; the wording is the port's own.
 library;
 
+import 'package:ptome/ptome.dart' show Ptome;
 import 'package:ptome/src/internal.dart';
 import 'package:test/test.dart';
 
@@ -43,6 +44,20 @@ void main() {
       ]);
     });
   }
+
+  test('each conversion through the API is warned', () {
+    final warnings = <String>[];
+    Ptome(
+        attributes: const {'source-highlighter': 'rouge'},
+        onDiagnostic: (d) => warnings.add(d.message),
+      )
+      ..convert(source)
+      ..convert(source);
+    expect(warnings, [
+      for (var i = 0; i < 2; i++)
+        'Rouge syntax highlighting is not available. Functionality disabled.',
+    ]);
+  });
 
   test('DocBook converts AsciiMath without a warning (ADR-0014)', () {
     final warnings = warningsOf(() {

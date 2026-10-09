@@ -3,6 +3,6 @@
 output = '8cd0a383f5cf'
 
 [pdf.ptome]
-output = '08ada05b39ec'
+output = '727581b50439'
 log = ['info:: laid out 1 page']
 pixels = 'identical'

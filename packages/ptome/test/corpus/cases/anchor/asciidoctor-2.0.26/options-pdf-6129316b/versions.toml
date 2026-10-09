@@ -3,6 +3,6 @@
 output = '09a06b4e3095'
 
 [pdf.ptome]
-output = 'c448e647e964'
+output = 'ccbb1792a183'
 log = ['info:: laid out 4 pages']
 pixels = 'pages: 4, not 5'

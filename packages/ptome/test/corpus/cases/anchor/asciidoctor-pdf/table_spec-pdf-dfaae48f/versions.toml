@@ -4,6 +4,6 @@ output = '0635d44c5184'
 log = ['error:: cannot fit contents of table cell into specified column width']
 
 [pdf.ptome]
-output = '2aa6a6b0a6fa'
+output = '53225b70ff0d'
 log = ['warning:4: table column 1 is too narrow for its text; the text overflows it', 'info:: laid out 1 page']
-pixels = 'page 1: 0.672%'
+pixels = 'page 1: 0.681%'

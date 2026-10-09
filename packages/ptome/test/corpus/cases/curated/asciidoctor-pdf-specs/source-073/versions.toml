@@ -4,5 +4,5 @@ output = 'a0a270fc1155'
 
 [pdf.ptome]
 output = '7eb948493e45'
-log = ['info:: laid out 1 page']
+log = ['warning:: Rouge syntax highlighting is not available. Functionality disabled.', 'info:: laid out 1 page']
 pixels = 'identical'

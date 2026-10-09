@@ -4,6 +4,6 @@ output = 'b0dde29a8eb6'
 log = ['info:: possible invalid reference: frptkq-ytkwbkuewz']
 
 [pdf.ptome]
-output = '64e45c3f23b5'
+output = 'c93e0921dfdb'
 log = ['info:: possible invalid reference: frptkq-ytkwbkuewz', 'info:: laid out 11 pages']
 pixels = 'page 1: 0.488%'

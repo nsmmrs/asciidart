@@ -2415,6 +2415,9 @@ final class _OptimalWrap extends _Wrap {
     // The breaker's items, and the piece each comes from.
     final items = <LineItem>[];
     final from = <int>[];
+    // The breaks before their piece (between the characters of a word too
+    // long for a line), where the others come after theirs.
+    final before = <int>{};
     void add(LineItem item, int piece) {
       items.add(item);
       from.add(piece);
@@ -2461,7 +2464,10 @@ final class _OptimalWrap extends _Wrap {
       final word = shy ? token.substring(0, token.length - 1) : token;
       // A character of a word longer than a line: a costly break before
       // it (see the pieces).
-      if (charBreaks.contains(p)) add(const PenaltyItem(0, 900), p);
+      if (charBreaks.contains(p)) {
+        before.add(items.length);
+        add(const PenaltyItem(0, 900), p);
+      }
       if (word.isNotEmpty) {
         // A piece of a word broken into pieces (at its hyphenation
         // points): its width within the word, kerning to the piece before
@@ -2547,6 +2553,9 @@ final class _OptimalWrap extends _Wrap {
       final item = items[at];
       final piece = from[at];
       final end = switch (item) {
+        // A break between two characters of a word: the line ends before
+        // the second.
+        PenaltyItem() when before.contains(at) => piece,
         // A break at a space or a newline: the line takes it (trailing
         // spaces are left out of its width; a newline is its end).
         GlueItem() || PenaltyItem() when piece < pieces.length => piece + 1,
