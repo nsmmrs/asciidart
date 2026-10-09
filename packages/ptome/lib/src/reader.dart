@@ -28,7 +28,6 @@ import 'package:ptome/src/rx.dart';
 import 'package:ptome/src/substitutors.dart' as substitutors;
 import 'package:ptome/src/text_case.dart';
 import 'package:ptome/src/units/include.dart';
-import 'package:ptome/src/units/reading.dart';
 import 'package:ptome/src/units/session.dart';
 
 export 'package:ptome/src/cursor.dart' show Cursor;
@@ -1635,9 +1634,8 @@ class PreprocessorReader extends Reader {
           );
         } else if (parsedAttrs['parallel'] case final other?
             when resolution.type == _IncludeTargetType.file &&
-                doc.safe < SafeMode.secure &&
-                doc.attributes['units-engine'] == 'native') {
-          // Natively (ADR-0020): a table the session makes once the
+                doc.safe < SafeMode.secure) {
+          // Parallel texts (ADR-0020): a table the session makes once the
           // document is parsed, where this placeholder is.
           final units = doc.unitsSession ??= UnitsSession.forIncludes(doc);
           return replaceNextLine(
@@ -1660,37 +1658,6 @@ class PreprocessorReader extends Reader {
                     0,
               ),
             ),
-          );
-        } else if (parsedAttrs['parallel'] case final other?
-            when resolution.type == _IncludeTargetType.file &&
-                doc.safe < SafeMode.secure) {
-          // Parallel texts (ADR-0019): the included document beside another
-          // in the same scheme, unit by unit.
-          final otherPath = doc.normalizeSystemPath(
-            other,
-            start: _dir,
-            targetName: 'include file',
-          );
-          final text = io.isFile(otherPath)
-              ? parallelText(resolution.path, otherPath)
-              : null;
-          if (text == null) {
-            LoggerManager.logger.error(
-              'no units to set side by side: $expandedTarget and $other',
-              at: cursor(),
-            );
-            return replaceNextLine(
-              'Unresolved directive in $_path - '
-              'include::$expandedTarget[${attrlist ?? ''}]',
-            );
-          }
-          shift();
-          _pushInclude(
-            source: text,
-            file: resolution.path,
-            path: resolution.relpath,
-            attrs: parsedAttrs,
-            remote: resolution.remote,
           );
         } else {
           final _IncludeContent raw;
@@ -2053,10 +2020,6 @@ class PreprocessorReader extends Reader {
     Encoding encoding,
   ) {
     if (resolution.type == _IncludeTargetType.file) {
-      // A file of a document in units, as the units engine renders it.
-      if (_document.unitsReading?.linesOf(resolution.path) case final lines?) {
-        return _IncludeContent.text('${lines.join('\n')}\n');
-      }
       try {
         return _IncludeContent.bytes(io.readBytes(resolution.path));
       } on Exception catch (_) {

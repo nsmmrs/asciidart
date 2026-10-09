@@ -905,7 +905,9 @@ final class Config {
       if (!p.isFile(file)) {
         throw UnitsException('scheme file not found: $file');
       }
-      tables.add(readSchemeFile(file));
+      final table = readSchemeFile(file);
+      _rejectFormat1(table, p.basename(file));
+      tables.add(table);
     }
     Canon? canon;
     Versification? versification;
@@ -1242,4 +1244,57 @@ final class Versification {
 
   /// `ACT 8:37`.
   final Set<String> excluded;
+}
+
+/// What scheme format 1 wrote (templates printing AsciiDoc), and what
+/// says it now (ADR-0020).
+const Map<String, String> _format1 = {
+  'lower': 'label, label-style, label-role, label-after, anchor, anchors',
+  'lower-block': 'block-role, block-options',
+  'lower-end': 'end, end-role, end-before, end-break',
+  'lower-resume': 'block-role',
+  'heading': 'title, role, attributes',
+  'mark': 'caller-style, caller-role',
+  'entry':
+      'entry-role, origin-style, caller-after, note-separator, '
+      'entry-after, entry-break',
+};
+
+/// Throws on what scheme format 1 wrote in [table] (the file [name]):
+/// templates that print AsciiDoc, which ptome no longer reads.
+void _rejectFormat1(SchemeMap table, String name) {
+  void check(SchemeMap m, String where) {
+    for (final MapEntry(:key, :value) in _format1.entries) {
+      if (m.entries.containsKey(key)) {
+        throw UnitsException(
+          '$name: $where `$key` is scheme format 1, which printed AsciiDoc; '
+          'say how units look instead ($value; ADR-0020)',
+        );
+      }
+    }
+  }
+
+  for (final (scheme, m)
+      in table.map('scheme')?.maps ?? const <(String, SchemeMap)>[]) {
+    for (final level in m.list('level').whereType<SchemeMap>()) {
+      check(level, 'level ${level.string('name') ?? ''} of $scheme:');
+    }
+  }
+  for (final (stream, m)
+      in table.map('stream')?.maps ?? const <(String, SchemeMap)>[]) {
+    check(m, 'stream $stream:');
+    if (m.entries.containsKey('lower')) {
+      throw UnitsException(
+        '$name: stream $stream: `lower` is scheme format 1; say how its '
+        'notes look instead (prefix, origin-style, lemma-style, '
+        'lemma-after; ADR-0020)',
+      );
+    }
+  }
+  if (table.map('templates') != null) {
+    throw UnitsException(
+      '$name: `templates` is scheme format 1; say how levels look in '
+      '`level-presentation` instead (ADR-0020)',
+    );
+  }
 }

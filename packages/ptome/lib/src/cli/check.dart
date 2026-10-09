@@ -1,11 +1,13 @@
-/// `ptome check`: analyzes documents written in numbered units (ADR-0019)
+/// `ptome check`: reads documents written in numbered units (ADR-0020)
 /// without converting them, and prints each document's units and the
 /// problems found (labels out of sequence, references not found).
 library;
 
+import 'package:ptome/src/abstract_node.dart' show SafeMode;
 import 'package:ptome/src/io.dart' as io;
-import 'package:ptome/src/units/engine.dart';
-import 'package:ptome/src/units/process.dart';
+import 'package:ptome/src/load.dart';
+import 'package:ptome/src/logging.dart';
+import 'package:ptome/src/options.dart';
 
 /// Usage text for `check` (printed by `--help` and on misuse).
 const String checkUsage = '''
@@ -58,11 +60,25 @@ int runCheck(List<String> args, {StringSink? out, StringSink? err}) {
       continue;
     }
     final watch = Stopwatch()..start();
-    final Analysis analysis;
-    try {
-      analysis = analyze(path);
-    } on Exception catch (e) {
-      stderr.writeln('ptome: ERROR: $path: $e');
+    // Read as conversion reads it, its messages kept: the units' problems
+    // are the session's diagnostics.
+    final previous = LoggerManager.logger;
+    LoggerManager.logger = MemoryLogger();
+    final analysis = () {
+      try {
+        return loadFile(
+          path,
+          options: const AsciidoctorOptions(safe: SafeMode.unsafe),
+        ).unitsSession?.analysis;
+      } on Exception catch (e) {
+        stderr.writeln('ptome: ERROR: $path: $e');
+        return null;
+      } finally {
+        LoggerManager.logger = previous;
+      }
+    }();
+    if (analysis == null) {
+      stdout.writeln('$path: not written in units');
       problems++;
       continue;
     }

@@ -1,6 +1,6 @@
 # ADR-0020: Units in the Document Model
 
-**Status:** Proposed. Decided by the user on 2026-10-08: units are to be a native feature of the ptome language, "not an awkward preprocessing step", in the ideal implementation. Byte identity with milestone 1 is not a goal. When accepted, this supersedes [ADR-0019](0019-units.md) decision 5, decision 4's port contract and decision 3's scheme format. It keeps ADR-0019's syntax (decision 2), opt-in (decision 1), safety (decision 7) and fixtures policy (decision 8).
+**Status:** Accepted on 2026-10-09 (decisions 1–3, 5, 6 and 8 implemented; 4 and 7 in progress, see Implementation). Decided by the user on 2026-10-08: units are to be a native feature of the ptome language, "not an awkward preprocessing step", in the ideal implementation. Byte identity with milestone 1 is not a goal. It supersedes [ADR-0019](0019-units.md) decision 5, decision 4's port contract and decision 3's scheme format. It keeps ADR-0019's syntax (decision 2), opt-in (decision 1), safety (decision 7) and fixtures policy (decision 8).
 
 ## Context
 
@@ -39,7 +39,7 @@ The output is right, but units are not part of the language. They exist only as 
    - Annotation layers are placed on the parsed text.
 7. **The PDF apparatus comes from the model.** Note entries go to the side column through their stream, and running heads come from the units of a level (`running_content_units`, `{page-units}`), not from ID-prefix conventions.
 8. **Verification.**
-   - Milestone 1's units model, dumped as canonical JSON (`tool/units_oracle.dart`), is the oracle for the native model. Differences are allowed only with a recorded reason.
+   - Milestone 1's units model, dumped as canonical JSON (`tool/units_dump.dart`), is the oracle for the native model; the dumps were taken before milestone 1 was removed and are kept outside the repo with the corpus (`tool/units_model_check.dart`). Differences are allowed only with a recorded reason.
    - Milestone 1's outputs are the reference for review, not a byte-for-byte contract.
    - Plain AsciiDoc output and parity stay exactly as they are.
 
@@ -49,3 +49,16 @@ The output is right, but units are not part of the language. They exist only as 
 - Positions, diagnostics and the API refer to the source as written.
 - Scheme files lose their AsciiDoc-emitting templates, and the 24 corpus schemes migrate.
 - Milestone 1's reader hooks, renderer and loci's block reader are removed at the end (phase 8 of the plan).
+
+## Implementation
+
+As of 2026-10-09:
+
+- **Recognition (1) and the session (2).** The parser records line origins, keeps a units marker that starts a block out of the paragraph before it, and creates the session after the header. The session walks the finished tree in document order and sends the engine the events decision 2 lists; the engine is loci's, unchanged in its cursor logic. The walk happens once the parse is done rather than as it goes, which gives the same events with the tree complete (forward references to IDs work).
+- **The model (3)** is the engine's `Analysis` beside the tree, with each unit's start node and position (`Rendering.starts`).
+- **Rendering (4), as built.** Units render through the inline kinds every backend already has: anchors, quoted text with roles, footnotes, cross references, line breaks. Markers, notes, references and terms become typed atoms (placeholders in the text the inline substitutions start from, converted after them); range and term text is wrapped in marks that become role spans around balanced markup and split at markup a range crosses. Headings and blocks that are units carry the unit's ID, title, roles and options. Dedicated unit kinds (semantic HTML, unit containers for provisions) are still to come.
+- **Scheme format 2 (5)** is the only format read: text templates and presentation keys (`label`, `label-style`, `block-role`, `entry-role` …, `level-presentation`). Format-1 keys are rejected with the keys that replace them. The 24 corpus schemes were migrated with a script outside the repo (loci is a data source, not maintained).
+- **Other works (6).** Cited works are parsed natively and cached. `include::X[unit=…]` and `include::#id[]` leave placeholders the session replaces with blocks cut from the cited work's own tree and rendering (quoted, or spliced with headings as discrete headings); `parallel=` builds a table; layers are AsciiDoc documents whose description lists the session weaves in as notes at the words they quote.
+- **PDF (7).** The apparatus works as before through roles (`role_xref_display: side`) and anchor-prefix running content; running heads from the model are still to come.
+- **Verification (8).** The model gate agrees on all 28 corpus documents, four with recorded reasons (`tool/units_model_allow.txt`). Reviewed against milestone 1's frozen HTML, 14 documents are identical and the rest differ where milestone 1 was wrong (footnotes cut at `]`, italics broken by lemmas, `(C)` turned into ©, a spliced psalm breaking its section, anchors that overwrote each other) or by reviewed structure.
+- **Removal.** Milestone 1's reading and lowering, loci's block reader, its parallel-text and include code, and the `units-engine` switch are gone.

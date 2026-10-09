@@ -23,8 +23,7 @@ import 'package:ptome/src/units/document.dart';
 import 'package:ptome/src/units/engine.dart';
 import 'package:ptome/src/units/files.dart' as p;
 import 'package:ptome/src/units/include.dart';
-import 'package:ptome/src/units/process.dart'
-    show findIgnoringPoints, headerAttributes, resolveUnit, schemesDir;
+import 'package:ptome/src/units/layers.dart';
 import 'package:ptome/src/units/render.dart';
 import 'package:ptome/src/units/scheme.dart';
 
@@ -48,9 +47,6 @@ final class UnitsSession {
   /// any other document, which then reads exactly as before.
   static UnitsSession? start(ptome.Document document) {
     final attrs = document.attributes;
-    // Milestone 1 reads units by default until the native reading renders
-    // them (ADR-0020, phase 3).
-    if (attrs['units-engine'] != 'native') return null;
     if (document.safe >= SafeMode.secure) return null;
     final units = attrs['units'];
     if (units == null && attrs['works'] == null) return null;
@@ -60,7 +56,7 @@ final class UnitsSession {
     if (units == null) {
       config = Config.empty();
     } else {
-      final dir = schemesDir(docfile);
+      final dir = p.schemesDir(docfile);
       if (dir == null) {
         LoggerManager.logger.error(
           'units: no schemes/ directory above $docfile',
@@ -170,7 +166,7 @@ final class UnitsSession {
       Document(SourceFile(docfile, const []), _files, _events, {
         for (final MapEntry(:key, :value) in _document.attributes.entries)
           key: value,
-      }, const {}),
+      }),
       config,
       works: works,
       knownIds: _document.catalog.refs.keys.toSet(),
@@ -507,20 +503,16 @@ final class UnitsSession {
     // Where each woven note goes: by file and line, its column.
     final woven = <SourceFile, Map<int, List<Note>>>{};
     for (final layer in layers) {
-      if (!p.isFile(layer)) {
+      final read = readLayer(layer, _document.safe);
+      if (read == null) {
         problems.add(Diagnostic(null, 'layer not found: $layer'));
         continue;
       }
-      final stream = headerAttributes(layer)['layer-stream'] ?? 'footnote';
+      final stream = read.stream;
       // Where the last note of a unit went, so the next looks after it.
       final after = <Unit, (int, int)>{};
-      for (final line in p.readLines(layer)) {
-        final m = RegExp(r'^(\S+)(?:\s+"([^"]*)")?::\s+(.*)$').firstMatch(line);
-        if (m == null) continue;
-        final address = m[1]!;
-        final lemma = m[2];
-        final body = m[3]!;
-        final unit = resolveUnit(a, address);
+      for (final (:address, :lemma, :body) in read.notes) {
+        final unit = resolvePassage(a, address)?.start;
         if (unit == null) {
           problems.add(
             Diagnostic(null, '${p.basename(layer)}: $address not found'),
@@ -650,13 +642,7 @@ final class UnitsSession {
     if (_workCache.containsKey(key)) return _workCache[key];
     if (!p.isFile(key)) return null;
     _workCache[key] = null;
-    final doc = loadFile(
-      key,
-      options: AsciidoctorOptions(
-        safe: safe,
-        attributes: const {'units-engine': 'native'},
-      ),
-    );
+    final doc = loadFile(key, options: AsciidoctorOptions(safe: safe));
     return _workCache[key] = doc;
   }
 }

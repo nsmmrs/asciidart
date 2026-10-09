@@ -10,8 +10,9 @@ reports **2.1.0.alpha.0**), fixing bugs Asciidoctor still has. The tag
 release byte for byte (ADR-0017). Not affiliated with or endorsed by the
 Asciidoctor project.
 
-- The ptome language: texts cited by numbered units (ADR-0019,
-  `doc/units.md`).
+- The ptome language: texts cited by numbered units (ADR-0019, ADR-0020,
+  `doc/units.md`), read by ptome's own parser and rendered by every
+  backend.
   - A document that names schemes (`:units: bible, kjv`, YAML files in the
     nearest `schemes/` directory) can write:
     - unit markers: `@`, `@@`, `@6`, `@(a)(1)`, bridges, `@^`, attributes;
@@ -23,10 +24,11 @@ Asciidoctor project.
     - `[annotations]`, `[overlays]` and speeches;
     - defined terms, apparatus roles and term rules.
   - Ptome works out every unit's anchor, label and reftext. Labels out of
-    sequence are warnings.
+    sequence are warnings. How units look is in the scheme files, as text
+    templates, styles and roles (scheme format 2).
   - `-a units-as-of=DATE` gives a statute as in force on that date, and
     `-a units!` reads a units document as plain AsciiDoc.
-  - `ptome check FILE...` analyzes documents without converting them.
+  - `ptome check FILE...` reads documents without converting them.
   - `include::text.adoc[parallel=translation.adoc]` sets two documents in
     one scheme side by side, unit by unit, matched by address.
   - `Document.units` and `Document.unit(idOrAddress)` give the units in the
@@ -34,9 +36,9 @@ Asciidoctor project.
     ID, reftext, citation and source line.
   - Checked against the loci experiment's 26 documents (scripture, law,
     classics, drama, liturgy, a hymnal, a catechism, a specification) and
-    a commonplace book quoting them all. Each renders byte-identical to
-    loci's own rendering, in HTML5, DocBook 5 and PDF
-    (`tool/units_acceptance.dart`).
+    a commonplace book quoting them all: the units model each yields
+    agrees with the first, preprocessing implementation's
+    (`tool/units_model_check.dart`).
   - Documents without `:units:` or `:works:` are unaffected.
 - Follows Asciidoctor's development version (upstream `main` at
   `30fb8cd5`, 2.1.0.alpha.0) rather than the 2.0.26 release: the CLI's

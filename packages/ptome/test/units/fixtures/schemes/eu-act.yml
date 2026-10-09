@@ -16,9 +16,6 @@ scheme:
         gaps: true
         id: "art-{{article}}"
         reftext: "Article {{article}}"
-        heading: |-
-          [[{{id}},{{reftext}}]]
-          {{=}} Article {{article}}: {{title}}
         title: "Article {{article}}: {{title}}"
       - name: "paragraph"
         wrap: "%."
@@ -29,8 +26,6 @@ scheme:
         gaps: true
         id: "art-{{article}}-{{paragraph}}"
         reftext: "Article {{article}}({{paragraph}})"
-        lower: "[[{{id}},{{reftext}}]]{{label}} "
-        lower-block: "[.paragraph]"
         label: "{{label}}"
         label-after: " "
         block-role: "paragraph"
@@ -39,7 +34,6 @@ scheme:
         auto: "paragraph"
         id: "art-{{article}}{{#paragraph}}-{{paragraph}}{{/paragraph}}-s{{subparagraph}}"
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}, subparagraph {{subparagraph}}"
-        lower: "[[{{id}}]]"
         anchor: true
       - name: "point"
         type: "alpha|int"
@@ -49,8 +43,6 @@ scheme:
         gaps: true
         id: "art-{{article}}{{#paragraph}}-{{paragraph}}{{/paragraph}}-{{point}}"
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}({{point}})"
-        lower: "[[{{id}},{{reftext}}]]{{label}} "
-        lower-block: "[.point]"
         label: "{{label}}"
         label-after: " "
         block-role: "point"
@@ -62,8 +54,6 @@ scheme:
         gaps: true
         id: "art-{{article}}{{#paragraph}}-{{paragraph}}{{/paragraph}}-{{point}}-{{subpoint}}"
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}({{point}})({{subpoint}})"
-        lower: "[[{{id}},{{reftext}}]]{{label}} "
-        lower-block: "[.subpoint]"
         label: "{{label}}"
         label-after: " "
         block-role: "subpoint"
@@ -73,7 +63,6 @@ scheme:
         auto: "item"
         id: "art-{{article}}{{#paragraph}}-{{paragraph}}{{/paragraph}}{{#point}}-{{point}}{{/point}}-i{{indent}}"
         reftext: "Article {{article}}{{#paragraph}}({{paragraph}}){{/paragraph}}{{#point}}({{point}}){{/point}}, indent {{indent}}"
-        lower: "[[{{id}}]]"
         anchor: true
   recital:
     level:
@@ -84,14 +73,12 @@ scheme:
         default: true
         id: "rct-{{recital}}"
         reftext: "Recital {{recital}}"
-        lower: "[[{{id}},{{reftext}}]]{{label}} "
         label: "{{label}}"
         label-after: " "
 stream:
   # The Official Journal's footnotes, numbered through the act.
   oj:
     placement: "footnote"
-    lower: "{{body}}"
 citation:
   # Quoted elsewhere, in the form of the Official Journal: `— Article
   # 6(1)(a) of Regulation (EU) 2016/679`.

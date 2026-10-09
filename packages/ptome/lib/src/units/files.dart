@@ -102,3 +102,15 @@ String relative(String path, {required String from}) {
   final parts = [for (var j = i; j < b.length; j++) '..', ...a.sublist(i)];
   return parts.isEmpty ? '.' : parts.join('/');
 }
+
+/// The `schemes/` directory nearest above [path].
+String? schemesDir(String path) {
+  var dir = dirname(absolute(path));
+  while (true) {
+    final candidate = join(dir, 'schemes');
+    if (isDirectory(candidate)) return candidate;
+    final parent = dirname(dir);
+    if (parent == dir) return null;
+    dir = parent;
+  }
+}

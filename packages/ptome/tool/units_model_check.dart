@@ -1,6 +1,7 @@
-// The model equivalence gate (ADR-0020): reads each document of a corpus
-// natively (ptome's parser, `units-engine=native`), dumps its units model as
-// tool/units_oracle.dart dumps milestone 1's, and compares the two.
+// The model equivalence gate (ADR-0020): reads each document of a corpus,
+// dumps its units model (tool/units_dump.dart), and compares it with the
+// oracle: the models milestone 1 (ADR-0019) found for the same documents,
+// dumped the same way before it was removed and kept outside the repo.
 //
 //   dart run tool/units_model_check.dart ORACLE_DIR CORPUS [--allow FILE] \
 //       [DOC...]
@@ -50,10 +51,7 @@ void main(List<String> arguments) {
     final watch = Stopwatch()..start();
     final document = loadFile(
       p.join(corpus, doc),
-      options: const AsciidoctorOptions(
-        safe: SafeMode.unsafe,
-        attributes: {'units-engine': 'native'},
-      ),
+      options: const AsciidoctorOptions(safe: SafeMode.unsafe),
     );
     final analysis = document.unitsSession?.analysis;
     if (analysis == null) {

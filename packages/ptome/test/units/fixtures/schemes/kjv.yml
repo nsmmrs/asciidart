@@ -1,6 +1,6 @@
 stream:
-  # The King James Bible's notes, ranges and terms, and how it lowers to the
-  # standard AsciiDoc of a print reference Bible (book/ in this repository).
+  # The King James Bible's notes, ranges and terms, and how they look in a
+  # print reference Bible.
 
   # The 1611 translators' marginal notes, with their verse and the words
   # they are on.
@@ -8,7 +8,6 @@ stream:
     placement: "footnote"
     reset: "verse"
     origin: "{{chapter}}:{{verse}}"
-    lower: "*{{origin}}* {{#lemma}}__{{lemma}}__: {{/lemma}}{{body}}"
     origin-style: "strong"
     lemma-style: "emphasis"
     lemma-after: ": "
@@ -19,8 +18,6 @@ stream:
     caller: "a"
     reset: "verse"
     origin: "{{chapter}}:{{verse}}"
-    mark: "[.xref-mark]^{{caller}}^"
-    entry: "[.xref]##*{{origin}}* {{#notes}}{{^first}} {{/first}}^{{caller}}^{nbsp}{{body}}{{/notes}}## "
     caller-style: "superscript"
     caller-role: "xref-mark"
     origin-style: "strong"
@@ -36,20 +33,6 @@ term:
     pattern: "(?<![A-Za-z])(?:LORD|GOD|JEHOVAH|JAH)(?![A-Za-z])"
     role: "nd"
     transform: "titlecase"
-templates:
-  bible:
-    book:
-      heading: |-
-        [[{{id}},{{reftext}}]]
-        [.book,short-name="{{book.abbr}}"]
-        {{=}} {{book.name}}
-    chapter:
-      heading: |-
-        [[{{id}},{{reftext}}]]
-        [.chapter,number={{chapter}}]
-        {{=}} {{book.chapter-label}} {{chapter}}
-    verse:
-      lower: "[[{{id}},{{reftext}}]]{{^first}}{{^zero}}^{{label}}^{nbsp}{{/zero}}{{/first}}"
 level-presentation:
   bible:
     book:

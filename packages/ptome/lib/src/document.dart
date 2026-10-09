@@ -49,7 +49,6 @@ import 'package:ptome/src/section.dart';
 import 'package:ptome/src/substitutors.dart' as substitutors;
 import 'package:ptome/src/text_case.dart';
 import 'package:ptome/src/timings.dart';
-import 'package:ptome/src/units/reading.dart';
 import 'package:ptome/src/units/session.dart';
 import 'package:ptome/src/version.dart';
 
@@ -373,14 +372,6 @@ class _BuiltinConverterStub implements NodeConverter {
   String? convert(AbstractNode node) =>
       throw UnsupportedError('no converter for backend "$backend"');
 }
-
-/// Whether units are read natively (`-a units-engine=native`, ADR-0020)
-/// rather than by milestone 1's reading.
-bool _nativeUnits(Map<String, _Override> overrides) =>
-    switch (overrides['units-engine']) {
-      _SetValue(:final value) => value == 'native',
-      _ => false,
-    };
 
 /// The root node of a parsed AsciiDoc document.
 ///
@@ -730,26 +721,7 @@ class Document extends AbstractBlock implements NodeDocument {
         extensions = Registry()..activate(this);
       }
 
-      // A document in units (`:units:` in its header): its source files as
-      // the units engine renders them (ADR-0019). `-a units!` reads it as
-      // plain AsciiDoc.
-      final docfile = attrs['docfile'];
-      if (parentDoc == null &&
-          docfile != null &&
-          safe < SafeMode.secure &&
-          attrOverrides['units'] is! _Unset &&
-          !_nativeUnits(attrOverrides)) {
-        unitsReading = UnitsReading.read(docfile, asOf: attrs['units-as-of']);
-      }
-      final unitLines = unitsReading?.linesOf(docfile!);
-      reader = unitLines != null
-          ? PreprocessorReader(
-              this,
-              unitLines,
-              cursor: Cursor(attrs['docfile'], baseDir),
-              normalize: true,
-            )
-          : lines != null
+      reader = lines != null
           ? PreprocessorReader(
               this,
               lines,
@@ -766,14 +738,8 @@ class Document extends AbstractBlock implements NodeDocument {
     }
   }
 
-  /// The rendered source files of a document in units (`:units:` in its
-  /// header), which the reader reads in place of the files' own lines;
-  /// `null` for any other document.
-  @internal
-  UnitsReading? unitsReading;
-
-  /// The units of a document in units read natively (ADR-0020): `null` for
-  /// any other document.
+  /// The units of a document in units (ADR-0020): `null` for any other
+  /// document.
   @internal
   UnitsSession? unitsSession;
 

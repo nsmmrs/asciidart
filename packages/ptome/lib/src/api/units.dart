@@ -47,8 +47,10 @@ final class Unit {
   String toString() => citation;
 }
 
-Unit _unit(impl.UnitsReading reading, impl.Unit u) {
-  final config = reading.analysis.config;
+Unit _unit(impl.Analysis analysis, impl.Unit u) {
+  final config = analysis.config;
+  // Where the parser read the unit's start.
+  final origin = u.start.file.originOf(u.start.line);
   return Unit._(
     scheme: u.level.scheme.name,
     level: u.level.name,
@@ -60,7 +62,7 @@ Unit _unit(impl.UnitsReading reading, impl.Unit u) {
     id: u.id,
     reftext: u.reftext,
     citation: impl.passageText(impl.Passage(u, u), config),
-    path: u.start.file.path,
-    line: u.start.line + 1,
+    path: origin?.file ?? origin?.path ?? u.start.file.path,
+    line: origin?.line ?? u.start.line + 1,
   );
 }

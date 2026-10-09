@@ -1,4 +1,4 @@
-# Documents whose native units model may differ from milestone 1's oracle
+# Documents whose units model may differ from milestone 1's oracle
 # (tool/units_model_check.dart --allow), each with the reason. Milestone 1
 # read documents with loci's own block reader; where it and ptome's parser
 # disagree, the native model follows ptome's parse, which is also what the

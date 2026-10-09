@@ -1,10 +1,10 @@
 // The canonical units model of an analysis, as JSON: what
-// tool/units_oracle.dart records from milestone 1 and
-// tool/units_model_check.dart compares the native model with (ADR-0020).
+// tool/units_model_check.dart compares with the oracle (ADR-0020), the
+// models milestone 1 found, dumped the same way.
 import 'package:ptome/src/units/engine.dart';
 import 'package:ptome/src/units/files.dart' as p;
 
-/// The canonical model of [a]: what the native engine must reproduce.
+/// The canonical model of [a].
 Map<String, Object> dump(Analysis a, String root) {
   String where(Unit u) {
     if (u.start.file.originOf(u.start.line) case final o?) {

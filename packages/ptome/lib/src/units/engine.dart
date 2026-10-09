@@ -415,8 +415,6 @@ final class Engine {
               a.terms[token.term.toLowerCase()] =
                   'term-${applyFilter('slug', token.term)}';
           }
-        case IncludeSelf() || IncludeUnit():
-          break;
       }
       if (block != null && e is TokenEvent) a.contextOf[e.token] = _innermost();
     }

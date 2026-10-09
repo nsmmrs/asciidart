@@ -25,7 +25,8 @@ anchors, labels, reftexts, notes and links.
 Every verse gets an anchor (`v-exo-34-6`), a reftext (`Exodus 34:6`) and
 its printed number. `LORD` is set in small capitals, the cross-references
 go into an entry after the verse number, and `<<Ps 86:15>>` links to the
-verse. The design and the documents it was tested on are in ADR-0019.
+verse. The design is in ADR-0020 (ADR-0019 has the syntax and the
+documents it was tested on).
 
 Nothing on this page is active unless a document names its schemes in its
 header (`:units:`), or names other works it quotes by address (`:works:`).
@@ -101,13 +102,18 @@ later are kept.
   A note right after `##span##` or a range's close takes it as its lemma.
   `note:F#id[…]` is written once and called again by `note:F#id[]`.
 - **Includes.**
-  - `include::#id[]` repeats a block of this document.
+  - `include::#id[]` repeats a block of this document, without its ID
+    or anchors.
   - `include::kjv[unit="Ps 23:1-3"]` quotes a passage of another work. The
-    quotation is cut at its units, even mid-line, and leaves out the work's
-    anchors, headings and notes.
+    work is parsed and its units rendered as its own; the quotation is cut
+    from that at its units, even mid-line, and leaves out the work's
+    anchors, headings and notes. Lists stay lists, so a dialogue keeps its
+    speakers.
   - The citation under the quotation is made from the work, not from the
     address as typed. A style the work's schemes declare (`cite=bcp`)
-    shapes it; `cite=none` splices the passage in uncited.
+    shapes it. `cite=none` splices the passage in uncited, as the work
+    prints it; its headings become discrete headings, so a psalm spliced
+    into a section stays in that section.
 - **Description lists with a style.**
   - `[annotations]`: a layer of notes kept in another file, each on an
     address and the words it quotes.
@@ -124,18 +130,20 @@ same scheme side by side, unit by unit: a text and its translation, the
 Arabic and Pickthall.
 - Units are matched by address alone; nothing in either document points
   at the other.
-- Each heading of the first document comes through. A heading that is
-  only a marker shows its unit's name (`Psalms 23`).
-- Under each heading, a table has a row per unit of the default level,
-  with the unit's label on both sides.
-- The include's other attributes apply as usual (`leveloffset=+1`).
+- Each heading of the first document comes through as a discrete
+  heading. A heading that is only a marker shows its unit's name
+  (`Psalms 23`).
+- Under each heading, a table (role `parallel-text`) has a row per unit
+  of the default level, with the unit's number on both sides.
+- `leveloffset` moves the headings down as it does for any include.
 
 ## A reference Bible in PDF
 
 The PDF engine sets a unit's apparatus where a print edition does, with
 theme keys alone (see `doc/pdf.md`):
-- The entries of a note stream (the cross-references' `[.xref]` spans) go
-  in the center column beside their verse (`role_xref_display: side`).
+- The entries of a note stream (the cross-references, spans with the
+  stream's `entry-role`, `xref`) go in the center column beside their
+  verse (`role_xref_display: side`).
 - The running head gives the page's first and last verse, from the verses'
   anchors (`running_content_marks: v-`).
 
@@ -201,8 +209,8 @@ scheme:
         reftext: "{{book.name}} {{chapter}}:{{verse}}"
 ```
 
-A second file (`kjv.yml`) adds the edition's note streams, ranges, terms
-and templates:
+A second file (`kjv.yml`) adds the edition's note streams, ranges and
+terms, and how its units look:
 
 ```yaml
 stream:
@@ -213,8 +221,12 @@ stream:
     caller: "a"
     reset: "verse"
     origin: "{{chapter}}:{{verse}}"
-    mark: "[.xref-mark]^{{caller}}^"
-    entry: "[.xref]##*{{origin}}* {{#notes}}{{^first}} {{/first}}^{{caller}}^{nbsp}{{body}}{{/notes}}## "
+    caller-style: "superscript"
+    caller-role: "xref-mark"
+    caller-after: "\u00a0"
+    origin-style: "strong"
+    entry-role: "xref"
+    entry-after: " "
 range:
   wj:
     role: "wj"
@@ -223,10 +235,18 @@ term:
     pattern: "(?<![A-Za-z])(?:LORD|GOD|JEHOVAH|JAH)(?![A-Za-z])"
     role: "nd"
     transform: "titlecase"
-templates:
+level-presentation:
   bible:
+    chapter:
+      title: "{{book.chapter-label}} {{chapter}}"
+      role: "chapter"
+      attributes:
+        number: "{{chapter}}"
     verse:
-      lower: "[[{{id}},{{reftext}}]]{{^first}}{{^zero}}^{{label}}^{nbsp}{{/zero}}{{/first}}"
+      # No number on a chapter's first verse.
+      label: "{{^first}}{{^zero}}{{label}}{{/zero}}{{/first}}"
+      label-style: "superscript"
+      label-after: "\u00a0"
 ```
 
 A scheme file declares the following.
@@ -244,19 +264,37 @@ A scheme file declares the following.
 - *Citation forms:* `sep`, `wrap`, `cite-wrap`, `cite-range-wrap`.
 - *Stepping:* `auto` (`block`, `paragraph`, `item`), `stepping`, `gaps`,
   `zero`, `hidden`, `bridges`, `absolute`.
-- *Templates:* `id`, `reftext`, `heading`, `lower`, `lower-block`,
-  `lower-end`.
+- *Templates:* `id`, `reftext`.
+- *How its units look* (on the level, or in `level-presentation`):
+  - `label` (a template), `label-style` (`plain`, `superscript`,
+    `strong`, `emphasis`), `label-role`, `label-before`, `label-after`;
+  - `anchor` (`false` for a unit only its label marks), `anchors` (more
+    IDs, as templates: a through-line number), `indent`;
+  - for a heading that is a unit: `title`, `role`, `attributes`;
+  - for a block that is a unit: `block-role` (the level's name without
+    one), `block-options` (`hardbreaks`);
+  - at a unit's end: `end`, `end-role`, `end-before`, `end-break: line`.
 
 **Everything else.**
 - *Canons* (book codes and every name a citation may use) and
   *versifications*.
-- *Note streams*, *ranges* and *term rules*.
-- *Settings*: `apparatus` roles, the overlay template.
+- *Note streams*, and how their notes look: `caller-style`,
+  `caller-role`, `caller-after`; `origin-style`, `lemma-style`,
+  `lemma-after`, `prefix` (in a footnote); `entry-role`, `entry-after`,
+  `note-separator`, `entry-break: block` (an entry that is a block of its
+  own).
+- *Ranges* and *term rules*.
+- *Settings*: `apparatus` roles, `overlay-role` and `overlay-after`.
 - *Citation styles* (`citation:`): how another document cites a passage of
   this one. Each style gives `attribution` and `title` templates, a `block`
   and the `labels` a quotation keeps.
 
-Templates are Mustache, and they write ptome markup.
+Templates are Mustache and print text, never markup: what a unit prints
+is set in the styles and roles above, and every backend renders it its
+own way. Text a template prints may refer to document attributes
+(`{response}`), with their values where the unit is. Scheme format 1,
+whose templates printed AsciiDoc (`lower`, `heading`, `mark`, `entry`,
+`templates:`), is no longer read: ptome says which keys replace each.
 
 **What a template can use.**
 - the unit's levels by name;
@@ -268,8 +306,8 @@ Templates are Mustache, and they write ptome markup.
 
 ## Checking a document
 
-`ptome check FILE...` analyzes documents without converting them. It
-prints each document's problems, then a summary line, and exits with
+`ptome check FILE...` reads documents as conversion does, without
+converting them. It prints each document's problems, then a summary line, and exits with
 status 1 when any document has a problem. `-q` prints only the summaries.
 
 ```console
@@ -300,10 +338,20 @@ print(doc.unit('Exod 34:6')?.reftext); // Exodus 34:6
 
 ## How it works
 
-When a document names schemes, ptome's units engine analyzes the document
-and its includes. The engine finds every unit, its address, ID and
-reftext, and resolves notes and references. ptome's reader then reads
-each source file as the engine renders it, through the scheme templates.
-The parser and every backend see units as the markup they render to, so
-HTML, DocBook, EPUB and PDF all support them, and so does the npm package.
-The units engine lives in `lib/src/units/` (ADR-0019).
+ptome's parser reads a document in units as it reads any other, and
+records where each line of text came from. Once the document is parsed,
+the units session walks it in document order: it finds the units syntax
+in the text the parser read (section titles, paragraphs, list items,
+description-list entries, verse blocks, table cells) and runs the engine.
+The engine finds every unit, its address, ID and reftext, and resolves
+notes and references. Because the parser read the text, conditionals,
+`leveloffset`, tables and includes all apply as they do anywhere else.
+
+Then the session renders what units print. Headings and blocks that are
+units get their IDs, roles and options; markers, notes, references and
+defined terms become placeholders in the text the inline substitutions
+start from, converted afterwards as anchors, styled parts, footnotes and
+links; ranges and term rules become role spans around the markup inside
+them. The source is never rewritten: a block's source still holds what
+was written. HTML, DocBook, EPUB and PDF all render units, and so does
+the npm package. The units engine lives in `lib/src/units/` (ADR-0020).

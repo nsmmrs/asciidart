@@ -41,7 +41,6 @@ import 'package:ptome/src/section.dart' as impl;
 import 'package:ptome/src/table.dart' as impl;
 import 'package:ptome/src/units/citation.dart' as impl;
 import 'package:ptome/src/units/engine.dart' as impl;
-import 'package:ptome/src/units/reading.dart' as impl;
 import 'package:ptome/src/version.dart' as impl;
 
 part 'attributes.dart';

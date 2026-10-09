@@ -316,9 +316,14 @@ final class Document extends Block {
   /// sections and their subdivisions. Empty for a document not written in
   /// units.
   List<Unit> get units {
-    final reading = _doc.unitsReading;
-    if (reading == null) return const [];
-    return [for (final u in reading.analysis.units) _unit(reading, u)];
+    final analysis = _doc.unitsSession?.analysis;
+    if (analysis == null) return const [];
+    return [
+      for (final u in [
+        ...analysis.units,
+      ]..sort((a, b) => a.start.compareTo(b.start)))
+        _unit(analysis, u),
+    ];
   }
 
   /// The unit with the ID [idOrAddress] (`v-exo-34-6`), or the first unit
@@ -326,13 +331,12 @@ final class Document extends Block {
   /// (`Exod 34:6`, `Exodus 34:6-8`). `null` when there is no such unit or
   /// the document is not written in units.
   Unit? unit(String idOrAddress) {
-    final reading = _doc.unitsReading;
-    if (reading == null) return null;
-    final analysis = reading.analysis;
+    final analysis = _doc.unitsSession?.analysis;
+    if (analysis == null) return null;
     final found =
         analysis.byId[idOrAddress] ??
         impl.resolvePassage(analysis, idOrAddress)?.start;
-    return found == null ? null : _unit(reading, found);
+    return found == null ? null : _unit(analysis, found);
   }
 
   /// The messages reported while parsing and converting this document.
