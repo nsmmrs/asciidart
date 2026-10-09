@@ -200,6 +200,24 @@ void main() {
     expect(firstChars('<!--', ignoreCase: true, unicode: true)!.prefix, '<!--');
   });
 
+  test('literals a few characters in', () {
+    Anchor? anchor(String source, {bool ignoreCase = false}) =>
+        firstChars(source, ignoreCase: ignoreCase)!.anchor;
+    final html = anchor('.?html`')!;
+    expect(html, (literal: 'html`', min: 0, max: 1));
+    expect(anchorAdmits(html, 'xhtml`', 0), isTrue);
+    expect(anchorAdmits(html, 'html`', 0), isTrue);
+    expect(anchorAdmits(html, 'xyhtml`', 0), isFalse);
+    expect(anchor(r'\b.x?abc'), (literal: 'abc', min: 1, max: 2));
+    expect(anchor('.?ab'), isNull, reason: 'too short');
+    expect(anchor('html`'), isNull, reason: 'a prefix');
+    expect(anchor('.*html`'), isNull, reason: 'unbounded');
+    expect(anchor('(?:x|y)html`'), isNull, reason: 'a group');
+    expect(anchor('.?HTML', ignoreCase: true), isNull, reason: 'case');
+    expect(anchor('.?h|.?html`'), isNull, reason: 'alternatives');
+    expect(anchor('(?=.?html`)x'), isNull, reason: 'lookahead');
+  });
+
   test('line starts, literals and empty matches', () {
     FirstChars read(String source, {bool ignoreCase = false}) =>
         firstChars(source, ignoreCase: ignoreCase)!;
@@ -255,6 +273,7 @@ void main() {
     var lined = 0;
     var prefixed = 0;
     var literals = 0;
+    var anchored = 0;
     for (final name in engine.languageNames) {
       final language = engine.getLanguage(name)!;
       final samples = _samples(name);
@@ -338,6 +357,14 @@ void main() {
                 reason: where,
               );
             }
+            if (first.anchor case final anchor?) {
+              expect(
+                anchorAdmits(anchor, text, at),
+                isTrue,
+                reason: '$where, anchor',
+              );
+              anchored++;
+            }
             if (first.follow case final follow?) {
               expect(follow.admits(text, at), isTrue, reason: '$where, follow');
               followed++;
@@ -352,6 +379,7 @@ void main() {
     expect(lined, greaterThan(100));
     expect(prefixed, greaterThan(1000));
     expect(literals, greaterThan(1000));
+    expect(anchored, greaterThan(0));
   });
 
   test('group counts', () {

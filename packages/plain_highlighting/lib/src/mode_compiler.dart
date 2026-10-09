@@ -96,6 +96,13 @@ final class MultiRegex {
   late final List<int> _missAt = List.filled(_regexes.length, 0);
   late final List<int> _missTo = List.filled(_regexes.length, 0);
 
+  /// Where each rule's [FirstChars.anchor] was last searched for: the
+  /// text, the position and the occurrence found there (-1 for none),
+  /// which stays the next one for any position up to it.
+  late final List<String?> _anchorIn = List.filled(_regexes.length, null);
+  late final List<int> _anchorFrom = List.filled(_regexes.length, 0);
+  late final List<int> _anchorAt = List.filled(_regexes.length, 0);
+
   /// Each rule alone (compiled when first tried).
   late final List<RegExp?> _alone = List.filled(_regexes.length, null);
 
@@ -234,6 +241,10 @@ final class MultiRegex {
         if (at < _missTo[i] && at > _missAt[i] && identical(s, _missIn[i])) {
           continue;
         }
+        if (first.anchor case final anchor?
+            when !_nearAnchor(i, anchor, s, at)) {
+          continue;
+        }
         if (first.follow case final follow? when !follow.admits(s, at)) {
           if (_run[i] case final run?) _missed(i, run, s, at);
           continue;
@@ -258,6 +269,23 @@ final class MultiRegex {
       }
     }
     return null;
+  }
+
+  /// Whether [anchor]'s literal is where a match of rule [i] starting at
+  /// [at] in [s] has it: its next occurrence, searched for once for the
+  /// positions up to it.
+  bool _nearAnchor(int i, Anchor anchor, String s, int at) {
+    final from = at + anchor.min;
+    var next = _anchorAt[i];
+    if (!identical(s, _anchorIn[i]) ||
+        from < _anchorFrom[i] ||
+        (next >= 0 && next < from)) {
+      next = s.indexOf(anchor.literal, from);
+      _anchorIn[i] = s;
+      _anchorFrom[i] = from;
+      _anchorAt[i] = next;
+    }
+    return next >= 0 && next <= at + anchor.max;
   }
 
   /// Whether [at] is inside a surrogate pair of [s] (where no match of a

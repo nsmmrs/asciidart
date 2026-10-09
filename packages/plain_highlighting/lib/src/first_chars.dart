@@ -20,6 +20,7 @@ final class FirstChars {
     this.lineStart = false,
     this.prefix,
     this.literal = false,
+    this.anchor,
   });
 
   /// 1 for each ASCII character a match can start with.
@@ -60,6 +61,11 @@ final class FirstChars {
 
   final bool _ignoreCase;
 
+  /// A literal of three characters or more that every match has a few
+  /// characters in, after a head of a bounded length (`.?html\``): see
+  /// [Anchor].
+  final Anchor? anchor;
+
   /// Whether a match can start with the ASCII character [c].
   bool has(int c) => _ascii[c] != 0;
 
@@ -83,6 +89,22 @@ final class FirstChars {
     }
     return true;
   }
+}
+
+/// A literal that every match has `min` to `max` characters in (the
+/// most, at least one: one at the start is [FirstChars.prefix]). A rule
+/// whose candidates are dense but whose matches are rare can then be
+/// tried only near the literal's next occurrence, which a search for it
+/// finds once for many positions.
+typedef Anchor = ({String literal, int min, int max});
+
+/// Whether [anchor]'s literal is where a match starting at [at] in [s]
+/// has it.
+bool anchorAdmits(Anchor anchor, String s, int at) {
+  for (var p = at + anchor.min; p <= at + anchor.max; p++) {
+    if (s.startsWith(anchor.literal, p)) return true;
+  }
+  return false;
 }
 
 /// Whether the expression [source] matches the empty string at every
@@ -185,6 +207,12 @@ FirstChars? firstChars(
       lineStart: chars.lineStart,
       prefix: prefix != null && (prefix.length > 1 || literal) ? prefix : null,
       literal: literal,
+      anchor: switch (chars.anchor) {
+        // (Searched for by code unit: none ignoring the case of letters.)
+        final anchor? when !(ignoreCase && anchor.literal.contains(_letter)) =>
+          anchor,
+        _ => null,
+      },
     );
   } on _Unread {
     return null;
@@ -192,6 +220,7 @@ FirstChars? firstChars(
 }
 
 final RegExp _sk = RegExp('[sk]');
+final RegExp _letter = RegExp('[a-z]');
 
 /// The [RunFollow] of an expression read as [chars], if it has one.
 RunFollow? _runFollow(_Chars chars) {
@@ -259,6 +288,12 @@ final class _Chars {
 
   /// Whether the expression read is an assertion: it takes no character.
   bool assertion = false;
+
+  /// Whether the expression read is quantified with `?` (zero or one).
+  bool optional = false;
+
+  /// See [FirstChars.anchor].
+  Anchor? anchor;
 
   /// Whether this set's ASCII characters are all in [other]'s.
   bool asciiIn(_Chars other) {
@@ -380,7 +415,8 @@ final class _Parser {
           ..follow = first.follow
           ..exactRun = first.exactRun
           ..prefix = first.prefix
-          ..literal = first.literal;
+          ..literal = first.literal
+          ..anchor = first.anchor;
       }
       return (
         chars
@@ -432,6 +468,7 @@ final class _Parser {
       }
       _readRunFollow(chars, terms);
       _readPrefix(chars, terms);
+      _readAnchor(chars, terms);
     }
     return (chars, open);
   }
@@ -457,6 +494,42 @@ final class _Parser {
     chars
       ..prefix = prefix.toString()
       ..literal = literal;
+  }
+
+  /// The literal (three characters or more) a sequence of [terms] has
+  /// after a head of single characters, some optional, into [chars].
+  void _readAnchor(_Chars chars, List<(_Chars, bool)> terms) {
+    // (In Unicode mode, a character may be two code units.)
+    if (unicode) return;
+    var min = 0;
+    var max = 0;
+    for (var t = 0; t < terms.length; t++) {
+      final (term, _) = terms[t];
+      if (term.assertion) continue;
+      if (term.prefix != null && !term.quantified) {
+        final literal = StringBuffer();
+        for (final (next, _) in terms.skip(t)) {
+          if (next.assertion) continue;
+          final p = next.prefix;
+          if (p == null || next.quantified) break;
+          literal.write(p);
+          if (!next.literal) break;
+        }
+        if (literal.length >= 3 && max > 0) {
+          chars.anchor = (literal: literal.toString(), min: min, max: max);
+        }
+        return;
+      }
+      if (!term.single) return;
+      if (!term.quantified) {
+        min++;
+        max++;
+      } else if (term.optional) {
+        max++;
+      } else {
+        return;
+      }
+    }
   }
 
   /// The run a sequence of [terms] starts with after its first character
@@ -519,6 +592,7 @@ final class _Parser {
           ..boundary = false
           ..lineStart = false
           ..quantified = true
+          ..optional = true
           ..min = 0;
       case 0x2b: // +
         at++;
@@ -648,7 +722,8 @@ final class _Parser {
         ..follow = null
         ..exactRun = false
         ..prefix = null
-        ..literal = false;
+        ..literal = false
+        ..anchor = null;
       return empty
           ? (_Chars()..assertion = true, true)
           : (chars..run = null, false);
