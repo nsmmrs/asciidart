@@ -61,12 +61,23 @@ final class MultiRegex {
   final List<int> _groups = [];
   int _matchAt = 1;
   int _position = 0;
-  RegExp? _matcherRe;
+
+  /// The rules as one alternation (compiled when first searched, which on
+  /// the VM is only for a mode that isn't dispatched).
+  late final RegExp _matcherRe = _compile(
+    regex.rewriteBackreferences([
+      for (final (_, re) in _regexes) re,
+    ], joinWith: '|'),
+    global: true,
+  );
 
   /// The rules that can start with each ASCII character, in order (by
-  /// index into [_regexes]); then those that can start with any other
-  /// ([_beyondAscii]) and those that can match at the end ([_atEnd]).
-  List<List<int>>? _byChar;
+  /// index into [_regexes]): for the character c, [_rules] from
+  /// `_ruleStart[c]` to `_ruleStart[c + 1]`; then those that can start
+  /// with any other ([_beyondAscii]) and those that can match at the end
+  /// ([_atEnd]). Null when the rules aren't dispatched.
+  Int32List? _ruleStart;
+  Int32List _rules = Int32List(0);
 
   /// The number of groups of each rule.
   final List<int> _groupCounts = [];
@@ -100,61 +111,72 @@ final class MultiRegex {
     _matchIndexes[_matchAt] = opts;
     _regexes.add((opts, re));
     _groups.add(_matchAt);
-    final groupCount = regex.countMatchGroups(re);
+    final groupCount = _groupCountOf[re] ??= regex.countMatchGroups(re);
     _groupCounts.add(groupCount);
     _matchAt += groupCount + 1;
   }
 
+  /// The group count of each rule source seen (the same rules make many
+  /// matchers).
+  static final Map<String, int> _groupCountOf = {};
+
+  /// The [FirstChars] of each rule source seen, by its flags.
+  static final Map<(String, bool, bool), FirstChars?> _firstCharsOf = {};
+
   void _build() {
     if (_regexes.isEmpty) return;
-    final terminators = [for (final (_, re) in _regexes) re];
-    _matcherRe = _compile(
-      regex.rewriteBackreferences(terminators, joinWith: '|'),
-      global: true,
-    );
-    if (prefilter) _byChar = _dispatchTable();
+    if (prefilter) _dispatchTable();
     lastIndex = 0;
   }
 
-  /// The rules by the character they can start with (see [_byChar]), or
-  /// null when one's first characters can't be read.
-  List<List<int>>? _dispatchTable() {
-    final table = List.generate(130, (_) => <int>[]);
+  /// Fills [_ruleStart] and [_rules], unless one rule's first characters
+  /// can't be read.
+  void _dispatchTable() {
+    // The rules dispatched: up to one that matches the empty string
+    // anywhere (null), which no rule after it can.
+    var count = 0;
     for (final (i, (_, source)) in _regexes.indexed) {
-      if (matchesEmptyEverywhere(source)) {
-        // It matches wherever the search starts: no later rule can.
-        for (final rules in table) {
-          rules.add(i);
-        }
-        break;
-      }
-      final first = firstChars(
+      count++;
+      if (matchesEmptyEverywhere(source)) break;
+      final first = _firstCharsOf.putIfAbsent((
         source,
-        ignoreCase: ignoreCase,
-        unicode: unicode,
-      );
-      if (first == null) return null;
-      for (var c = 0; c < 128; c++) {
-        if (first.has(c)) table[c].add(i);
-      }
-      if (first.nonAscii) table[_beyondAscii].add(i);
-      if (first.atEnd) table[_atEnd].add(i);
+        ignoreCase,
+        unicode,
+      ), () => firstChars(source, ignoreCase: ignoreCase, unicode: unicode));
+      if (first == null) return;
       _first[i] = first;
       _run[i] = first.run;
     }
-    return table;
+    final starts = Int32List(131);
+    final rules = <int>[];
+    for (var slot = 0; slot < 130; slot++) {
+      starts[slot] = rules.length;
+      for (var i = 0; i < count; i++) {
+        final first = _first[i];
+        if (first == null ||
+            switch (slot) {
+              _beyondAscii => first.nonAscii,
+              _atEnd => first.atEnd,
+              _ => first.has(slot),
+            }) {
+          rules.add(i);
+        }
+      }
+    }
+    starts[130] = rules.length;
+    _ruleStart = starts;
+    _rules = Int32List.fromList(rules);
   }
 
   /// The first match in [s] at or after [lastIndex], or `null`.
   ModeMatch? exec(String s) {
-    final re = _matcherRe;
-    if (re == null || lastIndex > s.length) return null;
-    if (_byChar case final byChar?) {
+    if (_regexes.isEmpty || lastIndex > s.length) return null;
+    if (_ruleStart case final starts?) {
       // (Started inside a surrogate pair, the engine steps back to the
       // pair's start: left to it.)
-      if (!unicode || !_inPair(s, lastIndex)) return _dispatch(byChar, s);
+      if (!unicode || !_inPair(s, lastIndex)) return _dispatch(starts, s);
     }
-    final match = re.allMatches(s, lastIndex).firstOrNull;
+    final match = _matcherRe.allMatches(s, lastIndex).firstOrNull;
     if (match == null) return null;
     // (The first rule's group that matched: a rule's own groups come
     // after its group.)
@@ -177,20 +199,23 @@ final class MultiRegex {
   }
 
   /// [exec] trying each rule alone where it can start.
-  ModeMatch? _dispatch(List<List<int>> byChar, String s) {
+  ModeMatch? _dispatch(Int32List starts, String s) {
+    final rules = _rules;
     final length = s.length;
     for (var at = lastIndex; at <= length; at++) {
-      final List<int> rules;
+      final int slot;
       if (at == length) {
-        rules = byChar[_atEnd];
+        slot = _atEnd;
       } else {
         final c = s.codeUnitAt(at);
-        rules = byChar[c < 128 ? c : _beyondAscii];
+        slot = c < 128 ? c : _beyondAscii;
       }
-      if (rules.isEmpty) continue;
+      final end = starts[slot + 1];
+      if (starts[slot] == end) continue;
       if (unicode && _inPair(s, at)) continue;
       final afterWord = at > 0 && isWordChar(s.codeUnitAt(at - 1));
-      for (final i in rules) {
+      for (var k = starts[slot]; k < end; k++) {
+        final i = rules[k];
         final first = _first[i];
         if (first == null) {
           // (The rule that matches the empty string anywhere.)
