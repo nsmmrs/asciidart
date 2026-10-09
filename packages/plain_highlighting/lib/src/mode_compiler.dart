@@ -21,6 +21,95 @@ final class _RuleOptions {
   int position = 0;
 }
 
+/// A rule of a [MultiRegex]: its expression, what it stands for, where its
+/// groups are in the alternation, and what the dispatcher keeps for it.
+final class _Rule {
+  new(
+    this.source,
+    this.options, {
+    required this.group,
+    required this.groupCount,
+  });
+
+  /// The expression's source.
+  final String source;
+
+  /// What the rule stands for (shared by the matchers of a mode, which
+  /// number its position in turn, as upstream does).
+  final _RuleOptions options;
+
+  /// The alternation's group of the rule, and the number of its own.
+  final int group;
+  final int groupCount;
+
+  /// The number of the alternation's groups from the rule's on (a match
+  /// of the rule alone has as many, the ones after its own unmatched).
+  int tail = 0;
+
+  /// What the rule's matches can start with; null for the rule that
+  /// matches the empty string anywhere (when dispatched).
+  FirstChars? first;
+
+  /// The rule alone (compiled when first tried).
+  RegExp? alone;
+
+  /// Where the rule last didn't match in a run of [FirstChars.run]'s
+  /// class: the text, the position and the run's end, between which it
+  /// doesn't match either.
+  String? missIn;
+  int missAt = 0;
+  int missTo = 0;
+
+  /// Where [FirstChars.anchor] was last searched for: the text, the
+  /// position and the occurrence found there (-1 for none), which stays
+  /// the next one for any position up to it.
+  String? anchorIn;
+  int anchorFrom = 0;
+  int anchorAt = 0;
+
+  /// Whether the anchor's literal is where a match starting at [at] in
+  /// [s] has it: its next occurrence, searched for once for the positions
+  /// up to it.
+  bool nearAnchor(Anchor anchor, String s, int at) {
+    final from = at + anchor.min;
+    var next = anchorAt;
+    if (!identical(s, anchorIn) ||
+        from < anchorFrom ||
+        (next >= 0 && next < from)) {
+      next = s.indexOf(anchor.literal, from);
+      anchorIn = s;
+      anchorFrom = from;
+      anchorAt = next;
+    }
+    return next >= 0 && next <= at + anchor.max;
+  }
+
+  /// The rule, whose matches start with a run of [run]'s characters,
+  /// didn't match in [s] at [at]: nor does it further into the run.
+  void missed(Uint8List run, String s, int at) {
+    var c = s.codeUnitAt(at);
+    if (c >= 128 || run[c] == 0) return;
+    var end = at + 1;
+    while (end < s.length && (c = s.codeUnitAt(end)) < 128 && run[c] != 0) {
+      end++;
+    }
+    missIn = s;
+    missAt = at;
+    missTo = end;
+  }
+
+  /// The match of the rule at [at] in [s] that is [lexeme] alone.
+  ModeMatch literalMatch(String s, int at, String lexeme) => ModeMatch.literal(
+    s,
+    at,
+    lexeme,
+    type: options.type,
+    rule: options.rule,
+    position: options.position,
+    length: tail,
+  );
+}
+
 /// Several regular expressions searched at once, as one alternation; a
 /// match tells which of them matched.
 ///
@@ -54,11 +143,8 @@ final class MultiRegex {
   /// inside a surrogate pair).
   final bool unicode;
 
-  final Map<int, _RuleOptions> _matchIndexes = {};
-  final List<(_RuleOptions, String)> _regexes = [];
-
-  /// The alternation's group of each rule, in order.
-  final List<int> _groups = [];
+  /// The rules, in order.
+  final List<_Rule> _rules = [];
   int _matchAt = 1;
   int _position = 0;
 
@@ -66,45 +152,18 @@ final class MultiRegex {
   /// the VM is only for a mode that isn't dispatched).
   late final RegExp _matcherRe = _compile(
     regex.rewriteBackreferences([
-      for (final (_, re) in _regexes) re,
+      for (final rule in _rules) rule.source,
     ], joinWith: '|'),
     global: true,
   );
 
-  /// The rules that can start with each ASCII character, in order (by
-  /// index into [_regexes]): for the character c, [_rules] from
-  /// `_ruleStart[c]` to `_ruleStart[c + 1]`; then those that can start
-  /// with any other ([_beyondAscii]) and those that can match at the end
-  /// ([_atEnd]). Null when the rules aren't dispatched.
-  Int32List? _ruleStart;
-  Int32List _rules = Int32List(0);
-
-  /// The number of groups of each rule.
-  final List<int> _groupCounts = [];
-
-  /// What each rule's matches can start with (see [FirstChars]); null
-  /// for a rule that matches the empty string anywhere (the last one the
-  /// table has).
-  late final List<FirstChars?> _first = List.filled(_regexes.length, null);
-
-  /// The class of the run each rule's matches start with, if one (see
-  /// [FirstChars.run]), and where the rule last didn't match in a run:
-  /// the text, the position and the run's end, between which it doesn't
-  /// match either.
-  late final List<Uint8List?> _run = List.filled(_regexes.length, null);
-  late final List<String?> _missIn = List.filled(_regexes.length, null);
-  late final List<int> _missAt = List.filled(_regexes.length, 0);
-  late final List<int> _missTo = List.filled(_regexes.length, 0);
-
-  /// Where each rule's [FirstChars.anchor] was last searched for: the
-  /// text, the position and the occurrence found there (-1 for none),
-  /// which stays the next one for any position up to it.
-  late final List<String?> _anchorIn = List.filled(_regexes.length, null);
-  late final List<int> _anchorFrom = List.filled(_regexes.length, 0);
-  late final List<int> _anchorAt = List.filled(_regexes.length, 0);
-
-  /// Each rule alone (compiled when first tried).
-  late final List<RegExp?> _alone = List.filled(_regexes.length, null);
+  /// The rules that can start with each ASCII character, in order: for
+  /// the character c, [_byChar] from `_byCharStart[c]` to
+  /// `_byCharStart[c + 1]`; then those that can start with any other
+  /// ([_beyondAscii]) and those that can match at the end ([_atEnd]).
+  /// Null when the rules aren't dispatched.
+  Int32List? _byCharStart;
+  List<_Rule> _byChar = const [];
 
   /// Where the next search starts.
   int lastIndex = 0;
@@ -115,11 +174,8 @@ final class MultiRegex {
   /// Adds [re], matching a rule described by [opts].
   void _addRule(String re, _RuleOptions opts) {
     opts.position = _position++;
-    _matchIndexes[_matchAt] = opts;
-    _regexes.add((opts, re));
-    _groups.add(_matchAt);
     final groupCount = _groupCountOf[re] ??= regex.countMatchGroups(re);
-    _groupCounts.add(groupCount);
+    _rules.add(_Rule(re, opts, group: _matchAt, groupCount: groupCount));
     _matchAt += groupCount + 1;
   }
 
@@ -131,19 +187,23 @@ final class MultiRegex {
   static final Map<(String, bool, bool), FirstChars?> _firstCharsOf = {};
 
   void _build() {
-    if (_regexes.isEmpty) return;
+    if (_rules.isEmpty) return;
+    for (final rule in _rules) {
+      rule.tail = _matchAt - rule.group;
+    }
     if (prefilter) _dispatchTable();
     lastIndex = 0;
   }
 
-  /// Fills [_ruleStart] and [_rules], unless one rule's first characters
-  /// can't be read.
+  /// Fills [_byCharStart] and [_byChar], unless one rule's first
+  /// characters can't be read.
   void _dispatchTable() {
     // The rules dispatched: up to one that matches the empty string
-    // anywhere (null), which no rule after it can.
-    var count = 0;
-    for (final (i, (_, source)) in _regexes.indexed) {
-      count++;
+    // anywhere (with no first characters), which no rule after it can.
+    final dispatched = <_Rule>[];
+    for (final rule in _rules) {
+      dispatched.add(rule);
+      final source = rule.source;
       if (matchesEmptyEverywhere(source)) break;
       final first = _firstCharsOf.putIfAbsent((
         source,
@@ -151,63 +211,62 @@ final class MultiRegex {
         unicode,
       ), () => firstChars(source, ignoreCase: ignoreCase, unicode: unicode));
       if (first == null) return;
-      _first[i] = first;
-      _run[i] = first.run;
+      rule.first = first;
     }
     final starts = Int32List(131);
-    final rules = <int>[];
+    final byChar = <_Rule>[];
     for (var slot = 0; slot < 130; slot++) {
-      starts[slot] = rules.length;
-      for (var i = 0; i < count; i++) {
-        final first = _first[i];
+      starts[slot] = byChar.length;
+      for (final rule in dispatched) {
+        final first = rule.first;
         if (first == null ||
             switch (slot) {
               _beyondAscii => first.nonAscii,
               _atEnd => first.atEnd,
               _ => first.has(slot),
             }) {
-          rules.add(i);
+          byChar.add(rule);
         }
       }
     }
-    starts[130] = rules.length;
-    _ruleStart = starts;
-    _rules = Int32List.fromList(rules);
+    starts[130] = byChar.length;
+    _byCharStart = starts;
+    _byChar = byChar;
   }
 
   /// The first match in [s] at or after [lastIndex], or `null`.
   ModeMatch? exec(String s) {
-    if (_regexes.isEmpty || lastIndex > s.length) return null;
-    if (_ruleStart case final starts?) {
+    if (_rules.isEmpty || lastIndex > s.length) return null;
+    if (_byCharStart case final starts?) {
       // (Started inside a surrogate pair, the engine steps back to the
       // pair's start: left to it.)
       if (!unicode || !_inPair(s, lastIndex)) return _dispatch(starts, s);
     }
     final match = _matcherRe.allMatches(s, lastIndex).firstOrNull;
     if (match == null) return null;
-    // (The first rule's group that matched: a rule's own groups come
-    // after its group.)
+    // (The first rule whose group matched: a rule's own groups come after
+    // its group.)
     var k = 0;
-    while (k < _groups.length - 1 && match.group(_groups[k]) == null) {
+    while (k < _rules.length - 1 && match.group(_rules[k].group) == null) {
       k++;
     }
-    final i = _groups[k];
-    final data = _matchIndexes[i]!;
+    final rule = _rules[k];
+    final options = rule.options;
     return ModeMatch(
       s,
       match.start,
       match,
-      i,
-      type: data.type,
-      rule: data.rule,
-      position: data.position,
+      rule.group,
+      type: options.type,
+      rule: options.rule,
+      position: options.position,
       groupCount: _matchAt - 1,
     );
   }
 
   /// [exec] trying each rule alone where it can start.
   ModeMatch? _dispatch(Int32List starts, String s) {
-    final rules = _rules;
+    final byChar = _byChar;
     final length = s.length;
     for (var at = lastIndex; at <= length; at++) {
       final int slot;
@@ -222,71 +281,52 @@ final class MultiRegex {
       if (unicode && _inPair(s, at)) continue;
       final afterWord = at > 0 && isWordChar(s.codeUnitAt(at - 1));
       for (var k = starts[slot]; k < end; k++) {
-        final i = rules[k];
-        final first = _first[i];
+        final rule = byChar[k];
+        final first = rule.first;
         if (first == null) {
           // (The rule that matches the empty string anywhere.)
-          return _literalMatch(i, s, at, '');
+          return rule.literalMatch(s, at, '');
         }
         if (afterWord && first.wordStart) continue;
         if (!first.admitsLine(s, at) || !first.admitsPrefix(s, at)) continue;
-        if (first.literal && _groupCounts[i] == 0) {
-          return _literalMatch(
-            i,
+        if (first.literal && rule.groupCount == 0) {
+          return rule.literalMatch(
             s,
             at,
             s.substring(at, at + first.prefix!.length),
           );
         }
-        if (at < _missTo[i] && at > _missAt[i] && identical(s, _missIn[i])) {
+        if (at < rule.missTo && at > rule.missAt && identical(s, rule.missIn)) {
           continue;
         }
         if (first.anchor case final anchor?
-            when !_nearAnchor(i, anchor, s, at)) {
+            when !rule.nearAnchor(anchor, s, at)) {
           continue;
         }
         if (first.follow case final follow? when !follow.admits(s, at)) {
-          if (_run[i] case final run?) _missed(i, run, s, at);
+          if (first.run case final run?) rule.missed(run, s, at);
           continue;
         }
         if (first.stop case final stop? when !stop.admits(s, at)) continue;
-        final alone = _alone[i] ??= _compile(_regexes[i].$2);
+        final alone = rule.alone ??= _compile(rule.source);
         if (alone.matchAsPrefix(s, at) case final RegExpMatch match) {
-          final data = _regexes[i].$1;
+          final options = rule.options;
           return ModeMatch(
             s,
             at,
             match,
             0,
-            type: data.type,
-            rule: data.rule,
-            position: data.position,
-            // (As many groups as the alternation's from the rule's on.)
-            length: _matchAt - _groups[i],
-            groupCount: _groupCounts[i],
+            type: options.type,
+            rule: options.rule,
+            position: options.position,
+            length: rule.tail,
+            groupCount: rule.groupCount,
           );
         }
-        if (_run[i] case final run?) _missed(i, run, s, at);
+        if (first.run case final run?) rule.missed(run, s, at);
       }
     }
     return null;
-  }
-
-  /// Whether [anchor]'s literal is where a match of rule [i] starting at
-  /// [at] in [s] has it: its next occurrence, searched for once for the
-  /// positions up to it.
-  bool _nearAnchor(int i, Anchor anchor, String s, int at) {
-    final from = at + anchor.min;
-    var next = _anchorAt[i];
-    if (!identical(s, _anchorIn[i]) ||
-        from < _anchorFrom[i] ||
-        (next >= 0 && next < from)) {
-      next = s.indexOf(anchor.literal, from);
-      _anchorIn[i] = s;
-      _anchorFrom[i] = from;
-      _anchorAt[i] = next;
-    }
-    return next >= 0 && next <= at + anchor.max;
   }
 
   /// Whether [at] is inside a surrogate pair of [s] (where no match of a
@@ -296,34 +336,6 @@ final class MultiRegex {
       at < s.length &&
       (s.codeUnitAt(at) & 0xfc00) == 0xdc00 &&
       (s.codeUnitAt(at - 1) & 0xfc00) == 0xd800;
-
-  /// The match of rule [i] at [at] in [s] that is [lexeme] alone.
-  ModeMatch _literalMatch(int i, String s, int at, String lexeme) {
-    final data = _regexes[i].$1;
-    return ModeMatch.literal(
-      s,
-      at,
-      lexeme,
-      type: data.type,
-      rule: data.rule,
-      position: data.position,
-      length: _matchAt - _groups[i],
-    );
-  }
-
-  /// Rule [i], whose matches start with a run of [run]'s characters,
-  /// didn't match in [s] at [at]: nor does it further into the run.
-  void _missed(int i, Uint8List run, String s, int at) {
-    var c = s.codeUnitAt(at);
-    if (c >= 128 || run[c] == 0) return;
-    var end = at + 1;
-    while (end < s.length && (c = s.codeUnitAt(end)) < 128 && run[c] != 0) {
-      end++;
-    }
-    _missIn[i] = s;
-    _missAt[i] = at;
-    _missTo[i] = end;
-  }
 }
 
 /// A [MultiRegex] that can resume a search at the same position, skipping
