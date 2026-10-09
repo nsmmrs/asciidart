@@ -162,6 +162,49 @@ enum Behavior {
     'none',
   ),
 
+  /// Which fonts an EPUB is set in: `reader` (the reading system's) or
+  /// `embedded` (asciidoctor-epub3's, packed in the book). The
+  /// `epub-embed-fonts` attribute is `embedded` too.
+  epubFonts('epub-fonts', CompatFormat.epub, 'reader', 'embedded'),
+
+  /// What an EPUB makes of a link from a website's root (`/page#id`):
+  /// `resolved` (to the chapter with the ID, else text) or `kept` (the
+  /// link as it is, which leaves the book).
+  epubRootLinks('epub-root-links', CompatFormat.epub, 'resolved', 'kept'),
+
+  /// What `toc::[]` writes in an EPUB chapter: `contents` (the book's
+  /// contents) or `none`.
+  epubTocMacro('epub-toc-macro', CompatFormat.epub, 'contents', 'none'),
+
+  /// Where an EPUB's highlighter links its assets: `cdnjs` (cdnjs.com) or
+  /// `none` (from the root, as asciidoctor-epub3 writes them).
+  epubCdn('epub-cdn', CompatFormat.epub, 'cdnjs', 'none'),
+
+  /// The title of an EPUB's contents when `toc-title` is empty: `default`
+  /// (Table of Contents) or `empty`.
+  epubTocTitle('epub-toc-title', CompatFormat.epub, 'default', 'empty'),
+
+  /// Which landmarks an EPUB's navigation gives: `ptome` (the start of the
+  /// content after the front matter; the front and back matter by section
+  /// name) or `asciidoctor-epub3` (the first chapter as the start; the
+  /// appendix, bibliography, glossary, index and preface, by style).
+  epubLandmarks(
+    'epub-landmarks',
+    CompatFormat.epub,
+    'ptome',
+    'asciidoctor-epub3',
+  ),
+
+  /// What a cover image that can't be read leaves in an EPUB: `omitted`
+  /// (nothing) or `listed` (an entry in the manifest for a file the book
+  /// hasn't, as asciidoctor-epub3 leaves it).
+  epubMissingCover(
+    'epub-missing-cover',
+    CompatFormat.epub,
+    'omitted',
+    'listed',
+  ),
+
   /// Whether a man page table cell starts with a paragraph space (`.sp`
   /// after `T{`): `none` or `spaced`.
   manpageCells('manpage-cells', CompatFormat.manpage, 'none', 'spaced'),

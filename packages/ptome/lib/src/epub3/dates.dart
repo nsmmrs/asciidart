@@ -8,7 +8,8 @@ library;
 /// Reads the forms documents and Asciidoctor give: `2026-01-31`,
 /// `2026-01-31 12:00:00 +0100` (`docdatetime`), ISO 8601 with a `T`, an
 /// offset or `Z`, `2026/01/31`, and `31 January 2026` or `January 31,
-/// 2026`. A time without an offset is local time, as in Ruby.
+/// 2026`. A time without an offset is read as UTC (where Ruby reads local
+/// time), so the book is the same wherever it is made.
 String? rubyTimeParseUtc(String value) {
   final text = value.trim();
   final parsed = _parseNumeric(text) ?? _parseMonthName(text);
@@ -95,7 +96,7 @@ DateTime? _build(
   if (month < 1 || month > 12 || day < 1 || day > 31) return null;
   if (hour > 23 || minute > 59 || second > 60) return null;
   if (zone == null) {
-    return DateTime(year, month, day, hour, minute, second);
+    return DateTime.utc(year, month, day, hour, minute, second);
   }
   final utc = DateTime.utc(year, month, day, hour, minute, second);
   final upper = zone.toUpperCase();

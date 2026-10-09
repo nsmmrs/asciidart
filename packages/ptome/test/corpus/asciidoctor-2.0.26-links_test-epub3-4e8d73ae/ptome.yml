@@ -2,3 +2,4 @@
 # or the files in them), by SHA-256; written by the corpus test.
 asciidoctor-2.0.26:
   pdf: 94fe12f243582fa0afad3c79762e269b37c60ffbaf48458539db335dc8650522
+  epub3: 003d32cbb007bdf1d8a48fd9f764c5d25363b3b6bea9cc8a8a3a8adb89b7e272

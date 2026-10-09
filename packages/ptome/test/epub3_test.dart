@@ -199,7 +199,8 @@ void main() {
   });
 
   test('dates are read as Ruby reads them and written in UTC', () {
-    expect(rubyTimeParseUtc('2026-01-31'), startsWith('2026-01-'));
+    // Without an offset, UTC (not the machine's zone).
+    expect(rubyTimeParseUtc('2026-01-31'), '2026-01-31T00:00:00Z');
     expect(
       rubyTimeParseUtc('2026-01-31 12:00:00 +0100'),
       '2026-01-31T11:00:00Z',
