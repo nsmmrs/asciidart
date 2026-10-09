@@ -322,12 +322,25 @@ final class OpenTypeFont {
 
   /// The glyph for each character the font maps (from its best `cmap`
   /// subtable).
-  late final Map<int, int> characterMap = _guard(_readCmap);
+  late final Map<int, int> characterMap = _guard(() {
+    final map = <int, int>{};
+    _readCmap((c, g) => map[c] = g);
+    return map;
+  });
 
   /// The glyph for [codePoint], or 0 (`.notdef`).
-  int glyphFor(int codePoint) => characterMap[codePoint] ?? 0;
+  int glyphFor(int codePoint) => _glyphs[codePoint];
 
-  Map<int, int> _readCmap() {
+  /// The [characterMap] in pages of glyph ids, built without the map.
+  late final _GlyphPages _glyphs = _guard(() {
+    final pages = _GlyphPages();
+    _readCmap(pages.put);
+    return pages;
+  });
+
+  /// Reads the best `cmap` subtable, giving [put] each character and its
+  /// glyph in turn (a later one replacing an earlier one).
+  void _readCmap(void Function(int c, int glyph) put) {
     final t = _require('cmap');
     final at = t.offset;
     final count = _data.u16(at + 2);
@@ -352,17 +365,16 @@ final class OpenTypeFont {
         bestScore = score;
       }
     }
-    if (best == null) return {};
-    return _cmapSubtable(best);
+    if (best == null) return;
+    _cmapSubtable(best, put);
   }
 
-  Map<int, int> _cmapSubtable(int at) {
-    final map = <int, int>{};
+  void _cmapSubtable(int at, void Function(int c, int glyph) put) {
     switch (_data.u16(at)) {
       case 0:
         for (var c = 0; c < 256; c++) {
           final g = _data.u8(at + 6 + c);
-          if (g != 0) map[c] = g;
+          if (g != 0) put(c, g);
         }
       case 4:
         final segCount = _data.u16(at + 6) ~/ 2;
@@ -386,7 +398,7 @@ final class OpenTypeFont {
               g = _data.u16(glyphAt);
               if (g != 0) g = (g + delta) & 0xffff;
             }
-            if (g != 0) map[c] = g;
+            if (g != 0) put(c, g);
           }
         }
       case 6:
@@ -394,7 +406,7 @@ final class OpenTypeFont {
         final count = _data.u16(at + 8);
         for (var i = 0; i < count; i++) {
           final g = _data.u16(at + 10 + 2 * i);
-          if (g != 0) map[first + i] = g;
+          if (g != 0) put(first + i, g);
         }
       case 12:
         final groups = _data.u32(at + 12);
@@ -404,11 +416,10 @@ final class OpenTypeFont {
           final end = _data.u32(group + 4);
           final glyph = _data.u32(group + 8);
           for (var c = start; c <= end; c++) {
-            map[c] = glyph + (c - start);
+            put(c, glyph + (c - start));
           }
         }
     }
-    return map;
   }
 
   /// The `glyf` data of [glyph] (empty for a glyph without outline).
@@ -1068,5 +1079,32 @@ final class _PairClasses extends _PairAccelerator {
     final class1 = left < _class1.length ? _class1[left] : 0;
     final class2 = right >= 0 && right < _class2.length ? _class2[right] : 0;
     return _values[class1 * _class2Count + class2];
+  }
+}
+
+/// Glyph ids by character: pages of 256 characters, made as characters
+/// are put, for the Unicode range and 16-bit glyph ids; a map for the
+/// rest (which a damaged font may have). Absent is glyph 0.
+final class _GlyphPages {
+  final List<Uint16List?> _pages = List.filled(0x1100, null);
+  Map<int, int>? _others;
+
+  void put(int c, int glyph) {
+    if (c >= 0 && c <= 0x10ffff && glyph >= 0 && glyph <= 0xffff) {
+      (_pages[c >> 8] ??= Uint16List(256))[c & 0xff] = glyph;
+      _others?.remove(c);
+    } else {
+      (_others ??= {})[c] = glyph;
+    }
+  }
+
+  int operator [](int c) {
+    final others = _others;
+    if (others != null) {
+      if (others[c] case final glyph?) return glyph;
+    }
+    if (c < 0 || c > 0x10ffff) return 0;
+    final page = _pages[c >> 8];
+    return page == null ? 0 : page[c & 0xff];
   }
 }

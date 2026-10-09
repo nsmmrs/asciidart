@@ -116,6 +116,10 @@ void _expectSameFont(
   );
   final cmap = _outcome(() => font.characterMap);
   _expectSame(cmap, _outcome(() => old.characterMap));
+  expect(
+    _outcome(() => font.glyphFor(0x41)),
+    _outcome(() => old.glyphFor(0x41)),
+  );
   if (cmap is! Map<int, int>) return;
   final probes = [
     ...cmap.keys,
@@ -433,6 +437,55 @@ void main() {
             if (value != expected) {
               fail('$name #$i kerning($a, $b): $value != $expected');
             }
+          }
+        }
+      }
+    }
+  });
+
+  test('damaged cmap tables: the same glyphs, or the same rejection', () {
+    final random = Random(404);
+    for (final name in [
+      'notoserif-regular-latin.ttf',
+      'mplus1p-regular-multilingual.ttf',
+      'notoserif-cff.otf',
+      'libertinus-smcp.otf',
+    ]) {
+      final bytes = File('test/fonts/$name').readAsBytesSync();
+      final view = ByteData.sublistView(bytes);
+      var (cmap, length) = (0, 0);
+      for (var i = 0; i < view.getUint16(4); i++) {
+        final record = 12 + 16 * i;
+        if (String.fromCharCodes(bytes, record, record + 4) == 'cmap') {
+          cmap = view.getUint32(record + 8);
+          length = view.getUint32(record + 12);
+        }
+      }
+      for (var i = 0; i < 150; i++) {
+        final copy = Uint8List.fromList(bytes);
+        for (var k = 0; k < 1 + random.nextInt(3); k++) {
+          final at = random.nextInt(2) == 0
+              ? random.nextInt(length)
+              : random.nextInt(min(length, 400));
+          copy[cmap + at] = random.nextBool()
+              ? random.nextInt(256)
+              : copy[cmap + at] ^ (1 << random.nextInt(8));
+        }
+        final font = OpenTypeFont.parse(copy);
+        final old = frozen.OpenTypeFont.parse(copy);
+        final map = _outcome(() => old.characterMap);
+        _expectSame(_outcome(() => font.characterMap), map);
+        for (final c in [
+          if (map is Map<int, int>) ...map.keys.take(3000),
+          for (var k = 0; k < 300; k++) random.nextInt(0x30000),
+          -1,
+          0x10ffff,
+          0x110000,
+        ]) {
+          final glyph = _outcome(() => font.glyphFor(c));
+          final expected = _outcome(() => old.glyphFor(c));
+          if (glyph != expected) {
+            fail('$name #$i glyphFor($c): $glyph != $expected');
           }
         }
       }
