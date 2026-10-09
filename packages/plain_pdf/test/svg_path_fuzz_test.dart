@@ -1,14 +1,15 @@
-// SVG path data parsing pinned to what the RegExp-based parser of commit
-// 17001e86 gave: digests of the segments of seeded random path data, well
-// formed and not (numbers like `5.`, `.5`, `1e`, `-`, `1e+`, `.e1`; stray
-// letters, flags and separators), and the numbers of single tokens
-// checked against the number grammar's RegExp.
-import 'dart:convert';
+// SVG path data parsing pinned to the RegExp-based parser of commit
+// 17001e86 (test/frozen/svg_path.dart), run side by side on the same
+// platform: the segments of seeded random path data, well formed and not
+// (numbers like `5.`, `.5`, `1e`, `-`, `1e+`, `.e1`; stray letters, flags
+// and separators), and the numbers of single tokens checked against the
+// number grammar's RegExp.
 import 'dart:math' as math;
 
-import 'package:crypto/crypto.dart';
 import 'package:plain_pdf/plain_pdf.dart';
 import 'package:test/test.dart';
+
+import 'frozen/svg_path.dart' as frozen;
 
 String number(math.Random r) => switch (r.nextInt(14)) {
   0 => '${r.nextInt(500)}',
@@ -61,47 +62,66 @@ String pathData(math.Random r, int commands, {required bool clean}) {
   return out.toString();
 }
 
-String describe(SvgPath path) {
-  // Six decimals: arcs become curves through sin and cos, whose last bit
-  // may differ between platforms' math libraries.
-  String n(double v) => v.toStringAsFixed(6);
-  final b = StringBuffer();
-  for (final s in path.segments) {
+String describe(SvgPath path) => [
+  for (final s in path.segments)
     switch (s) {
-      case MoveSegment(:final x, :final y):
-        b.write('M${n(x)},${n(y)};');
-      case LineSegment(:final x, :final y):
-        b.write('L${n(x)},${n(y)};');
-      case CubicSegment(
+      MoveSegment(:final x, :final y) => 'M$x,$y',
+      LineSegment(:final x, :final y) => 'L$x,$y',
+      CubicSegment(
         :final x1,
         :final y1,
         :final x2,
         :final y2,
         :final x,
         :final y,
-      ):
-        b.write('C${n(x1)},${n(y1)},${n(x2)},${n(y2)},${n(x)},${n(y)};');
-      case CloseSegment():
-        b.write('Z;');
-    }
+      ) =>
+        'C$x1,$y1,$x2,$y2,$x,$y',
+      CloseSegment() => 'Z',
+    },
+].join(';');
+
+String describeFrozen(frozen.SvgPath path) => [
+  for (final s in path.segments)
+    switch (s) {
+      frozen.MoveSegment(:final x, :final y) => 'M$x,$y',
+      frozen.LineSegment(:final x, :final y) => 'L$x,$y',
+      frozen.CubicSegment(
+        :final x1,
+        :final y1,
+        :final x2,
+        :final y2,
+        :final x,
+        :final y,
+      ) =>
+        'C$x1,$y1,$x2,$y2,$x,$y',
+      frozen.CloseSegment() => 'Z',
+    },
+].join(';');
+
+/// What parsing [data] gives: its segments, or the error it throws.
+String outcome(String data) {
+  try {
+    return describe(SvgPath.parse(data));
+  } on FormatException catch (e) {
+    return 'error: ${e.message}';
   }
-  return b.toString();
+}
+
+String frozenOutcome(String data) {
+  try {
+    return describeFrozen(frozen.SvgPath.parse(data));
+  } on FormatException catch (e) {
+    return 'error: ${e.message}';
+  }
 }
 
 void main() {
   test('random path data parses as before', () {
     final r = math.Random(5);
-    final out = StringBuffer();
     for (var i = 0; i < 3000; i++) {
       final data = pathData(r, r.nextInt(30), clean: i.isEven);
-      out
-        ..write(describe(SvgPath.parse(data)))
-        ..write('\n');
+      expect(outcome(data), frozenOutcome(data), reason: data);
     }
-    expect(
-      md5.convert(utf8.encode(out.toString())).toString(),
-      '733bfaef499d4e6c4cf38b45ae87d313',
-    );
   });
 
   test('numbers follow the grammar', () {
