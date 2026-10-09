@@ -148,7 +148,7 @@ Map<String, List<String>> weaveLayers(Analysis a, List<String> layers) {
       final address = m[1]!;
       final lemma = m[2];
       final body = m[3]!.replaceAll(']', r'\]');
-      final unit = _resolve(a, address);
+      final unit = resolveUnit(a, address);
       if (unit == null) {
         a.warn(null, '${p.basename(layer)}: $address not found');
         continue;
@@ -175,7 +175,7 @@ Map<String, List<String>> weaveLayers(Analysis a, List<String> layers) {
           placed = true;
           break;
         }
-        final hit = _findIgnoringPoints(text, lemma, startCol);
+        final hit = findIgnoringPoints(text, lemma, startCol);
         if (hit != null) {
           ((inserts[file.path] ??= {})[ln] ??= []).add((
             hit.$1,
@@ -217,7 +217,8 @@ Map<String, List<String>> weaveLayers(Analysis a, List<String> layers) {
   return out;
 }
 
-Unit? _resolve(Analysis a, String address) {
+/// The unit of [a] at [address], in any of its schemes.
+Unit? resolveUnit(Analysis a, String address) {
   for (final s in a.config.schemes) {
     for (final pp in parseCompound(s, address, cite: true)) {
       final full = List<Label?>.filled(s.levels.length, null);
@@ -235,7 +236,7 @@ Unit? _resolve(Analysis a, String address) {
 /// markup aside: (start, end) in [text]. A lemma of two parts ("from …
 /// to …", as Rashi quotes a passage by its first and last words) spans
 /// from the first to the second.
-(int, int)? _findIgnoringPoints(String text, String lemma, int from) {
+(int, int)? findIgnoringPoints(String text, String lemma, int from) {
   final bare = StringBuffer();
   final map = <int>[]; // bare index -> text index
   var space = true;

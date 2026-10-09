@@ -1,0 +1,18 @@
+= Includes
+:units: bible, kjv
+:works: kjv=sample.adoc
+
+[#refrain.verse]
+____
+Glory be to the Father.
+____
+
+include::#refrain[]
+
+== Quoted
+
+include::kjv[unit="Exod 34:6-7"]
+
+== Spliced
+
+include::sample.adoc[unit="Matt 5:3-4",cite=none]

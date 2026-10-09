@@ -2419,13 +2419,16 @@ abstract final class Parser {
     }
     if (units != null) {
       final base = breakCondition;
-      var first = true;
+      String? previous;
       breakCondition = (line) {
-        if (first) {
-          first = false;
-          return base?.call(line) ?? false;
-        }
-        return (base?.call(line) ?? false) || units.breaksParagraph(line);
+        final before = previous;
+        previous = line;
+        if (before == null) return base?.call(line) ?? false;
+        // An include's placeholder is a block of its own.
+        return (base?.call(line) ?? false) ||
+            units.breaksParagraph(line) ||
+            units.isInclude(line) ||
+            units.isInclude(before);
       };
     }
     return reader.readLinesUntil(

@@ -3258,6 +3258,8 @@ bool _balancedTags(String text) {
 String _atomOutput(AbstractNode node, UnitAtom atom) {
   final block = _blockOf(node);
   switch (atom) {
+    case UnitStartAtom():
+      return '';
     case AnchorAtom(:final id, :final reftext):
       return InlineRun.emit(
         Inline(block, InlineContext.anchor, text: reftext, type: 'ref', id: id),

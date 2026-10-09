@@ -60,6 +60,34 @@ final class AnchorAtom extends UnitAtom {
   final String? reftext;
 }
 
+/// What a printed part is, for what a quotation keeps.
+enum PartKind {
+  /// Text: an end text, a separator.
+  text,
+
+  /// A unit's label (and what goes with it).
+  label,
+
+  /// A note's caller.
+  caller,
+
+  /// An overlay's name.
+  overlay,
+
+  /// What goes with a note entry (the text after it).
+  entry,
+}
+
+/// Where a unit starts in the text (prints nothing): where a passage that
+/// starts with it is cut.
+final class UnitStartAtom extends UnitAtom {
+  /// The start of [unit].
+  const new(this.unit);
+
+  /// The unit.
+  final Unit unit;
+}
+
 /// A printed part: a label, a caller, an overlay's name.
 final class PartAtom extends UnitAtom {
   /// [text] set in [style] and [role]; [markup]: text the author wrote
@@ -70,6 +98,8 @@ final class PartAtom extends UnitAtom {
     this.style = PartStyle.plain,
     this.role,
     this.markup = false,
+    this.kind = PartKind.text,
+    this.unit,
   });
 
   /// The text printed.
@@ -83,6 +113,12 @@ final class PartAtom extends UnitAtom {
 
   /// Whether the author wrote it (the inline substitutions apply).
   final bool markup;
+
+  /// What it is.
+  final PartKind kind;
+
+  /// The unit whose label it is, for a label.
+  final Unit? unit;
 }
 
 /// Atoms in a span with a role (an entry), or none.
@@ -160,6 +196,24 @@ final class Rendering {
 
   /// The roles of each range mark, by index.
   final List<String> roles;
+
+  /// Each unit's start: the node it starts in and the index of its
+  /// [UnitStartAtom] there (`-1` for a heading that is the unit).
+  final Map<Unit, (AbstractNode, int)> starts = Map.identity();
+
+  /// The index of the range mark for [role], added if new.
+  int role(String role) {
+    final at = roles.indexOf(role);
+    if (at >= 0) return at;
+    roles.add(role);
+    return roles.length - 1;
+  }
+
+  /// Adds [atom], returning its placeholder.
+  String place(UnitAtom atom) {
+    atoms.add(atom);
+    return '$atomMark${atoms.length - 1}$markEnd';
+  }
 }
 
 sealed class _Piece {
@@ -245,8 +299,13 @@ final class _Renderer {
 
   String _place(UnitAtom atom) {
     atoms.add(atom);
+    if (atom is UnitStartAtom && _node != null) {
+      _starts[atom.unit] = (_node!, atoms.length - 1);
+    }
     return '$atomMark${atoms.length - 1}$markEnd';
   }
+
+  final Map<Unit, (AbstractNode, int)> _starts = Map.identity();
 
   int _role(String role) => _roleIndex.putIfAbsent(role, () {
     roles.add(role);
@@ -328,7 +387,7 @@ final class _Renderer {
     }
     _moveAnchorsOnly(prepared);
     _insertBlocks(prepared);
-    return Rendering(prepared, atoms, roles);
+    return Rendering(prepared, atoms, roles)..starts.addAll(_starts);
   }
 
   // Headings --------------------------------------------------------------
@@ -357,6 +416,7 @@ final class _Renderer {
           '{{#title}}{{title}}{{/title}}{{^title}}{{label}}{{/title}}',
       ctx,
     ).trim();
+    _starts[u] = (node, -1);
     _identify(node, u.id, u.reftext);
     if (look.role case final role?) node.addRole(role);
     for (final MapEntry(:key, :value) in look.attributes.entries) {
@@ -401,13 +461,19 @@ final class _Renderer {
   }) {
     final look = u.level.look;
     if (look.end != null || _hasEndNotes(u)) _ending.add(u);
-    final out = <UnitAtom>[];
+    final out = <UnitAtom>[UnitStartAtom(u)];
     for (final name in a.overlays[u] ?? const <String>[]) {
       out.add(
-        PartAtom(name, role: config.settings['overlay-role'] ?? 'overlay'),
+        PartAtom(
+          name,
+          role: config.settings['overlay-role'] ?? 'overlay',
+          kind: PartKind.overlay,
+        ),
       );
       final after = config.settings['overlay-after'] ?? ' ';
-      if (after.isNotEmpty) out.add(PartAtom(after));
+      if (after.isNotEmpty) {
+        out.add(PartAtom(after, kind: PartKind.overlay));
+      }
     }
     var anchored = false;
     if (startsBlock && node != null) {
@@ -435,16 +501,28 @@ final class _Renderer {
     if (look.label case final label?) {
       final text = render(label, ctx);
       if (text.isNotEmpty) {
-        if (look.labelBefore.isNotEmpty) out.add(PartAtom(look.labelBefore));
-        out.add(PartAtom(text, style: look.labelStyle, role: look.labelRole));
+        if (look.labelBefore.isNotEmpty) {
+          out.add(PartAtom(look.labelBefore, kind: PartKind.label, unit: u));
+        }
+        out.add(
+          PartAtom(
+            text,
+            style: look.labelStyle,
+            role: look.labelRole,
+            kind: PartKind.label,
+            unit: u,
+          ),
+        );
         if (keepAfter && look.labelAfter.isNotEmpty) {
-          out.add(PartAtom(look.labelAfter));
+          out.add(PartAtom(look.labelAfter, kind: PartKind.label, unit: u));
         }
       }
     }
     if (look.indent case final indent?) {
       final text = render(indent, ctx);
-      if (text.isNotEmpty) out.add(PartAtom(text));
+      if (text.isNotEmpty) {
+        out.add(PartAtom(text, kind: PartKind.label, unit: u));
+      }
     }
     out.addAll(_entries(u));
     return out;
@@ -467,7 +545,7 @@ final class _Renderer {
   /// A unit starting at the start of a block or line with no marker of
   /// its own.
   void _prefix(Loc loc, Unit u) {
-    final node = nodeOf[loc.file];
+    final node = _node = nodeOf[loc.file];
     final atoms = _unitAtoms(
       u,
       node: node,
@@ -537,7 +615,7 @@ final class _Renderer {
       }
       out.add(GroupAtom(parts, role: look.entryRole ?? name));
       if (look.entryAfter.isNotEmpty && !look.entryBlock) {
-        out.add(PartAtom(look.entryAfter));
+        out.add(PartAtom(look.entryAfter, kind: PartKind.entry));
       }
     }
     return out;
@@ -652,7 +730,7 @@ final class _Renderer {
     // Lemma spans lose their `##`.
     final cut = <(int, int)>[];
     for (final t in tokens) {
-      if (t is Note && t.lemmaStart != null) {
+      if (t is Note && t.lemmaStart != null && !t.woven) {
         cut
           ..add((t.lemmaStart! - offset, t.lemmaStart! - offset + 2))
           ..add((t.loc.column - offset - 2, t.loc.column - offset));
@@ -701,6 +779,7 @@ final class _Renderer {
     use.caller,
     style: use.stream.look.callerStyle,
     role: use.stream.look.callerRole,
+    kind: PartKind.caller,
   );
 
   List<_Piece> _token(Token t) {
@@ -903,7 +982,12 @@ final class _Renderer {
       if (!only.hasMatch(text) ||
           atomRx
               .allMatches(text)
-              .any((m) => atoms[int.parse(m[1]!)] is! AnchorAtom)) {
+              .any(
+                (m) => switch (atoms[int.parse(m[1]!)]) {
+                  AnchorAtom() || UnitStartAtom() => false,
+                  _ => true,
+                },
+              )) {
         continue;
       }
       final next = _sibling(node, 1);
@@ -915,6 +999,13 @@ final class _Renderer {
         anchors = _place(AnchorAtom(id, reftext)) + anchors;
         document.catalog.refs.remove(id);
         _register(isParagraph(next) ? next : previous, id, reftext);
+      }
+      final target = isParagraph(next) ? next! : previous!;
+      // The units that start here start there.
+      for (final m in atomRx.allMatches(anchors)) {
+        if (atoms[int.parse(m[1]!)] case UnitStartAtom(:final unit)) {
+          _starts[unit] = (target, int.parse(m[1]!));
+        }
       }
       if (isParagraph(next)) {
         carried = anchors;
@@ -955,6 +1046,7 @@ final class _Renderer {
         final text = _place(entry);
         final block = Block(parent, BlockContext.paragraph, source: text);
         if (entry case GroupAtom(:final role?)) block.addRole(role);
+        block.commitSubs();
         // The entry's own span would repeat the block's role.
         atoms[atoms.length - 1] = switch (entry) {
           GroupAtom(:final atoms) => GroupAtom(atoms),

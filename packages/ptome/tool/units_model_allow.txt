@@ -6,3 +6,4 @@
 law-eu/gdpr.adoc: "M. SCHULZ" (a signature) is an upper-alpha ordered list item in AsciiDoc; ptome parses it as one, so it is an indent of Article 99(2) where loci's reader saw a subparagraph.
 specs/cpp-basic.adoc: the list after "A declaration can also have effects including:" in an example block is a list in ptome's parse (loci's reader read example blocks as paragraphs), so its items step the item level.
 law-uk/computer-misuse-act-1990.adoc: the paragraph of s. 10 that starts with "[ins#…}" and ends with "]" is text in ptome's parse; loci's reader took it for a block attribute line and lost its three notes.
+talmud/berakhot/berakhot-he.adoc: a layer's notes are woven in where the words they quote are in the text as written, in the order of those words; milestone 1 searched text that already had the notes before woven in (their markup in it), so it put some at the end of the unit's first line, and it cut a note's body at its first `]`.

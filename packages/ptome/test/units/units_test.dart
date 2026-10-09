@@ -158,5 +158,40 @@ void main() {
         contains('<anchor xml:id="v-exo-34-6"'),
       );
     });
+
+    test('includes: a block again by ID, a passage quoted and spliced', () {
+      final out = html('bible/includes');
+      // The repeat has no ID of its own.
+      expect('class="quoteblock verse"'.allMatches(out), hasLength(2));
+      expect('id="refrain"'.allMatches(out), hasLength(1));
+      // Quoted: no anchors or numbers, cited.
+      expect(
+        out,
+        contains(
+          '<blockquote>\n<div class="paragraph">\n<p>And the '
+          '<span class="nd">Lord</span> passed by',
+        ),
+      );
+      expect(out, contains('&#8212; Exodus 34:6–7'));
+      // Spliced: as the work prints it.
+      expect(
+        out,
+        contains('<a id="v-mat-5-4"></a><sup>4</sup>\u00a0<span class="wj">'),
+      );
+    });
+
+    test('parallel texts: a table, unit by unit', () {
+      final out = html('bible/psalm23-parallel');
+      expect(out, contains('class="tableblock frame-none grid-rows'));
+      expect(
+        out,
+        matches(
+          RegExp(
+            r'<td[^>]*><p[^>]*><a id="v-psa-23-1"></a><sup>1</sup>\u00a0'
+            'The <span class="nd">Lord</span> <em>is</em> my shepherd',
+          ),
+        ),
+      );
+    });
   });
 }

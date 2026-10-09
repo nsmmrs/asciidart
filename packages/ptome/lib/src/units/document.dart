@@ -162,7 +162,12 @@ final class Note extends Token {
     this.lemmaStart,
     this.lemmaRange,
     this.id,
+    this.woven = false,
   });
+
+  /// Whether a layer wove the note in (ADR-0020): it is in no text, and
+  /// its lemma has no markup there.
+  final bool woven;
 
   /// The note stream (`x`, `tn`, `F`), which a scheme declares.
   final String stream;

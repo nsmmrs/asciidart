@@ -27,7 +27,9 @@ import 'package:ptome/src/ruby_semantics.dart';
 import 'package:ptome/src/rx.dart';
 import 'package:ptome/src/substitutors.dart' as substitutors;
 import 'package:ptome/src/text_case.dart';
+import 'package:ptome/src/units/include.dart';
 import 'package:ptome/src/units/reading.dart';
+import 'package:ptome/src/units/session.dart';
 
 export 'package:ptome/src/cursor.dart' show Cursor;
 
@@ -1483,6 +1485,32 @@ class PreprocessorReader extends Reader {
         );
       }
     } else {
+      // Units (ADR-0020): a passage by its address, or a block of this
+      // document again by its ID; the session puts their blocks where the
+      // placeholder it gives is, once the document is parsed.
+      if (doc.unitsSession case final units?
+          when doc.safe < SafeMode.secure &&
+              (expandedTarget.startsWith('#') ||
+                  (attrlist ?? '').contains('unit='))) {
+        final parsed = substitutors.parseAttributes(
+          doc,
+          attrlist,
+          subInput: true,
+        );
+        if (expandedTarget.startsWith('#') || parsed.containsKey('unit')) {
+          return replaceNextLine(
+            units.includeLine(
+              UnitsInclude(
+                expandedTarget,
+                parsed['unit'],
+                parsed['cite'],
+                _file ?? '$_dir/$_path',
+                _lineno,
+              ),
+            ),
+          );
+        }
+      }
       final ext = hasIncludeProcessors
           ? _findIncludeProcessor(expandedTarget)
           : null;
@@ -1604,6 +1632,34 @@ class PreprocessorReader extends Reader {
             parsedAttrs,
             encoding,
             incTags,
+          );
+        } else if (parsedAttrs['parallel'] case final other?
+            when resolution.type == _IncludeTargetType.file &&
+                doc.safe < SafeMode.secure &&
+                doc.attributes['units-engine'] == 'native') {
+          // Natively (ADR-0020): a table the session makes once the
+          // document is parsed, where this placeholder is.
+          final units = doc.unitsSession ??= UnitsSession.forIncludes(doc);
+          return replaceNextLine(
+            units.includeLine(
+              UnitsInclude(
+                resolution.path,
+                null,
+                null,
+                _file ?? '$_dir/$_path',
+                _lineno,
+                parallel: doc.normalizeSystemPath(
+                  other,
+                  start: _dir,
+                  targetName: 'include file',
+                ),
+                levelOffset:
+                    int.tryParse(
+                      (parsedAttrs['leveloffset'] ?? '0').replaceFirst('+', ''),
+                    ) ??
+                    0,
+              ),
+            ),
           );
         } else if (parsedAttrs['parallel'] case final other?
             when resolution.type == _IncludeTargetType.file &&

@@ -37,9 +37,14 @@ Passage? resolvePassage(Analysis a, String address) {
   if (start == null) return null;
   final right = address.substring(dash.end).trim();
   final s = start.level.scheme;
-  // The end inherits the levels above where it starts.
-  for (final pp in parseCompound(s, right, cite: true)) {
-    if (pp.end != start.level.depth && pp.start > start.level.depth) continue;
+  // The end inherits the levels above where it starts; it is a unit of the
+  // start's level if it can be (`1:1-7` ends at the seventh ayah, not the
+  // seventh surah).
+  final depth = start.level.depth;
+  final readings = parseCompound(s, right, cite: true)
+    ..sort((x, y) => (x.end == depth ? 0 : 1) - (y.end == depth ? 0 : 1));
+  for (final pp in readings) {
+    if (pp.end != depth && pp.start > depth) continue;
     final full = List<Label?>.filled(s.levels.length, null);
     for (var d = 0; d < pp.start; d++) {
       full[d] = d < start.labels.length ? start.labels[d] : null;
