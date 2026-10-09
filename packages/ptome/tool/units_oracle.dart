@@ -10,9 +10,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ptome/src/units/engine.dart';
 import 'package:ptome/src/units/files.dart' as p;
 import 'package:ptome/src/units/process.dart';
+
+import 'units_dump.dart';
 
 void main(List<String> args) {
   final out = args[0];
@@ -47,73 +48,4 @@ void main(List<String> args) {
       '${a.refs.length} references',
     );
   }
-}
-
-/// The canonical model of [a]: what the native engine must reproduce.
-Map<String, Object> dump(Analysis a, String root) {
-  String where(Unit u) =>
-      '${p.relative(u.start.file.path, from: root)}:${u.start.line + 1}';
-  return {
-    'units': [
-      for (final u in a.units)
-        {
-          'scheme': u.level.scheme.name,
-          'level': u.level.name,
-          'labels': {
-            for (final (d, l) in u.labels.indexed)
-              if (l != null) u.level.scheme.levels[d].name: l.text,
-          },
-          'id': u.id,
-          'reftext': u.reftext,
-          'ordinal': u.ordinal,
-          'zero': u.isZero,
-          'start': where(u),
-        },
-    ],
-    'notes': [
-      for (final use in a.notes.values)
-        {
-          'stream': use.stream.name,
-          'caller': use.caller,
-          'unit': ?use.unit?.id,
-          'context': ?use.context?.id,
-          'lemma': ?use.note.lemma,
-          'body': use.note.body,
-          'id': ?use.note.id,
-        },
-    ],
-    'references': [
-      for (final ref in a.refs.values)
-        {
-          'written': ref.xref.content,
-          'parts': [
-            for (final part in ref.parts)
-              switch (part) {
-                RefText(:final text) => {'text': text},
-                RefLink(:final text, :final id, :final file) => {
-                  'text': text,
-                  'id': id,
-                  'file': ?file,
-                },
-              },
-          ],
-        },
-    ],
-    'terms': {for (final k in (a.terms.keys.toList()..sort())) k: a.terms[k]!},
-    'overlays': [
-      for (final MapEntry(key: u, value: names) in a.overlays.entries)
-        {'unit': u.id, 'names': names},
-    ],
-    'diagnostics': [
-      for (final d in a.diagnostics)
-        {
-          'error': d.error,
-          'at': d.loc == null
-              ? ''
-              : '${p.relative(d.loc!.file.path, from: root)}:'
-                    '${d.loc!.line + 1}:${d.loc!.column + 1}',
-          'message': d.message,
-        },
-    ],
-  };
 }

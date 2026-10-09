@@ -320,7 +320,7 @@ String? rangeStart(String text) {
 /// Computes a document's units, notes and references (see [run]).
 final class Engine {
   /// An engine for [doc] under [config], which may cite [works].
-  new(this.doc, this.config, {this.works = const {}});
+  new(this.doc, this.config, {this.works = const {}, this.knownIds = const {}});
 
   /// The document.
   final Document doc;
@@ -330,6 +330,10 @@ final class Engine {
 
   /// Other documents references may cite, by work name.
   final Map<String, Analysis> works;
+
+  /// IDs the document gives its own nodes (ptome's catalog, for a document
+  /// its parser read), which a reference names rather than an address.
+  final Set<String> knownIds;
 
   /// The analysis [run] fills.
   late final Analysis a = Analysis(doc, config);
@@ -345,6 +349,7 @@ final class Engine {
 
   /// Walks the document's events and returns its analysis.
   Analysis run() {
+    a.explicitIds.addAll(knownIds);
     final idPattern = RegExp(
       r'\[\[([\w:.-]+)(?:,[^\]]*)?\]\]|\[#([\w:-]+)|\bid=([\w:.-]+)',
     );

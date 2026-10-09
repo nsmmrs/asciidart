@@ -20,6 +20,7 @@ import 'package:ptome/src/abstract_node.dart';
 import 'package:ptome/src/block.dart';
 import 'package:ptome/src/callouts.dart';
 import 'package:ptome/src/constants.dart';
+import 'package:ptome/src/cursor.dart';
 import 'package:ptome/src/document.dart';
 import 'package:ptome/src/extensions.dart';
 import 'package:ptome/src/helpers.dart';
@@ -34,6 +35,7 @@ import 'package:ptome/src/section.dart';
 import 'package:ptome/src/substitutors.dart';
 import 'package:ptome/src/table.dart';
 import 'package:ptome/src/text_case.dart';
+import 'package:ptome/src/units/session.dart';
 
 /// Match data for a delimited block boundary line.
 ///
@@ -470,6 +472,12 @@ abstract final class Parser {
         reader is PreprocessorReader && reader.includeDepth > 0
         ? null
         : reader.lineno;
+    // A document in units (ADR-0020): the parser records where its texts'
+    // lines were read, and the session finds the units in them at the end.
+    if (!headerOnly && document.parentDocument == null) {
+      final session = document.unitsSession = UnitsSession.start(document);
+      if (session != null) reader.recordOrigins = true;
+    }
 
     if (!headerOnly) {
       while (reader.hasMoreLines()) {
@@ -491,6 +499,7 @@ abstract final class Parser {
       }
     }
 
+    document.unitsSession?.finish();
     return document;
   }
 
@@ -1065,6 +1074,11 @@ abstract final class Parser {
     return invalid;
   }
 
+  /// Where the text of a section title starts: after its `=` (or `#`)
+  /// signs and the spaces of an ATX title; a setext title at the line's
+  /// start.
+  static final RegExp _atxTitleStartRx = RegExp(r'^(?:=+|#+)[ \t]+');
+
   /// Initializes a new [Section] and assigns any attributes provided.
   ///
   /// Port of `Parser.initialize_section`.
@@ -1079,6 +1093,10 @@ abstract final class Parser {
     final book = doctype == 'book';
     final sourceLocation = document.sourcemap ? reader.cursor() : null;
     final sectStyle = attrs['1'];
+    final titleOrigin = document.unitsSession == null
+        ? null
+        : reader.nextLineOrigin;
+    final titleLine = titleOrigin == null ? null : reader.peekLine();
     var (id: sectId, :reftext, title: sectTitle, :level, :atx) =
         parseSectionTitle(reader, document, attrs['id']);
 
@@ -1113,6 +1131,19 @@ abstract final class Parser {
       ..title = sectTitle
       ..sectname = sectName
       ..sourceLocation = sourceLocation;
+    if (titleOrigin != null) {
+      final column = atx
+          ? _atxTitleStartRx.firstMatch(titleLine ?? '')?.end ?? 0
+          : 0;
+      document.unitsSession?.recordOrigins(section, [
+        (
+          file: titleOrigin.file,
+          path: titleOrigin.path,
+          line: titleOrigin.line,
+          column: titleOrigin.column + column,
+        ),
+      ]);
+    }
     if (sectSpecial) {
       section.special = true;
       if (sectNumbered) {
@@ -1841,6 +1872,9 @@ abstract final class Parser {
           block = parseDescriptionList(reader, dlistMatch, parent);
         case _DiscreteHeadingStart():
           reader.unshiftLine(thisLine);
+          final titleOrigin = document.unitsSession == null
+              ? null
+              : reader.nextLineOrigin;
           final floatTitle = parseSectionTitle(reader, document, attrs['id']);
           if (floatTitle.reftext case final reftext?) {
             attrs['reftext'] = reftext;
@@ -1857,6 +1891,19 @@ abstract final class Parser {
                   ? Section.generateId(block.title ?? '', document)
                   : null);
           block.level = floatTitle.level;
+          if (titleOrigin != null) {
+            final column = floatTitle.atx
+                ? _atxTitleStartRx.firstMatch(thisLine)?.end ?? 0
+                : 0;
+            document.unitsSession?.recordOrigins(block, [
+              (
+                file: titleOrigin.file,
+                path: titleOrigin.path,
+                line: titleOrigin.line,
+                column: titleOrigin.column + column,
+              ),
+            ]);
+          }
         case _StyledParagraph(:final context):
           blockContext = context;
           cloakedContext = 'paragraph';
@@ -1900,6 +1947,7 @@ abstract final class Parser {
               reader,
               skipped == 0 ? listType : null,
               skipLineComments: true,
+              units: document.unitsSession,
             );
             final admonitionMatch =
                 _admonitionStyleHeads.contains(ch0) && thisLine.contains(':')
@@ -2313,6 +2361,12 @@ abstract final class Parser {
     // FIXME remove the need for this update!
     _applyAttributes(result, attrs);
     result.commitSubs();
+    // A document in units: where the block's lines were read.
+    if (document.unitsSession case final session?
+        when result is Block &&
+            reader.lastOrigins.length == result.lines.length) {
+      session.recordOrigins(result, reader.lastOrigins);
+    }
 
     //if doc_attrs.key? :pending_attribute_entries
     //  doc_attrs.delete(:pending_attribute_entries).each do |entry|
@@ -2341,13 +2395,17 @@ abstract final class Parser {
   /// continuations and (depending on [breakAtList]) block/list starts.
   ///
   /// Port of `Parser.read_paragraph_lines`.
+  ///
+  /// In a document in units, a line that starts a unit of a block level (a
+  /// statute's provision) or `@^` starts a block of its own ([units]).
   static List<String> readParagraphLines(
     Reader reader,
     BlockContext? breakAtList, {
     bool skipLineComments = false,
     bool skipProcessing = false,
+    UnitsSession? units,
   }) {
-    final bool Function(String)? breakCondition;
+    bool Function(String)? breakCondition;
     if (breakAtList != null) {
       breakCondition = Compliance.blockTerminatesParagraph
           ? _startOfBlockOrList
@@ -2356,6 +2414,17 @@ abstract final class Parser {
       breakCondition = Compliance.blockTerminatesParagraph
           ? _startOfBlock
           : null;
+    }
+    if (units != null) {
+      final base = breakCondition;
+      var first = true;
+      breakCondition = (line) {
+        if (first) {
+          first = false;
+          return base?.call(line) ?? false;
+        }
+        return (base?.call(line) ?? false) || units.breaksParagraph(line);
+      };
     }
     return reader.readLinesUntil(
       breakOnBlankLines: true,
@@ -2488,6 +2557,7 @@ abstract final class Parser {
           null,
           skipLineComments: true,
           skipProcessing: skipProcessing,
+          units: _docOf(parent).unitsSession,
         );
         // QUESTION check for empty lines after grabbing lines for simple
         // content model?
@@ -2517,6 +2587,7 @@ abstract final class Parser {
         ),
         cursor: blockCursor,
       );
+      if (reader.recordOrigins) blockReader.adoptOrigins(reader.lastOrigins);
     } else {
       final blockCursor = reader.cursor();
       blockReader = Reader(
@@ -2528,6 +2599,7 @@ abstract final class Parser {
         ),
         cursor: blockCursor,
       );
+      if (reader.recordOrigins) blockReader.adoptOrigins(reader.lastOrigins);
     }
 
     if (model == ContentModel.verbatim) {
@@ -3064,6 +3136,10 @@ abstract final class Parser {
       }
     }
 
+    // A document in units: where the item's text (and a term) was read.
+    final session = _docOf(listBlock).unitsSession;
+    final markerOrigin = session == null ? null : reader.nextLineOrigin;
+
     // First skip the line with the marker / term (it gets put back onto
     // the reader by nextBlock).
     reader.shift();
@@ -3078,7 +3154,21 @@ abstract final class Parser {
       itemLines.lines,
       continuationPlaceholders: itemLines.placeholders,
       cursor: blockCursor,
-    );
+    )..recordOrigins = reader.recordOrigins;
+    final itemOrigins = <LineOrigin>[];
+    if (markerOrigin != null) {
+      // The item's text runs to the end of the marker line.
+      final text = match.group(dlist ? 3 : 2);
+      if (text != null) {
+        itemOrigins.add((
+          file: markerOrigin.file,
+          path: markerOrigin.path,
+          line: markerOrigin.line,
+          column: markerOrigin.column + match.end - text.length,
+        ));
+      }
+      if (listTerm != null) session!.recordOrigins(listTerm, [markerOrigin]);
+    }
     if (listItemReader.hasMoreLines()) {
       if (sourcemapAssignmentDeferred) {
         listItem.sourceLocation = blockCursor;
@@ -3123,9 +3213,13 @@ abstract final class Parser {
       if (contentAdjacent &&
           listItem.blocks.isNotEmpty &&
           listItem.blocks[0].context == BlockContext.paragraph) {
+        if (session?.originsOf(listItem.blocks[0]) case final folded?) {
+          itemOrigins.addAll(folded);
+        }
         listItem.foldFirst();
       }
     }
+    if (session != null) session.recordOrigins(listItem, itemOrigins);
 
     if (dlist) {
       final description = listItem.hasText || listItem.blocks.isNotEmpty

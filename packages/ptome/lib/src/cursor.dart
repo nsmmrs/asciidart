@@ -38,3 +38,8 @@ class Cursor {
   @override
   String toString() => lineInfo;
 }
+
+/// Where a line of text was read: its file (a path or a URI, if known), the
+/// path shown in messages, its 1-based line, and the 0-based column its text
+/// starts at in that line (after a list marker or a description-list term).
+typedef LineOrigin = ({String? file, String path, int line, int column});

@@ -50,6 +50,7 @@ import 'package:ptome/src/substitutors.dart' as substitutors;
 import 'package:ptome/src/text_case.dart';
 import 'package:ptome/src/timings.dart';
 import 'package:ptome/src/units/reading.dart';
+import 'package:ptome/src/units/session.dart';
 import 'package:ptome/src/version.dart';
 
 /// Resolves a safe mode [name] (case-insensitive) to its level.
@@ -372,6 +373,14 @@ class _BuiltinConverterStub implements NodeConverter {
   String? convert(AbstractNode node) =>
       throw UnsupportedError('no converter for backend "$backend"');
 }
+
+/// Whether units are read natively (`-a units-engine=native`, ADR-0020)
+/// rather than by milestone 1's reading.
+bool _nativeUnits(Map<String, _Override> overrides) =>
+    switch (overrides['units-engine']) {
+      _SetValue(:final value) => value == 'native',
+      _ => false,
+    };
 
 /// The root node of a parsed AsciiDoc document.
 ///
@@ -728,7 +737,8 @@ class Document extends AbstractBlock implements NodeDocument {
       if (parentDoc == null &&
           docfile != null &&
           safe < SafeMode.secure &&
-          attrOverrides['units'] is! _Unset) {
+          attrOverrides['units'] is! _Unset &&
+          !_nativeUnits(attrOverrides)) {
         unitsReading = UnitsReading.read(docfile, asOf: attrs['units-as-of']);
       }
       final unitLines = unitsReading?.linesOf(docfile!);
@@ -761,6 +771,11 @@ class Document extends AbstractBlock implements NodeDocument {
   /// `null` for any other document.
   @internal
   UnitsReading? unitsReading;
+
+  /// The units of a document in units read natively (ADR-0020): `null` for
+  /// any other document.
+  @internal
+  UnitsSession? unitsSession;
 
   /// A read-only integer value indicating the level of security enforced
   /// while processing this document (see [SafeMode]).

@@ -6,18 +6,30 @@
 /// through untouched.
 library;
 
+import 'package:ptome/src/cursor.dart';
 import 'package:ptome/src/units/files.dart' as p;
 
 /// A source file of the document: the root or one it includes.
 final class SourceFile {
-  /// The file at [path] with its [lines].
-  new(this.path, this.lines);
+  /// The file at [path] with its [lines]; [origins], when given, say where
+  /// each line was read (a text ptome's parser read: a block's lines).
+  new(this.path, this.lines, {this.origins});
 
   /// The file's path.
   final String path;
 
   /// The file's lines, without terminators.
   final List<String> lines;
+
+  /// Where each line was read, aligned with [lines], for a text ptome's
+  /// parser read (positions then point into the source as written).
+  final List<LineOrigin>? origins;
+
+  /// Where line [line] (0-based) was read, if known.
+  LineOrigin? originOf(int line) {
+    final o = origins;
+    return o == null || line >= o.length ? null : o[line];
+  }
 }
 
 /// A place in a source file: line and column (0-based).
@@ -43,7 +55,12 @@ final class Loc implements Comparable<Loc> {
       order != o.order ? order.compareTo(o.order) : column.compareTo(o.column);
 
   @override
-  String toString() => '${p.basename(file.path)}:${line + 1}:${column + 1}';
+  String toString() {
+    if (file.originOf(line) case final o?) {
+      return '${p.basename(o.path)}:${o.line}:${o.column + column + 1}';
+    }
+    return '${p.basename(file.path)}:${line + 1}:${column + 1}';
+  }
 }
 
 /// Something the units syntax writes in a line of text.
@@ -406,7 +423,7 @@ Document readDocument(
   final attributes = <String, String>{};
   final blocksById = <String, (SourceFile, int, int)>{};
   var order = 0;
-  final scanner = _InlineScanner(rangeNames, active: active);
+  final scanner = InlineScanner(rangeNames, active: active);
 
   void readFile(String filePath, {required bool isRoot}) {
     // A file's lines as given (layers woven in), else as on disk.
@@ -692,7 +709,11 @@ Document readDocument(
   return Document(files.first, files, events, attributes, blocksById);
 }
 
-final class _InlineScanner {
+/// Finds the units syntax in a line: markers, ranges, notes, references by
+/// address and defined terms.
+final class InlineScanner {
+  /// A scanner of the ranges named [rangeNames]; markers are units only when
+  /// [active] (a document that names schemes).
   new(Set<String> rangeNames, {required this.active})
     : _open = rangeNames.isEmpty
           ? null
@@ -705,6 +726,7 @@ final class _InlineScanner {
               '\\{(${rangeNames.map(RegExp.escape).join('|')})(#[\\w-]+)?\\]',
             );
 
+  /// Whether markers are units (the document names schemes).
   final bool active;
   final RegExp? _open;
   final RegExp? _close;

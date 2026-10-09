@@ -58,13 +58,22 @@ class Reader {
   /// [continuationPlaceholders] are the indexes in [lines] of empty lines
   /// that stand for a list continuation (see
   /// [nextLineIsContinuationPlaceholder]).
+  ///
+  /// [origins] are where [lines] were read (see [recordOrigins]), aligned
+  /// with them: a reader of lines already read keeps their origins.
   new(
     List<String> lines, {
     Cursor? cursor,
     bool normalize = false,
     Set<int> continuationPlaceholders = const {},
+    List<LineOrigin>? origins,
   }) {
     _initCursor(cursor);
+    if (origins != null) {
+      _presetOrigins = origins;
+      _presetBase = _lineno;
+      recordOrigins = true;
+    }
     _sourceLines = _prepareLines(
       lines: lines,
       normalize: normalize ? _LineNormalization.full : _LineNormalization.none,
@@ -139,6 +148,55 @@ class Reader {
   /// Whether the end of the reader was reached with a delimited block open.
   bool unterminated = false;
   _ReaderState? _savedState;
+
+  /// Whether [readLinesUntil] reports where each line it returns was read
+  /// ([lastOrigins]); set for documents in units (ADR-0020), whose
+  /// positions point into the source as written.
+  bool recordOrigins = false;
+
+  /// Where the lines the last [readLinesUntil] returned were read, aligned
+  /// with them (empty unless [recordOrigins]).
+  List<LineOrigin> lastOrigins = const [];
+
+  /// The origins of the lines this reader was made of, by line number from
+  /// [_presetBase], when they were read elsewhere first.
+  List<LineOrigin>? _presetOrigins;
+  int _presetBase = 1;
+
+  /// Where the line [shift] last returned was read (when [recordOrigins]).
+  late LineOrigin _shiftOrigin;
+
+  /// The origins of the lines shifted most recently (newest last), so a
+  /// line restored by [unshift] keeps where it was read even when the
+  /// reader has left its include since (when [recordOrigins]).
+  final List<LineOrigin> _shiftedOrigins = [];
+
+  /// The origins of restored lines, the next to read last.
+  final List<LineOrigin> _restoredOrigins = [];
+
+  /// Where the line at [lineno] of this reader was read.
+  LineOrigin _originAt(int lineno) {
+    final preset = _presetOrigins;
+    if (preset != null) {
+      final index = lineno - _presetBase;
+      if (index >= 0 && index < preset.length) return preset[index];
+    }
+    return (file: _file, path: _path, line: lineno, column: 0);
+  }
+
+  /// Takes [origins] as where this reader's lines were read (lines read
+  /// elsewhere first, aligned with them), and records origins from now on.
+  @internal
+  void adoptOrigins(List<LineOrigin> origins) {
+    _presetOrigins = origins;
+    _presetBase = _lineno;
+    recordOrigins = true;
+  }
+
+  /// Where the next line to read was read (when [recordOrigins]).
+  @internal
+  LineOrigin get nextLineOrigin =>
+      _restoredOrigins.isNotEmpty ? _restoredOrigins.last : _originAt(_lineno);
 
   /// The file under the cursor, if known (a path or a URI).
   String? get file => _file;
@@ -369,6 +427,7 @@ class Reader {
     var breakOnListCont = breakOnListContinuation;
     var breakOnBlank = breakOnBlankLines;
     final result = <String>[];
+    final origins = recordOrigins ? <LineOrigin>[] : null;
     var restoreProcessLines = false;
     if (processLines && skipProcessing) {
       processLines = false;
@@ -397,7 +456,10 @@ class Reader {
                     (preserveLast = true)) ||
                 (test != null && test(current)));
       if (stop) {
-        if (readLastLine) result.add(current);
+        if (readLastLine) {
+          result.add(current);
+          origins?.add(_shiftOrigin);
+        }
         if (preserveLast) {
           unshift(current);
           lineRestored = true;
@@ -408,9 +470,11 @@ class Reader {
           current.startsWith('//') &&
           !current.startsWith('///'))) {
         result.add(current);
+        origins?.add(_shiftOrigin);
         lineRead = true;
       }
     }
+    lastOrigins = origins ?? const [];
     if (restoreProcessLines) {
       processLines = true;
       if (lineRestored && terminator == null) _lookAhead -= 1;
@@ -432,6 +496,13 @@ class Reader {
   /// incremented even when the stack is empty.
   @internal
   String? shift() {
+    if (recordOrigins) {
+      _shiftOrigin = _restoredOrigins.isNotEmpty
+          ? _restoredOrigins.removeLast()
+          : _originAt(_lineno);
+      _shiftedOrigins.add(_shiftOrigin);
+      if (_shiftedOrigins.length > 64) _shiftedOrigins.removeAt(0);
+    }
     _lineno += 1;
     if (_lookAhead != 0) _lookAhead -= 1;
     return _lines.isEmpty ? null : _lines.removeLast();
@@ -442,6 +513,7 @@ class Reader {
   /// Internal: see [shift].
   @internal
   void unshift(String line) {
+    if (recordOrigins) _restoreOrigins(1);
     _lineno -= 1;
     _lookAhead += 1;
     _lines.add(line);
@@ -452,9 +524,18 @@ class Reader {
   /// Internal: see [shift].
   @internal
   void unshiftAll(List<String> linesToRestore) {
+    if (recordOrigins) _restoreOrigins(linesToRestore.length);
     _lineno -= linesToRestore.length;
     _lookAhead += linesToRestore.length;
     _lines.addAll(linesToRestore.reversed);
+  }
+
+  /// Moves the origins of the [count] lines shifted last to the restored
+  /// ones (a line restored that was never shifted keeps none).
+  void _restoreOrigins(int count) {
+    for (var i = 0; i < count && _shiftedOrigins.isNotEmpty; i++) {
+      _restoredOrigins.add(_shiftedOrigins.removeLast());
+    }
   }
 
   /// The cursor at the current line.
@@ -511,6 +592,9 @@ class Reader {
     if (saved == null) return;
     _restoreState(saved);
     _savedState = null;
+    // The lines read since are read again, from their own positions.
+    _shiftedOrigins.clear();
+    _restoredOrigins.clear();
   }
 
   /// Discards state saved by [save].
