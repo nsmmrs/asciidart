@@ -608,6 +608,36 @@ abstract interface class CustomContent {
   (double, double) intrinsicWidths();
 }
 
+/// Custom content made of lines laid out once per width (a paragraph a
+/// caller sets itself): the layout asks how many of its lines fit, keeps
+/// as many of them as the [PageBreaker] allows (its orphans and widows,
+/// as for a [ParagraphBox]) and has the content place that many. The
+/// content can lay its lines out once per width and answer every height
+/// from them (the layout tries several heights to make room for notes or
+/// to balance columns).
+///
+/// The layout still calls [place] where no line fits even at the top of
+/// a region, or where the content has no lines: it decides what then
+/// goes there.
+abstract interface class LinedContent implements CustomContent {
+  /// How many lines the content is set in at [width].
+  int lineCount(double width);
+
+  /// How many of the content's first lines at [width] fit in [available]
+  /// height (none to all of them).
+  int linesThatFit(double width, double available);
+
+  /// The first [count] lines at [width] placed (`count` from 1 to all of
+  /// them; `rest` holds what follows).
+  CustomPlacement placeLines(double width, int count);
+
+  /// The fewest lines before a break.
+  int get orphans;
+
+  /// The fewest lines after a break.
+  int get widows;
+}
+
 /// What placing custom content gave.
 final class CustomPlacement {
   /// A piece [height] tall that [paint] draws with its top left at (x,
@@ -874,6 +904,18 @@ abstract interface class PageBreaker {
     required bool atTop,
   });
 
+  /// How many lines of [total] go in a region where the first [fit] of
+  /// them fit (0 moves them all to the next region), keeping [orphans]
+  /// lines before the break and [widows] after it; [atTop] when nothing
+  /// is above them in the region.
+  int linesToKeep(
+    int fit,
+    int total, {
+    required int orphans,
+    required int widows,
+    required bool atTop,
+  });
+
   /// Whether a box kept together, [height] tall, moves to the next
   /// region rather than split, with [available] left of a region
   /// [regionHeight] tall.
@@ -901,7 +943,23 @@ final class DefaultPageBreaker implements PageBreaker {
       used += heights[fit];
       fit++;
     }
-    final total = heights.length;
+    return linesToKeep(
+      fit,
+      heights.length,
+      orphans: orphans,
+      widows: widows,
+      atTop: atTop,
+    );
+  }
+
+  @override
+  int linesToKeep(
+    int fit,
+    int total, {
+    required int orphans,
+    required int widows,
+    required bool atTop,
+  }) {
     if (fit >= total) return total;
     // A line must go somewhere: at the top of a region, at least one.
     final least = atTop ? math.max(1, fit) : 0;
@@ -3250,11 +3308,28 @@ final class _Pass {
     final style = box.style;
     final margin = style.margin;
     final top = atTop || box._continued ? 0.0 : margin.top;
-    final placement = box.content.place(
-      width - margin.horizontal,
-      available - top,
-      atTop: atTop,
-    );
+    final content = box.content;
+    final inner = width - margin.horizontal;
+    final room = available - top;
+    CustomPlacement? placement;
+    if (content is LinedContent) {
+      // As many lines as fit and the page breaker keeps; where none fits
+      // at the top of a region (or there are none), the content decides.
+      final total = content.lineCount(inner);
+      final fit = total == 0 ? 0 : content.linesThatFit(inner, room);
+      if (total > 0 && (fit > 0 || !atTop)) {
+        final keep = layout.pageBreaker.linesToKeep(
+          fit,
+          total,
+          orphans: content.orphans,
+          widows: content.widows,
+          atTop: atTop,
+        );
+        if (keep == 0) return _Fit.moved(box);
+        placement = content.placeLines(inner, keep);
+      }
+    }
+    placement ??= content.place(inner, room, atTop: atTop);
     if (placement == null) return _Fit.moved(box);
     final rest = placement.rest;
     // Its margin below no more than the room left (a region's end takes

@@ -82,6 +82,13 @@ abstract interface class LayoutPage
 abstract interface class LineBreaker
   LineBreaker()
   List<Line> breakLines(Paragraph paragraph, double Function(int) widths)
+abstract interface class LinedContent implements CustomContent
+  CustomPlacement placeLines(double width, int count)
+  LinedContent()
+  int lineCount(double width)
+  int linesThatFit(double width, double available)
+  int orphans
+  int widows
 abstract interface class OpenTypeTextFont implements Font
   OpenTypeFont font
   OpenTypeTextFont()
@@ -89,6 +96,7 @@ abstract interface class PageBreaker
   PageBreaker()
   bool moveKeptBox(double height, double available, double regionHeight)
   int linesThatFit(List<double> heights, double available, {required int orphans, required int widows, required bool atTop})
+  int linesToKeep(int fit, int total, {required int orphans, required int widows, required bool atTop})
 enum BlendMode
   static BlendMode colorBurn
   static BlendMode colorDodge
@@ -253,6 +261,7 @@ final class DefaultPageBreaker implements PageBreaker
   DefaultPageBreaker()
   bool moveKeptBox(double height, double available, double regionHeight)
   int linesThatFit(List<double> heights, double available, {required int orphans, required int widows, required bool atTop})
+  int linesToKeep(int fit, int total, {required int orphans, required int widows, required bool atTop})
 final class DrawingBox extends LayoutBox
   BoxAlign align
   DrawingBox(double height, void Function(Canvas, Rect) draw, {double? width, BoxStyle style = const BoxStyle(), BoxAlign align = BoxAlign.left})

@@ -93,7 +93,10 @@ final class FakeLines implements CustomContent {
 
 /// A random document and the layout for it.
 final class RandomFlow {
-  new(this.seed) : random = math.Random(seed);
+  new(this.seed, {this.custom = FakeLines.new}) : random = math.Random(seed);
+
+  /// Makes the custom content named `name` of lines `heights` tall.
+  final CustomContent Function(String name, List<double> heights) custom;
 
   final int seed;
   final math.Random random;
@@ -271,7 +274,7 @@ final class RandomFlow {
         2 when depth == 0 => BreakBox.page(force: chance(20)),
         3 when depth == 0 => const BreakBox.column(),
         4 || 5 => CustomBox(
-          FakeLines('c${_anchors++}', [
+          custom('c${_anchors++}', [
             for (var i = 0, n = 1 + random.nextInt(30); i < n; i++)
               pick([12.0, 12.0, 14.5, 30.0]),
           ]),

@@ -36,3 +36,11 @@
 - A region holds as much content as fits with its notes under it (the
   most room found by halving), where it gave up when the notes of what
   fit first took most of the region.
+- `LinedContent`: custom content made of lines laid out once per width;
+  the layout asks how many fit and keeps as many as the page breaker
+  allows (orphans and widows, as for paragraphs), the content placing
+  that many. `PageBreaker.linesToKeep` is that rule apart from measuring
+  (a page breaker implements it too).
+- Faster, with the same output: math items moved in place and glyph
+  metrics cached; a `FlowLayout` keeps its paragraphs' lines and widths
+  from one `layout` to the next.
