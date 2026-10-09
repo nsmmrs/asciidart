@@ -224,7 +224,8 @@ final class TextStyle {
   /// The width of [glyphs] set in this style, in points.
   double widthOf(List<ShapedGlyph> glyphs) {
     var width = 0.0;
-    for (final (i, glyph) in glyphs.indexed) {
+    for (var i = 0; i < glyphs.length; i++) {
+      final glyph = glyphs[i];
       width += glyph.advance * size / 1000 + characterSpacing;
       if (glyph.text == ' ') width += wordSpacing;
       if (i < glyphs.length - 1) width += glyph.kerning * size / 1000;

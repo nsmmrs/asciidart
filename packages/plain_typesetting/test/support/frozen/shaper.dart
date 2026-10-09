@@ -1,95 +1,14 @@
-/// Fonts as typesetting sees them: metrics, coverage and shaping, in
-/// 1000ths of the em. A backend's fonts implement [Font] (plain_pdf's
-/// standard and embedded fonts); [OpenTypeShaper] shapes text with an
-/// OpenType font's cmap, single substitutions, ligatures and kerning.
-library;
-
+// A frozen copy of OpenTypeShaper as of 17001e86 (before shaped texts
+// were cached): the oracle the shaping equivalence test compares every
+// glyph with. Don't change it.
+// ignore_for_file: type=lint
 import 'package:plain_fonts/plain_fonts.dart';
+import 'package:plain_typesetting/plain_typesetting.dart';
 
-/// A glyph of shaped text: what to draw and how far it moves.
-final class ShapedGlyph {
-  /// A glyph [id] standing for [text], advancing [advance] plus [kerning]
-  /// (in 1000ths of the em).
-  const new(this.id, this.text, this.advance, [this.kerning = 0]);
-
-  /// The glyph: its id in an embedded font, its code in a standard font.
-  final int id;
-
-  /// The characters the glyph stands for (several for a ligature).
-  final String text;
-
-  /// The glyph's advance width, in 1000ths of the em.
-  final double advance;
-
-  /// The kerning before the next glyph, in 1000ths of the em (negative
-  /// brings it closer).
-  final double kerning;
-}
-
-/// A font text can be set in.
-abstract interface class Font {
-  /// The PostScript name.
-  String get name;
-
-  /// The ascender, in 1000ths of the em.
-  double get ascender;
-
-  /// The descender (negative), in 1000ths of the em.
-  double get descender;
-
-  /// The line gap, in 1000ths of the em.
-  double get lineGap;
-
-  /// The height of capital letters, in 1000ths of the em.
-  double get capHeight;
-
-  /// The height of lowercase letters, in 1000ths of the em.
-  double get xHeight;
-
-  /// The position of the underline's center, in 1000ths of the em
-  /// (negative: below the baseline).
-  double get underlinePosition;
-
-  /// The underline's thickness, in 1000ths of the em.
-  double get underlineThickness;
-
-  /// Whether the font has a glyph for [codePoint].
-  bool covers(int codePoint);
-
-  /// [text] as glyphs, with kerning (and ligatures, where the font has
-  /// them) when asked, and the single substitutions of the OpenType
-  /// [features] the font has (`onum`, `smcp`...).
-  List<ShapedGlyph> shape(
-    String text, {
-    bool kerning = true,
-    bool ligatures = false,
-    Set<String> features = const {},
-  });
-
-  /// The width of [text] at [size] points.
-  double widthOf(String text, double size, {bool kerning = true});
-}
-
-/// A [Font] whose glyphs are an OpenType font's: its glyph ids are the
-/// font's (math layout reads the font's MATH table and draws its glyphs).
-abstract interface class OpenTypeTextFont implements Font {
-  /// The font program.
-  OpenTypeFont get font;
-}
-
-/// An OpenType [font] as a [Font]: its metrics in 1000ths of the em, and
-/// text shaped with each character's glyph from the cmap, the single
-/// substitutions of the features asked for, the ligatures (`liga`), and
-/// kerning by the GPOS pair adjustments, else the `kern` table, or by the
-/// `kern` table's subtable [kernTableSubtable] alone.
-///
-/// A layout can set text in it as it is; a backend's fonts delegate to it
-/// (plain_pdf's embedded fonts, which also subset and embed the font).
-final class OpenTypeShaper implements OpenTypeTextFont {
+final class FrozenShaper {
   /// A shaper for [font].
   new(this.font, {this.kernTableSubtable});
 
-  @override
   final OpenTypeFont font;
 
   /// The `kern` subtable text is kerned by alone, if any.
@@ -105,15 +24,11 @@ final class OpenTypeShaper implements OpenTypeTextFont {
   /// The kerning of the pairs looked up, by `left << 16 | right`.
   final Map<int, int> _kerns = {};
 
-  @override
   String get name => font.postScriptName;
 
-  @override
   double widthOf(String text, double size, {bool kerning = true}) {
-    final glyphs = shape(text, kerning: kerning);
     var width = 0.0;
-    for (var i = 0; i < glyphs.length; i++) {
-      final glyph = glyphs[i];
+    for (final glyph in shape(text, kerning: kerning)) {
       width += glyph.advance + glyph.kerning;
     }
     return width * size / 1000;
@@ -123,44 +38,35 @@ final class OpenTypeShaper implements OpenTypeTextFont {
   double scale(num units) => units * 1000 / font.unitsPerEm;
 
   /// The ascender.
-  @override
   double get ascender => scale(font.ascender);
 
   /// The descender (negative).
-  @override
   double get descender => scale(font.descender);
 
   /// The line gap.
-  @override
   double get lineGap => scale(font.lineGap);
 
   /// The height of capital letters (the ascender if the font doesn't say).
-  @override
   double get capHeight => scale(font.capHeight ?? font.ascender);
 
   /// The height of lowercase letters (half the ascender if the font
   /// doesn't say).
-  @override
   double get xHeight => scale(font.xHeight ?? (font.ascender ~/ 2));
 
   /// The position of the underline's center (`post` gives its top).
-  @override
   double get underlinePosition =>
       scale(font.underlinePosition ?? -font.unitsPerEm ~/ 10) -
       underlineThickness / 2;
 
   /// The underline's thickness.
-  @override
   double get underlineThickness =>
       scale(font.underlineThickness ?? font.unitsPerEm ~/ 20);
 
   /// Whether the font has a glyph for [codePoint].
-  @override
   bool covers(int codePoint) => font.glyphFor(codePoint) != 0;
 
   /// [text] as glyphs: the features' single substitutions, then the
   /// ligatures (with [ligatures]), then kerning (with [kerning]).
-  @override
   List<ShapedGlyph> shape(
     String text, {
     bool kerning = true,
