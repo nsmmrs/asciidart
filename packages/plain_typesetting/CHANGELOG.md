@@ -53,6 +53,9 @@
   allows (orphans and widows, as for paragraphs), the content placing
   that many. `PageBreaker.linesToKeep` is that rule apart from measuring
   (a page breaker implements it too).
+- A table's cell borders can be painted with each cell, before its content
+  (`TableBox.borders: TableBorders.withCells`, as prawn-table paints
+  them), or after all of it (`TableBorders.above`, the default).
 - Faster, with the same output: math items moved in place and glyph
   metrics cached; a `FlowLayout` keeps its paragraphs' lines and widths
   from one `layout` to the next.

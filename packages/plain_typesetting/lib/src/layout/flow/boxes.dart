@@ -774,6 +774,16 @@ final class ComputedColumnWidth extends ColumnWidth {
   final double Function(double tableWidth) width;
 }
 
+/// When a table's cell borders are painted.
+enum TableBorders {
+  /// After every cell's content, so no content covers a border.
+  above,
+
+  /// With each cell, before its content (as prawn-table paints them), so a
+  /// cell's content may cover its borders.
+  withCells,
+}
+
 /// A table: rows of cells in columns. Header rows repeat at the top of
 /// each region the table continues in.
 final class TableBox extends LayoutBox {
@@ -786,6 +796,7 @@ final class TableBox extends LayoutBox {
     this.headerRows = 0,
     this.width,
     this.shrinkToContent = false,
+    this.borders = TableBorders.above,
     this.align = BoxAlign.left,
     this.stripes = const [],
     BoxStyle style = const BoxStyle(),
@@ -799,6 +810,7 @@ final class TableBox extends LayoutBox {
       headerRows = table.headerRows,
       width = table.width,
       shrinkToContent = table.shrinkToContent,
+      borders = table.borders,
       align = table.align,
       stripes = table.stripes,
       super._(table.style);
@@ -817,6 +829,9 @@ final class TableBox extends LayoutBox {
 
   /// Whether the table is as narrow as its content allows.
   final bool shrinkToContent;
+
+  /// When the cells' borders are painted.
+  final TableBorders borders;
 
   /// Its alignment when narrower than the region.
   final BoxAlign align;

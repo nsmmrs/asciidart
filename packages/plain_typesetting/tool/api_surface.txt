@@ -157,6 +157,10 @@ enum PageSide
   static List<PageSide> values
   static PageSide recto
   static PageSide verso
+enum TableBorders
+  static List<TableBorders> values
+  static TableBorders above
+  static TableBorders withCells
 enum TextAlign
   static List<TextAlign> values
   static TextAlign center
@@ -529,7 +533,8 @@ final class TableBox extends LayoutBox
   List<Color?> stripes
   List<ColumnWidth> columns
   List<TableRow> rows
-  TableBox(List<TableRow> rows, {required List<ColumnWidth> columns, int headerRows = 0, double? width, bool shrinkToContent = false, BoxAlign align = BoxAlign.left, List<Color?> stripes = const [], BoxStyle style = const BoxStyle()})
+  TableBorders borders
+  TableBox(List<TableRow> rows, {required List<ColumnWidth> columns, int headerRows = 0, double? width, bool shrinkToContent = false, TableBorders borders = TableBorders.above, BoxAlign align = BoxAlign.left, List<Color?> stripes = const [], BoxStyle style = const BoxStyle()})
   bool shrinkToContent
   double? width
   int headerRows

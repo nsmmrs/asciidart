@@ -418,6 +418,7 @@ extension _Tables on _Pass {
         height,
         rest == null ? style.anchor : null,
         style.tag,
+        box.borders,
       ),
       height,
       rest == null ? null : TableBox._rest(box, [...headers, ...rest], widths),

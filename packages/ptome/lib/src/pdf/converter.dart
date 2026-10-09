@@ -2259,6 +2259,8 @@ final class PdfConverter extends BuiltInConverter
     'running_content_on_blank_pages': ThemeBool(true),
     'base_emphasis_inversion': ThemeBool(false),
     'base_glyph_widths': ThemeString('thousandths'),
+    'table_borders': ThemeString('with-cells'),
+    'stem_math': ThemeString('source'),
   };
 
   /// The page size of the initial layout (the gem's page size: a named
@@ -5901,6 +5903,11 @@ final class PdfConverter extends BuiltInConverter
         [for (final cells in tableRows) TableRow(cells)],
         columns: columns,
         headerRows: headerSize,
+        borders:
+            _choice('table_borders', const ['above', 'with-cells']) ==
+                'with-cells'
+            ? TableBorders.withCells
+            : TableBorders.above,
         stripes: [for (final color in stripes) pdfColorOf(color)],
         align: switch (align) {
           'center' => BoxAlign.center,
@@ -6457,7 +6464,7 @@ final class PdfConverter extends BuiltInConverter
   /// renderer).
   void convertStem(Block node) {
     final style = node.style ?? node.attr('style');
-    if (style == 'asciimath' || style == 'latexmath') {
+    if ((style == 'asciimath' || style == 'latexmath') && _typesetMath) {
       final source = _unescapeXml(node.content() ?? '');
       final latex = style == 'latexmath';
       if (_mathOf(source, latex: latex, display: true) case final formula?) {
@@ -6513,6 +6520,11 @@ final class PdfConverter extends BuiltInConverter
   }
 
   bool _warnedMath = false;
+
+  /// Whether math is typeset (`stem_math: typeset`), or shown as its source
+  /// (`source`, as asciidoctor-pdf shows it without a math renderer).
+  bool get _typesetMath =>
+      _choice('stem_math', const ['typeset', 'source']) != 'source';
 
   /// The math layout: in the theme's `math_font_family` (a font with an
   /// OpenType `MATH` table), else Noto Sans Math (installed); a character
@@ -10256,7 +10268,8 @@ final class PdfConverter extends BuiltInConverter
       ThemeList(:final values) => [for (final v in values) v.rubyString],
       _ => const ['&#8220;', '&#8221;', '&#8216;', '&#8217;'],
     };
-    if (node.type == 'asciimath' || node.type == 'latexmath') {
+    if ((node.type == 'asciimath' || node.type == 'latexmath') &&
+        _typesetMath) {
       final latex = node.type == 'latexmath';
       if (_inlineMath(node.text ?? '', latex: latex) case final image?) {
         return image;

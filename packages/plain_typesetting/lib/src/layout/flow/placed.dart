@@ -569,9 +569,12 @@ final class _PlacedCell {
 }
 
 final class _PlacedTable extends _Placed {
-  const new(this.cells, this.height, this.anchor, this.tag);
+  const new(this.cells, this.height, this.anchor, this.tag, this.borders);
 
   final List<_PlacedCell> cells;
+
+  /// When the cells' borders are painted.
+  final TableBorders borders;
 
   /// The table's tag ([BoxStyle.tag]).
   final String? tag;
@@ -620,14 +623,33 @@ final class _PlacedTable extends _Placed {
           ..restore();
       }
     }
-    for (final placed in cells) {
-      placed.content?.paint(
-        painter,
-        x + placed.x + placed.cell.padding.left,
-        top - placed._contentTop,
-      );
+    void content(_PlacedCell placed) => placed.content?.paint(
+      painter,
+      x + placed.x + placed.cell.padding.left,
+      top - placed._contentTop,
+    );
+    if (borders == TableBorders.withCells) {
+      for (final placed in cells) {
+        _paintBorder(painter, placed, x, top);
+        content(placed);
+      }
+      return;
     }
+    cells.forEach(content);
     for (final placed in cells) {
+      _paintBorder(painter, placed, x, top);
+    }
+  }
+
+  /// Paints the border of [placed] (its decoration, if it has one).
+  void _paintBorder(
+    _Painter painter,
+    _PlacedCell placed,
+    double x,
+    double top,
+  ) {
+    final canvas = painter.canvas;
+    {
       if (placed.cell.decoration case final decoration?) {
         decoration(
           painter.page,
@@ -640,11 +662,11 @@ final class _PlacedTable extends _Placed {
           first: !placed.cell._openTop,
           last: !placed.openBottom,
         );
-        continue;
+        return;
       }
       final border = placed.cell.border;
       final widths = border.widths;
-      if (widths == EdgeInsets.zero) continue;
+      if (widths == EdgeInsets.zero) return;
       final l = x + placed.x;
       final r = l + placed.width;
       final t = top - placed.y;

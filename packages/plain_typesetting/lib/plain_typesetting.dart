@@ -58,6 +58,7 @@ export 'src/layout/flow.dart'
         PageTemplate,
         ParagraphBox,
         SpacerBox,
+        TableBorders,
         TableBox,
         TableCell,
         TableRow,
