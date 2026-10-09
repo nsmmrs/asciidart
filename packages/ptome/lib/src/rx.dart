@@ -445,6 +445,41 @@ final Map<BlockContext, RegExp> listRxMap = {
   BlockContext.colist: calloutListRx,
 };
 
+/// Whether [line] could be an item of a list of [context] (its
+/// [listRxMap] pattern could match): it starts, after spaces and tabs, with
+/// a character the item's marker can start with (`-`, `*` or `•`; `.`, a
+/// digit or a letter; `<`), or for a description list holds `::` or `;;`.
+/// Checked before the patterns, which the VM's regex interpreter would
+/// otherwise try on every line.
+bool mayBeListItem(BlockContext context, String line) {
+  if (context == BlockContext.dlist) {
+    return line.contains('::') || line.contains(';;');
+  }
+  // (The patterns' `^` also matches after a newline.)
+  if (line.contains('\n')) return true;
+  var i = 0;
+  while (i < line.length &&
+      (line.codeUnitAt(i) == 0x20 || line.codeUnitAt(i) == 0x09)) {
+    i++;
+  }
+  if (i == line.length) return false;
+  final c = line.codeUnitAt(i);
+  return switch (context) {
+    BlockContext.ulist => c == 0x2d || c == 0x2a || c == 0x2022,
+    BlockContext.olist =>
+      c == 0x2e ||
+          (c >= 0x30 && c <= 0x39) ||
+          ((c | 0x20) >= 0x61 && (c | 0x20) <= 0x7a),
+    BlockContext.colist => i == 0 && c == 0x3c,
+    _ => true,
+  };
+}
+
+/// The first match in [line] of [context]'s [listRxMap] pattern, tried
+/// only when [mayBeListItem].
+RegExpMatch? listItemMatch(BlockContext context, String line) =>
+    mayBeListItem(context, line) ? listRxMap[context]!.firstMatch(line) : null;
+
 // Tables.
 
 /// Parses the column spec (i.e., colspec) for a table.

@@ -193,4 +193,27 @@ void main() {
       }
     });
   }
+
+  test('mayBeListItem: false only where the list patterns cannot match', () {
+    const pieces = [
+      ' ', '\t', '-', '*', '**', '•', '.', '..', '1', '12.', 'a', 'Z', 'i', //
+      'IV)', 'x)', ')', '<', '<1>', '<.>', '>', ':', '::', ':::', ';;', ';', //
+      '//', '/', 'é', 'term', '\n', '\r', ' ', '#',
+    ];
+    final random = Random(1384);
+    var matched = 0;
+    for (var i = 0; i < 100000; i++) {
+      final line = _text(random, pieces, 8);
+      for (final context in listRxMap.keys) {
+        final match = listRxMap[context]!.firstMatch(line);
+        if (match != null) matched++;
+        expect(
+          listItemMatch(context, line)?.group(0),
+          match?.group(0),
+          reason: '$context in ${Uri.encodeComponent(line)}',
+        );
+      }
+    }
+    expect(matched, greaterThan(10000));
+  });
 }

@@ -1495,16 +1495,18 @@ abstract final class Parser {
     ) => (start: start, indented: indented, ch0: first, style: style);
 
     if (!indented && first == '<') {
-      if (calloutListRx.firstMatch(line) case final match?) {
+      if (listItemMatch(BlockContext.colist, line) case final match?) {
         return starts(_CalloutListStart(match));
       }
     }
-    if (unorderedListRx.hasMatch(line)) {
+    if (listItemMatch(BlockContext.ulist, line) != null) {
       return starts(const _UnorderedListStart());
     }
-    if (orderedListRx.hasMatch(line)) return starts(const _OrderedListStart());
+    if (listItemMatch(BlockContext.olist, line) != null) {
+      return starts(const _OrderedListStart());
+    }
     if (line.contains('::') || line.contains(';;')) {
-      if (descriptionListRx.firstMatch(line) case final match?) {
+      if (listItemMatch(BlockContext.dlist, line) case final match?) {
         return starts(_DescriptionListStart(match));
       }
     }
@@ -2620,11 +2622,10 @@ abstract final class Parser {
     final listBlock = startNumber != null && startNumber != 1
         ? ListBlock(parent, listType, attributes: {'start': '$startNumber'})
         : ListBlock(parent, listType);
-    final listRx = listRxMap[listType]!;
 
     while (reader.hasMoreLines()) {
       final peeked = reader.peekLine();
-      final match = peeked == null ? null : listRx.firstMatch(peeked);
+      final match = peeked == null ? null : listItemMatch(listType, peeked);
       if (match == null) break;
       // NOTE parseListItem will stop at sibling item or end of list; never
       // sees ancestor items.
@@ -3529,7 +3530,7 @@ abstract final class Parser {
     List<BlockContext> contexts,
   ) {
     for (final context in contexts) {
-      final match = listRxMap[context]!.firstMatch(line);
+      final match = listItemMatch(context, line);
       if (match != null) return (context, match);
     }
     return null;
@@ -3644,7 +3645,7 @@ abstract final class Parser {
   ) {
     if (siblingTrait == null) return false;
     if (siblingTrait is RegExp) return siblingTrait.hasMatch(line);
-    final match = listRxMap[listType]!.firstMatch(line);
+    final match = listItemMatch(listType, line);
     return match != null &&
         siblingTrait == resolveListMarker(listType, match.group(1)!);
   }
