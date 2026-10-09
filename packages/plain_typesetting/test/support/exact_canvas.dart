@@ -15,7 +15,7 @@ String exact(Object? value) => switch (value) {
   Matrix(:final a, :final b, :final c, :final d, :final e, :final f) =>
     'm(${[a, b, c, d, e, f].map(exact).join(' ')})',
   final TextStyle s =>
-    's(${identityHashCode(s.font)} ${exact(s.size)} '
+    's(${s.font.name} ${exact(s.size)} '
         '${exact(s.characterSpacing)} ${exact(s.wordSpacing)} '
         '${exact(s.rise)} ${exact(s.horizontalScaling)} ${s.renderMode} '
         '${s.kerning} ${s.ligatures} ${s.features} ${exact(s.skew)} '
@@ -45,4 +45,45 @@ final class ExactCanvas implements Canvas {
         ? 0.0
         : null;
   }
+}
+
+/// A page recording, exactly, what is drawn on it and its links.
+final class ExactPage implements LayoutPage {
+  /// A page that is [box].
+  new(this.box);
+
+  /// The page's extent.
+  final Rect box;
+
+  @override
+  final ExactCanvas canvas = ExactCanvas();
+
+  /// The links made.
+  final List<String> links = [];
+
+  @override
+  void link(Rect rect, LinkTarget target) =>
+      links.add('link ${exact(rect)} $target');
+}
+
+/// A document of [ExactPage]s, recording its anchors.
+final class ExactDocument implements LayoutDocument<ExactPage> {
+  /// The pages, in order.
+  final List<ExactPage> pages = [];
+
+  /// The anchors added, a line each.
+  final List<String> anchors = [];
+
+  @override
+  ExactPage addPage(Rect mediaBox, {Rect? bleedBox, Rect? trimBox}) {
+    final page = ExactPage(mediaBox);
+    pages.add(page);
+    return page;
+  }
+
+  @override
+  void addAnchor(String name, ExactPage page, double left, double top) =>
+      anchors.add(
+        'destination $name ${pages.indexOf(page)} ${exact(left)} ${exact(top)}',
+      );
 }

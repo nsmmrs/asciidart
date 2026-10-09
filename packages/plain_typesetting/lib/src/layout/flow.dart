@@ -1127,6 +1127,15 @@ final class FlowLayout {
 
   static String _decimal(int number) => '$number';
 
+  /// The lines of the paragraphs without page references, by paragraph
+  /// box and width: kept from one [layout] to the next (the boxes and
+  /// breakers are immutable, so the lines are too).
+  final Expando<Map<double, List<Line>>> _lines = Expando();
+
+  /// The narrowest and widest lines of the paragraphs without page
+  /// references (without their margins and indent).
+  final Expando<(double, double)> _intrinsics = Expando();
+
   /// [content] laid out on pages.
   LayoutResult layout(
     List<LayoutBox> content, {
@@ -1234,6 +1243,9 @@ final class _Pass {
 
   /// The first and last page (1-based) of each tagged box.
   final Map<String, ({int first, int last})> tagPages = {};
+
+  /// The lines of the paragraphs with page references, by box and width
+  /// (resolved for this pass).
   final Map<(ParagraphBox, double), List<Line>> _lines = {};
   bool hasReferences = false;
   final List<_Boundary> boundaries = [];
@@ -1846,17 +1858,22 @@ final class _Pass {
 
   List<Line> _linesOf(ParagraphBox box, double width) {
     final source = box._source ?? box;
-    return _lines[(source, width)] ??= () {
-      return (source.lineBreaker ?? layout.lineBreaker).breakLines(
-        _resolve(source.paragraph),
-        (_) => width,
-      );
-    }();
+    List<Line> lines() => (source.lineBreaker ?? layout.lineBreaker).breakLines(
+      _resolve(source.paragraph),
+      (_) => width,
+    );
+    if (_hasReferences(source.paragraph)) {
+      return _lines[(source, width)] ??= lines();
+    }
+    return (layout._lines[source] ??= {})[width] ??= lines();
   }
+
+  static bool _hasReferences(Paragraph paragraph) =>
+      paragraph.content.any((c) => c is PageReference);
 
   /// [paragraph] with its page references filled in.
   Paragraph _resolve(Paragraph paragraph) {
-    if (!paragraph.content.any((c) => c is PageReference)) return paragraph;
+    if (!_hasReferences(paragraph)) return paragraph;
     hasReferences = true;
     return Paragraph(
       [
@@ -2720,33 +2737,11 @@ final class _Pass {
     final margin = box.style.margin.horizontal;
     switch (box) {
       case ParagraphBox(:final paragraph):
-        var least = 0.0;
-        var most = 0.0;
-        var word = 0.0;
-        var line = 0.0;
-        for (final item in paragraphItems(_resolve(paragraph))) {
-          switch (item) {
-            case BoxItem(:final width):
-              word += width;
-              line += width;
-            case GlueItem(:final width):
-              least = math.max(least, word);
-              word = 0;
-              line += width;
-            case PenaltyItem(:final isForced):
-              least = math.max(least, word);
-              word = 0;
-              if (isForced) {
-                most = math.max(most, line);
-                line = 0;
-              }
-          }
-        }
+        final (least, most) = _hasReferences(paragraph)
+            ? _lineExtremes(_resolve(paragraph))
+            : layout._intrinsics[paragraph] ??= _lineExtremes(paragraph);
         final indent = paragraph.firstLineIndent;
-        return (
-          math.max(least, word) + margin + indent,
-          math.max(most, line) + margin + indent,
-        );
+        return (least + margin + indent, most + margin + indent);
       case BlockBox(:final children):
         final insets =
             margin +
@@ -2785,6 +2780,34 @@ final class _Pass {
         double sum(List<double> values) => values.fold(0, (a, b) => a + b);
         return (sum(mins) + margin, sum(maxs) + margin);
     }
+  }
+
+  /// The widest word and the widest line between forced breaks of
+  /// [paragraph].
+  static (double, double) _lineExtremes(Paragraph paragraph) {
+    var least = 0.0;
+    var most = 0.0;
+    var word = 0.0;
+    var line = 0.0;
+    for (final item in paragraphItems(paragraph)) {
+      switch (item) {
+        case BoxItem(:final width):
+          word += width;
+          line += width;
+        case GlueItem(:final width):
+          least = math.max(least, word);
+          word = 0;
+          line += width;
+        case PenaltyItem(:final isForced):
+          least = math.max(least, word);
+          word = 0;
+          if (isForced) {
+            most = math.max(most, line);
+            line = 0;
+          }
+      }
+    }
+    return (math.max(least, word), math.max(most, line));
   }
 
   /// The rows of [table] with each cell's column, as HTML places them:
