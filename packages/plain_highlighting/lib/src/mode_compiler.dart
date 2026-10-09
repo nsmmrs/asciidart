@@ -35,7 +35,12 @@ final class MultiRegex {
   /// A matcher compiling its regular expressions with [_compile]; with
   /// [prefilter] (the language's [ignoreCase]), trying them only where
   /// they can start.
-  new(this._compile, {this.prefilter = false, this.ignoreCase = false});
+  new(
+    this._compile, {
+    this.prefilter = false,
+    this.ignoreCase = false,
+    this.unicode = false,
+  });
 
   final RegExp Function(String source, {bool global}) _compile;
 
@@ -44,6 +49,10 @@ final class MultiRegex {
 
   /// Whether the rules ignore case.
   final bool ignoreCase;
+
+  /// Whether the rules are in Unicode mode (where a match never starts
+  /// inside a surrogate pair).
+  final bool unicode;
 
   final Map<int, _RuleOptions> _matchIndexes = {};
   final List<(_RuleOptions, String)> _regexes = [];
@@ -119,7 +128,11 @@ final class MultiRegex {
         }
         break;
       }
-      final first = firstChars(source, ignoreCase: ignoreCase);
+      final first = firstChars(
+        source,
+        ignoreCase: ignoreCase,
+        unicode: unicode,
+      );
       if (first == null) return null;
       for (var c = 0; c < 128; c++) {
         if (first.has(c)) table[c].add(i);
@@ -136,7 +149,11 @@ final class MultiRegex {
   ModeMatch? exec(String s) {
     final re = _matcherRe;
     if (re == null || lastIndex > s.length) return null;
-    if (_byChar case final byChar?) return _dispatch(byChar, s);
+    if (_byChar case final byChar?) {
+      // (Started inside a surrogate pair, the engine steps back to the
+      // pair's start: left to it.)
+      if (!unicode || !_inPair(s, lastIndex)) return _dispatch(byChar, s);
+    }
     final match = re.allMatches(s, lastIndex).firstOrNull;
     if (match == null) return null;
     // (The first rule's group that matched: a rule's own groups come
@@ -171,6 +188,7 @@ final class MultiRegex {
         rules = byChar[c < 128 ? c : _beyondAscii];
       }
       if (rules.isEmpty) continue;
+      if (unicode && _inPair(s, at)) continue;
       final afterWord = at > 0 && isWordChar(s.codeUnitAt(at - 1));
       for (final i in rules) {
         final first = _first[i];
@@ -217,6 +235,14 @@ final class MultiRegex {
     return null;
   }
 
+  /// Whether [at] is inside a surrogate pair of [s] (where no match of a
+  /// Unicode-mode expression starts).
+  static bool _inPair(String s, int at) =>
+      at > 0 &&
+      at < s.length &&
+      (s.codeUnitAt(at) & 0xfc00) == 0xdc00 &&
+      (s.codeUnitAt(at - 1) & 0xfc00) == 0xd800;
+
   /// The match of rule [i] at [at] in [s] that is [lexeme] alone.
   ModeMatch _literalMatch(int i, String s, int at, String lexeme) {
     final data = _regexes[i].$1;
@@ -251,8 +277,13 @@ final class MultiRegex {
 /// a later rule match instead).
 final class ResumableMultiRegex {
   /// A matcher compiling its regular expressions with [_compile] (see
-  /// [MultiRegex] for [prefilter] and [ignoreCase]).
-  new(this._compile, {this.prefilter = false, this.ignoreCase = false});
+  /// [MultiRegex] for [prefilter], [ignoreCase] and [unicode]).
+  new(
+    this._compile, {
+    this.prefilter = false,
+    this.ignoreCase = false,
+    this.unicode = false,
+  });
 
   final RegExp Function(String source, {bool global}) _compile;
 
@@ -261,6 +292,9 @@ final class ResumableMultiRegex {
 
   /// Whether the rules ignore case.
   final bool ignoreCase;
+
+  /// Whether the rules are in Unicode mode.
+  final bool unicode;
   final List<(String, _RuleOptions)> _rules = [];
   final Map<int, MultiRegex> _multiRegexes = {};
   int _count = 0;
@@ -278,6 +312,7 @@ final class ResumableMultiRegex {
       _compile,
       prefilter: prefilter,
       ignoreCase: ignoreCase,
+      unicode: unicode,
     );
     for (final (re, opts) in _rules.skip(index)) {
       matcher._addRule(re, opts);
@@ -332,10 +367,10 @@ Mode compileLanguage(Language language) {
   ResumableMultiRegex buildModeRegex(Mode mode) {
     final mm = ResumableMultiRegex(
       langRe,
-      // (On the VM, whose engine runs alternations slowly; not in Unicode
-      // mode, which the first characters aren't read for.)
-      prefilter: !_onJavaScript && !language.unicodeRegex,
+      // (On the VM, whose engine runs alternations slowly.)
+      prefilter: !_onJavaScript,
       ignoreCase: language.caseInsensitive,
+      unicode: language.unicodeRegex,
     );
     for (final term in mode.contains!.cast<Mode>()) {
       mm._addRule(

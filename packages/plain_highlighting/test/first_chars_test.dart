@@ -42,6 +42,19 @@ Set<String> _rules(Mode mode, [Set<Mode>? seen]) {
   return rules;
 }
 
+/// Text with what Unicode mode reads differently: `ſ` and `K` (U+212A),
+/// which fold to `s` and `k`, and surrogate pairs.
+const String _beyondAscii =
+    'ſ K ſtyle <ſcript> Kelvin \u{1F600}x y\u{1F600} "\u{1F600}" é\n'
+    '<\u{1F600}a>def \u{10400}x(): \u{1F600}';
+
+/// Whether [at] is inside a surrogate pair of [text].
+bool _inPair(String text, int at) =>
+    at > 0 &&
+    at < text.length &&
+    (text.codeUnitAt(at) & 0xfc00) == 0xdc00 &&
+    (text.codeUnitAt(at - 1) & 0xfc00) == 0xd800;
+
 /// The samples of [language] in upstream's tests.
 List<String> _samples(String language) => [
   for (final dir in [
@@ -114,6 +127,79 @@ void main() {
     expect(follow(r'\w+|x'), isNull, reason: 'alternatives');
   });
 
+  test('first characters in Unicode mode', () {
+    // Each expression, alone, against characters ASCII and beyond: where
+    // the engine matches one, the first characters have it.
+    const sources = [
+      r'\w',
+      r'\W',
+      r'\s',
+      r'\S',
+      r'\d',
+      r'\D',
+      r'\b\w',
+      '.',
+      's',
+      'K',
+      'x',
+      '[^s]',
+      '[ſ]',
+      '[\u0100-\u0200]',
+      r'[\u{212A}]',
+      r'\u{17F}',
+      r'\p{L}',
+      r'\P{L}',
+      r'[^\p{L}]',
+      r'\p{Lu}',
+      r'\P{Lu}',
+      r'[\p{L}0-9._:-]+',
+      r'\p{XID_Start}',
+      r'[^\P{Ll}]',
+      r'[\w-]',
+    ];
+    final chars = [
+      for (var c = 0; c < 128; c++) c,
+      0xe9,
+      0x17f,
+      0x212a,
+      0x130,
+      0x131,
+      0x3a3,
+      0x2028,
+      0x10400,
+      0x1f600,
+    ];
+    var read = 0;
+    for (final ignoreCase in [false, true]) {
+      for (final source in sources) {
+        final first = firstChars(source, ignoreCase: ignoreCase, unicode: true);
+        if (first == null) continue;
+        read++;
+        final re = RegExp(source, unicode: true, caseSensitive: !ignoreCase);
+        for (final c in chars) {
+          if (re.matchAsPrefix(String.fromCharCode(c)) == null) continue;
+          expect(
+            c < 128 ? first.has(c) : first.nonAscii,
+            isTrue,
+            reason: '/$source/${ignoreCase ? 'i' : ''} on $c',
+          );
+        }
+      }
+    }
+    expect(read, sources.length * 2);
+    expect(
+      firstChars('\u{1F600}', ignoreCase: false, unicode: true),
+      isNull,
+      reason: 'a surrogate pair is one character',
+    );
+    expect(
+      firstChars('style', ignoreCase: true, unicode: true)!.prefix,
+      isNull,
+      reason: 'ſ',
+    );
+    expect(firstChars('<!--', ignoreCase: true, unicode: true)!.prefix, '<!--');
+  });
+
   test('line starts, literals and empty matches', () {
     FirstChars read(String source, {bool ignoreCase = false}) =>
         firstChars(source, ignoreCase: ignoreCase)!;
@@ -171,13 +257,15 @@ void main() {
     var literals = 0;
     for (final name in engine.languageNames) {
       final language = engine.getLanguage(name)!;
-      if (language.unicodeRegex) continue;
       final samples = _samples(name);
       if (samples.isEmpty) continue;
+      // (And what folds to ASCII, or is a surrogate pair, in Unicode mode.)
+      samples.add(_beyondAscii);
       final ignoreCase = language.caseInsensitive;
+      final unicode = language.unicodeRegex;
       for (final source in _rules(compileLanguage(language))) {
         if (matchesEmptyEverywhere(source)) {
-          final re = RegExp(source, multiLine: true);
+          final re = RegExp(source, multiLine: true, unicode: unicode);
           for (final text in samples.take(1)) {
             for (var at = 0; at <= text.length; at++) {
               expect(re.matchAsPrefix(text, at)?[0], '', reason: source);
@@ -185,9 +273,18 @@ void main() {
           }
           continue;
         }
-        final first = firstChars(source, ignoreCase: ignoreCase);
+        final first = firstChars(
+          source,
+          ignoreCase: ignoreCase,
+          unicode: unicode,
+        );
         if (first == null) continue;
-        final re = RegExp(source, multiLine: true, caseSensitive: !ignoreCase);
+        final re = RegExp(
+          source,
+          multiLine: true,
+          caseSensitive: !ignoreCase,
+          unicode: unicode,
+        );
         final run = first.run;
         bool inRun(String text, int at) {
           if (run == null || at >= text.length) return false;
@@ -200,6 +297,8 @@ void main() {
           // run's end.
           var missedUntil = -1;
           for (var at = 0; at <= text.length; at++) {
+            // (The matcher never tries one inside a pair in Unicode mode.)
+            if (unicode && _inPair(text, at)) continue;
             final match = re.matchAsPrefix(text, at);
             final matched = match != null;
             if (first.literal) {

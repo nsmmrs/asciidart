@@ -146,12 +146,20 @@ bool isWordChar(int c) =>
     c == 0x5f;
 
 /// The characters a match of the regular expression [source] can start
-/// with (case-insensitive when [ignoreCase]; not Unicode mode; multiline),
-/// or null when its source uses what isn't read here, or it can match
-/// without a first character anywhere (an empty match, one that only looks
-/// behind) but at the end of a line.
-FirstChars? firstChars(String source, {required bool ignoreCase}) {
-  final parser = _Parser(source, ignoreCase: ignoreCase);
+/// with (case-insensitive when [ignoreCase]; in Unicode mode when
+/// [unicode]; multiline), or null when its source uses what isn't read
+/// here, or it can match without a first character anywhere (an empty
+/// match, one that only looks behind) but at the end of a line.
+///
+/// In Unicode mode, a match never starts inside a surrogate pair, which
+/// the matcher has to see to; ignoring case, `ſ` (U+017F) and `K`
+/// (U+212A) match `s` and `k` too.
+FirstChars? firstChars(
+  String source, {
+  required bool ignoreCase,
+  bool unicode = false,
+}) {
+  final parser = _Parser(source, ignoreCase: ignoreCase, unicode: unicode);
   try {
     final (chars, nullable) = parser.alternation();
     if (nullable || parser.at < source.length) return null;
@@ -159,7 +167,13 @@ FirstChars? firstChars(String source, {required bool ignoreCase}) {
     for (var c = 0; c < 128 && words; c++) {
       if (chars.ascii[c] != 0 && !isWordChar(c)) words = false;
     }
-    final prefix = chars.prefix;
+    var prefix = chars.prefix;
+    var literal = chars.literal;
+    if (prefix != null && parser._foldsBeyondAscii && prefix.contains(_sk)) {
+      // (Compared by code unit, it would miss `ſ` and `K`.)
+      prefix = null;
+      literal = false;
+    }
     return FirstChars._(
       chars.ascii,
       ignoreCase: ignoreCase,
@@ -169,15 +183,15 @@ FirstChars? firstChars(String source, {required bool ignoreCase}) {
       run: parser.backreferences ? null : chars.run?.ascii,
       follow: parser.backreferences ? null : _runFollow(chars),
       lineStart: chars.lineStart,
-      prefix: prefix != null && (prefix.length > 1 || chars.literal)
-          ? prefix
-          : null,
-      literal: chars.literal,
+      prefix: prefix != null && (prefix.length > 1 || literal) ? prefix : null,
+      literal: literal,
     );
   } on _Unread {
     return null;
   }
 }
+
+final RegExp _sk = RegExp('[sk]');
 
 /// The [RunFollow] of an expression read as [chars], if it has one.
 RunFollow? _runFollow(_Chars chars) {
@@ -298,11 +312,40 @@ final class _Chars {
 /// Reads a regular expression (ECMAScript syntax, not Unicode mode) for
 /// the characters its matches start with.
 final class _Parser {
-  new(this.source, {required this.ignoreCase});
+  new(this.source, {required this.ignoreCase, required this.unicode});
 
   final String source;
   final bool ignoreCase;
+  final bool unicode;
   int at = 0;
+
+  /// Whether characters beyond ASCII match ASCII ones: `ſ` (U+017F) is
+  /// `s` and `K` (U+212A) is `k` when ignoring case in Unicode mode.
+  bool get _foldsBeyondAscii => unicode && ignoreCase;
+
+  /// [chars], with what [_foldsBeyondAscii] adds: the ASCII letters of
+  /// the characters [low] to [high] that fold to them, and characters
+  /// beyond ASCII for `s` and `k`.
+  _Chars _fold(_Chars chars, [int low = 0, int high = -1]) {
+    if (!_foldsBeyondAscii) return chars;
+    if (low <= 0x17f && 0x17f <= high) {
+      chars.ascii[0x53] = chars.ascii[0x73] = 1;
+    }
+    if (low <= 0x212a && 0x212a <= high) {
+      chars.ascii[0x4b] = chars.ascii[0x6b] = 1;
+    }
+    for (final c in const [0x53, 0x73, 0x4b, 0x6b]) {
+      if (chars.ascii[c] != 0) chars.nonAscii = true;
+    }
+    return chars;
+  }
+
+  /// A character of the source in Unicode mode: a surrogate (half of a
+  /// pair, which is one character there) isn't read.
+  int _checked(int c) {
+    if (unicode && c >= 0xd800 && c <= 0xdfff) throw const _Unread();
+    return c;
+  }
 
   /// Whether the expression has a backreference.
   bool backreferences = false;
@@ -550,13 +593,14 @@ final class _Parser {
       case 0x2a || 0x2b || 0x3f || 0x7c || 0x29:
         throw const _Unread();
       default:
-        return (_literal(c)..single = true, false);
+        return (_literal(_checked(c))..single = true, false);
     }
   }
 
   _Chars _literal(int c) {
     final chars = _Chars()..add(c);
     if (ignoreCase) chars.foldCase();
+    _fold(chars, c, c);
     // (ASCII only; a letter in lower case when ignoring case.)
     if (c < 128) {
       final letter = (c | 0x20) >= 0x61 && (c | 0x20) <= 0x7a;
@@ -639,11 +683,42 @@ final class _Parser {
         at = close + 1;
         return (_Chars().complement(), true);
       case 0x70 || 0x50: // \p \P
-        throw const _Unread();
+        return (_property(negated: c == 0x50)..single = true, false);
     }
-    if (_classEscape(c) case final chars?) return (chars..single = true, false);
+    if (_classEscape(c) case final chars?) {
+      return (_fold(chars)..single = true, false);
+    }
     return (_literal(_charEscape(c))..single = true, false);
   }
+
+  /// A Unicode property escape, past its `\p` or `\P` ([negated]): the
+  /// ASCII characters that match it (asked of the engine), and any beyond.
+  _Chars _property({required bool negated}) {
+    if (!unicode) throw const _Unread();
+    final close = source.indexOf('}', at);
+    if (!source.startsWith('{', at) || close < 0) throw const _Unread();
+    final name = source.substring(at + 1, close);
+    at = close + 1;
+    final ascii = _properties['${negated ? 'P' : 'p'}$ignoreCase$name'] ??=
+        _propertyAscii(name, negated: negated);
+    return _Chars()
+      ..ascii.setAll(0, ascii)
+      ..nonAscii = true;
+  }
+
+  Uint8List _propertyAscii(String name, {required bool negated}) {
+    final re = RegExp(
+      '^\\${negated ? 'P' : 'p'}{$name}\$',
+      unicode: true,
+      caseSensitive: !ignoreCase,
+    );
+    return Uint8List.fromList([
+      for (var c = 0; c < 128; c++)
+        if (re.hasMatch(String.fromCharCode(c))) 1 else 0,
+    ]);
+  }
+
+  static final Map<String, Uint8List> _properties = {};
 
   /// `\d`, `\w`, `\s` and their complements, or null.
   _Chars? _classEscape(int c) => switch (c) {
@@ -686,9 +761,19 @@ final class _Parser {
         return 0;
       case 0x78: // \xHH
         return _hex(2);
-      case 0x75: // \uHHHH
-        if (!_done && _c == 0x7b) throw const _Unread();
-        return _hex(4);
+      case 0x75: // \uHHHH, \u{H...} in Unicode mode
+        if (!_done && _c == 0x7b) {
+          final close = source.indexOf('}', at);
+          if (!unicode || close < 0) throw const _Unread();
+          final value = int.tryParse(
+            source.substring(at + 1, close),
+            radix: 16,
+          );
+          if (value == null || value > 0x10ffff) throw const _Unread();
+          at = close + 1;
+          return _checked(value);
+        }
+        return _checked(_hex(4));
       case 0x63: // \cX
         if (_done) throw const _Unread();
         final letter = _c;
@@ -740,11 +825,14 @@ final class _Parser {
         final (high, highSet) = _classAtom();
         if (highSet != null || high! < low!) throw const _Unread();
         chars.addRange(low, high);
+        _fold(chars, low, high);
       } else {
         chars.add(low!);
+        _fold(chars, low, low);
       }
     }
     if (ignoreCase) chars.foldCase();
+    _fold(chars);
     return negated ? chars.complement() : chars;
   }
 
@@ -752,15 +840,14 @@ final class _Parser {
   (int?, _Chars?) _classAtom() {
     final c = _c;
     at++;
-    if (c != 0x5c) return (c, null);
+    if (c != 0x5c) return (_checked(c), null);
     if (_done) throw const _Unread();
     final e = _c;
     at++;
     if (_classEscape(e) case final chars?) return (null, chars);
     if (e == 0x62) return (8, null); // \b: backspace
-    if ((e >= 0x31 && e <= 0x39) || e == 0x6b || e == 0x70 || e == 0x50) {
-      throw const _Unread();
-    }
+    if (e == 0x70 || e == 0x50) return (null, _property(negated: e == 0x50));
+    if ((e >= 0x31 && e <= 0x39) || e == 0x6b) throw const _Unread();
     return (_charEscape(e), null);
   }
 }
