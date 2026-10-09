@@ -60,8 +60,19 @@ Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs) {
     'head': head,
   };
   final file = assembleFont(tables);
-  headView.setUint32(8, (0xb1b0afba - _checksum(file)) & 0xffffffff);
-  return assembleFont(tables);
+  // The checksum adjustment makes the whole file sum to 0xb1b0afba; set
+  // in the file, it adds itself to the head table's checksum too.
+  final adjustment = (0xb1b0afba - _checksum(file)) & 0xffffffff;
+  headView.setUint32(8, adjustment);
+  final view = ByteData.sublistView(file);
+  final record = 12 + 16 * (tables.keys.toList()..sort()).indexOf('head');
+  view
+    ..setUint32(view.getUint32(record + 8) + 8, adjustment)
+    ..setUint32(
+      record + 4,
+      (view.getUint32(record + 4) + adjustment) & 0xffffffff,
+    );
+  return file;
 }
 
 /// A font file with [tables] (sorted by tag) and a table directory, of
@@ -106,14 +117,20 @@ Uint8List assembleFont(
   return out.takeBytes();
 }
 
-int _checksum(List<int> data) {
+/// The sum of [data]'s 32-bit words, the last one padded with zeros.
+int _checksum(Uint8List data) {
   var sum = 0;
-  for (var i = 0; i < data.length; i += 4) {
-    var word = 0;
-    for (var k = 0; k < 4; k++) {
-      word = (word << 8) | (i + k < data.length ? data[i + k] : 0);
+  final full = data.length & ~3;
+  final view = ByteData.sublistView(data);
+  for (var i = 0; i < full; i += 4) {
+    sum = (sum + view.getUint32(i)) & 0xffffffff;
+  }
+  if (full < data.length) {
+    var last = 0;
+    for (var i = full; i < full + 4; i++) {
+      last = last << 8 | (i < data.length ? data[i] : 0);
     }
-    sum = (sum + word) & 0xffffffff;
+    sum = (sum + last) & 0xffffffff;
   }
   return sum;
 }

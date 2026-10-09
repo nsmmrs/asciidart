@@ -40,8 +40,6 @@ final class _Data {
 
   int i32(int at) => _view.getInt32(at);
 
-  String tag(int at) => latin1.decode(Uint8List.sublistView(bytes, at, at + 4));
-
   /// The [length] bytes at [at].
   Uint8List slice(int at, int length) =>
       Uint8List.sublistView(bytes, at, at + length);
@@ -63,6 +61,45 @@ T _guard<T>(T Function() read) {
   }
 }
 
+/// A table or feature tag: its four bytes, big-endian.
+extension type const _Tag(int value) {
+  /// The tag spelled [tag]; one no font has when it isn't four Latin-1
+  /// characters.
+  factory of(String tag) {
+    if (tag.length != 4) return const _Tag(-1);
+    var value = 0;
+    for (var i = 0; i < 4; i++) {
+      final unit = tag.codeUnitAt(i);
+      if (unit > 0xff) return const _Tag(-1);
+      value = value << 8 | unit;
+    }
+    return _Tag(value);
+  }
+
+  static const _Tag head = _Tag(0x68656164); // head
+  static const _Tag hhea = _Tag(0x68686561); // hhea
+  static const _Tag hmtx = _Tag(0x686d7478); // hmtx
+  static const _Tag maxp = _Tag(0x6d617870); // maxp
+  static const _Tag os2 = _Tag(0x4f532f32); // OS/2
+  static const _Tag post = _Tag(0x706f7374); // post
+  static const _Tag name = _Tag(0x6e616d65); // name
+  static const _Tag cmap = _Tag(0x636d6170); // cmap
+  static const _Tag glyf = _Tag(0x676c7966); // glyf
+  static const _Tag loca = _Tag(0x6c6f6361); // loca
+  static const _Tag kern = _Tag(0x6b65726e); // kern
+  static const _Tag gpos = _Tag(0x47504f53); // GPOS
+  static const _Tag gsub = _Tag(0x47535542); // GSUB
+  static const _Tag ttcf = _Tag(0x74746366); // ttcf
+
+  /// The four characters of the tag.
+  String get text => String.fromCharCodes([
+    value >> 24 & 0xff,
+    value >> 16 & 0xff,
+    value >> 8 & 0xff,
+    value & 0xff,
+  ]);
+}
+
 /// A table record of the font's table directory.
 final class _Table {
   const new(this.offset, this.length);
@@ -76,7 +113,7 @@ final class OpenTypeFont {
   new _(this.bytes, this._data, this._tables) {
     _readHead();
     _readHhea();
-    numGlyphs = _data.u16(_require('maxp').offset + 4);
+    numGlyphs = _data.u16(_require(_Tag.maxp).offset + 4);
     _readHmtx();
     _readOs2();
     _readPost();
@@ -99,7 +136,7 @@ final class OpenTypeFont {
           : Uint8List.fromList(bytes),
     );
     var directory = 0;
-    if (data.bytes.length >= 12 && data.tag(0) == 'ttcf') {
+    if (data.bytes.length >= 12 && _Tag(data.u32(0)) == _Tag.ttcf) {
       final count = data.u32(8);
       if (index < 0 || index >= count) {
         throw FontFormatException('the collection has no font $index');
@@ -114,10 +151,10 @@ final class OpenTypeFont {
       throw const FontFormatException('not a TrueType or OpenType font');
     }
     final numTables = data.u16(directory + 4);
-    final tables = <String, _Table>{};
+    final tables = <_Tag, _Table>{};
     for (var i = 0; i < numTables; i++) {
       final record = directory + 12 + 16 * i;
-      tables[data.tag(record)] = _Table(
+      tables[_Tag(data.u32(record))] = _Table(
         data.u32(record + 8),
         data.u32(record + 12),
       );
@@ -128,31 +165,34 @@ final class OpenTypeFont {
   /// The number of fonts in the collection in [bytes] (1 for a font).
   static int fontCount(List<int> bytes) => _guard(() {
     final data = _Data(bytes is Uint8List ? bytes : Uint8List.fromList(bytes));
-    return data.bytes.length >= 12 && data.tag(0) == 'ttcf' ? data.u32(8) : 1;
+    return data.bytes.length >= 12 && _Tag(data.u32(0)) == _Tag.ttcf
+        ? data.u32(8)
+        : 1;
   });
 
   /// The font file.
   final Uint8List bytes;
   final _Data _data;
-  final Map<String, _Table> _tables;
+  final Map<_Tag, _Table> _tables;
 
   /// Whether the font has [tag] (`glyf`, `CFF `...).
-  bool hasTable(String tag) => _tables.containsKey(tag);
+  bool hasTable(String tag) => _tables.containsKey(_Tag.of(tag));
 
   /// The bytes of table [tag], or `null`.
   Uint8List? table(String tag) {
-    final t = _tables[tag];
+    final t = _tables[_Tag.of(tag)];
     return t == null ? null : _guard(() => _data.slice(t.offset, t.length));
   }
 
   /// The table tags, in the directory's order.
-  Iterable<String> get tableTags => _tables.keys;
+  Iterable<String> get tableTags => _tables.keys.map((tag) => tag.text);
 
-  _Table _require(String tag) =>
-      _tables[tag] ?? (throw FontFormatException('the font has no $tag table'));
+  _Table _require(_Tag tag) =>
+      _tables[tag] ??
+      (throw FontFormatException('the font has no ${tag.text} table'));
 
   /// Whether the outlines are TrueType (`glyf`) rather than CFF.
-  bool get isTrueType => hasTable('glyf');
+  bool get isTrueType => _tables.containsKey(_Tag.glyf);
 
   /// Font units per em.
   late final int unitsPerEm;
@@ -224,7 +264,7 @@ final class OpenTypeFont {
   bool get embeddingRestricted => fsType & 0x000f == 0x0002;
 
   void _readHead() {
-    final at = _require('head').offset;
+    final at = _require(_Tag.head).offset;
     unitsPerEm = _data.u16(at + 18);
     bbox = [
       _data.i16(at + 36),
@@ -236,7 +276,7 @@ final class OpenTypeFont {
   }
 
   void _readHhea() {
-    final at = _require('hhea').offset;
+    final at = _require(_Tag.hhea).offset;
     ascender = _data.i16(at + 4);
     descender = _data.i16(at + 6);
     lineGap = _data.i16(at + 8);
@@ -244,7 +284,7 @@ final class OpenTypeFont {
   }
 
   void _readHmtx() {
-    final at = _require('hmtx').offset;
+    final at = _require(_Tag.hmtx).offset;
     _advances = Uint16List(numGlyphs);
     var last = 0;
     for (var g = 0; g < numGlyphs; g++) {
@@ -254,7 +294,7 @@ final class OpenTypeFont {
   }
 
   void _readOs2() {
-    final t = _tables['OS/2'];
+    final t = _tables[_Tag.os2];
     if (t == null) return;
     final at = t.offset;
     final version = _data.u16(at);
@@ -272,7 +312,7 @@ final class OpenTypeFont {
   }
 
   void _readPost() {
-    final t = _tables['post'];
+    final t = _tables[_Tag.post];
     if (t == null) return;
     italicAngle = _data.fixed(t.offset + 4);
     underlinePosition = _data.i16(t.offset + 8);
@@ -281,7 +321,7 @@ final class OpenTypeFont {
   }
 
   void _readNames() {
-    final t = _tables['name'];
+    final t = _tables[_Tag.name];
     if (t == null) return;
     final at = t.offset;
     final count = _data.u16(at + 2);
@@ -296,10 +336,10 @@ final class OpenTypeFont {
         final offset = strings + _data.u16(record + 10);
         final raw = _data.slice(offset, length);
         if (platform == 3 || platform == 0) {
-          final units = [
-            for (var k = 0; k + 1 < raw.length; k += 2)
-              (raw[k] << 8) | raw[k + 1],
-          ];
+          final units = Uint16List(raw.length >> 1);
+          for (var k = 0; k < units.length; k++) {
+            units[k] = raw[2 * k] << 8 | raw[2 * k + 1];
+          }
           return String.fromCharCodes(units);
         }
         fallback ??= latin1.decode(raw);
@@ -341,7 +381,7 @@ final class OpenTypeFont {
   /// Reads the best `cmap` subtable, giving [put] each character and its
   /// glyph in turn (a later one replacing an earlier one).
   void _readCmap(void Function(int c, int glyph) put) {
-    final t = _require('cmap');
+    final t = _require(_Tag.cmap);
     final at = t.offset;
     final count = _data.u16(at + 2);
     // Prefer full Unicode (3,10 or 0,4+), then BMP (3,1 or 0,x).
@@ -427,7 +467,7 @@ final class OpenTypeFont {
 
   Uint8List _glyphData(int glyph) {
     final (start, end) = _glyphRange(glyph);
-    final glyf = _require('glyf');
+    final glyf = _require(_Tag.glyf);
     if (end < start) {
       throw FontFormatException('glyph $glyph has a negative length');
     }
@@ -435,7 +475,7 @@ final class OpenTypeFont {
   }
 
   (int, int) _glyphRange(int glyph) {
-    final loca = _require('loca').offset;
+    final loca = _require(_Tag.loca).offset;
     if (indexToLocFormat == 0) {
       return (
         _data.u16(loca + 2 * glyph) * 2,
@@ -449,7 +489,7 @@ final class OpenTypeFont {
   /// design units), from its `glyf` header; zeros for a glyph without
   /// outline, or in a font without `glyf`.
   (int, int, int, int) glyphBounds(int glyph) {
-    if (!hasTable('glyf')) return (0, 0, 0, 0);
+    if (!isTrueType) return (0, 0, 0, 0);
     final data = glyphData(glyph);
     if (data.length < 10) return (0, 0, 0, 0);
     final view = ByteData.sublistView(data);
@@ -526,7 +566,7 @@ final class OpenTypeFont {
   late final List<Map<int, int>> _kernSubtables = _guard(_readKernSubtables);
 
   List<Map<int, int>> _readKernSubtables() {
-    final t = _tables['kern'];
+    final t = _tables[_Tag.kern];
     final tables = <Map<int, int>>[];
     if (t == null) return tables;
     final at = t.offset;
@@ -555,7 +595,7 @@ final class OpenTypeFont {
   late final int? Function(int, int)? _gposKerning = _readGposKerning();
 
   int? Function(int, int)? _readGposKerning() {
-    final t = _tables['GPOS'];
+    final t = _tables[_Tag.gpos];
     if (t == null) return null;
     final lookups = _featureLookups(t.offset, 'kern');
     if (lookups.isEmpty) return null;
@@ -601,12 +641,13 @@ final class OpenTypeFont {
   /// The lookups of feature [feature] in a GSUB or GPOS table at [table]
   /// (default script and language, else every script).
   List<int> _featureLookups(int table, String feature) {
+    final tag = _Tag.of(feature);
     final featureList = table + _data.u16(table + 6);
     final count = _data.u16(featureList);
     final result = <int>{};
     for (var i = 0; i < count; i++) {
       final record = featureList + 2 + 6 * i;
-      if (_data.tag(record) != feature) continue;
+      if (_Tag(_data.u32(record)) != tag) continue;
       final featureTable = featureList + _data.u16(record + 4);
       final lookupCount = _data.u16(featureTable + 2);
       for (var k = 0; k < lookupCount; k++) {
@@ -865,14 +906,16 @@ final class OpenTypeFont {
       _singles[feature] ??= _guard(() => _readSingles(feature));
 
   /// Whether the font's GSUB has [feature].
-  bool hasFeature(String feature) {
-    final t = _tables['GSUB'];
+  bool hasFeature(String feature) => _features[feature] ??= () {
+    final t = _tables[_Tag.gsub];
     return t != null &&
         _guard(() => _featureLookups(t.offset, feature)).isNotEmpty;
-  }
+  }();
+
+  final Map<String, bool> _features = {};
 
   Map<int, int> _readSingles(String feature) {
-    final t = _tables['GSUB'];
+    final t = _tables[_Tag.gsub];
     final result = <int, int>{};
     if (t == null) return result;
     final lookupList = t.offset + _data.u16(t.offset + 8);
@@ -920,7 +963,7 @@ final class OpenTypeFont {
   );
 
   Map<int, List<(List<int>, int)>> _readLigatures() {
-    final t = _tables['GSUB'];
+    final t = _tables[_Tag.gsub];
     final result = <int, List<(List<int>, int)>>{};
     if (t == null) return result;
     final lookupList = t.offset + _data.u16(t.offset + 8);
