@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "a front cover image without the page it names (or without pages) leaves every page at Prawn's default margins, not the theme's"

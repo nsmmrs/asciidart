@@ -34,6 +34,9 @@ same (`benchmark/PARITY.md`).
 | `running_content_on_openers` | `true` | `false` |
 | `base_glyph_widths` | `thousandths` | `exact` |
 | `base_kerning_source` | `kern_table` | `font` |
+| `url_breaks` | `delimiters` | `chicago` |
+| `base_slash_breaks` | `false` | `true` |
+| `base_space_breaks` | `all` | `unicode` |
 | `table_borders` | `with-cells` | `above` |
 | `stem_math` | `source` | `typeset` |
 
@@ -240,6 +243,9 @@ number, fill its center column this way.
 | `code_orphans` | `2` | The fewest lines of a listing left at the bottom of a page. |
 | `code_widows` | `2` | The fewest lines of a listing carried to the top of the next page. |
 | `block_split_end` | `content` | Where the piece of a framed block (code, sidebar, example, admonition...) that a page's end cuts off ends: `content`, under its last line; `region`, at the page's bottom margin, its background and border with it. |
+| `url_breaks` | `chicago` | Where a link's URL may break across lines: `chicago`, at The Chicago Manual of Style's points (before a slash, a period, a hyphen..., after `://`), `www.` links too; `delimiters`, after `/`, `?`, `&` and `#` only, never leaving a single character, links with a scheme only. |
+| `base_space_breaks` | `unicode` | Where a space breaks a line: `unicode`, as the Unicode line breaking algorithm has it (not before closing punctuation, a colon, a slash..., nor after an opening bracket, spaces between or not); `all`, at every space. |
+| `base_slash_breaks` | `true` | Whether a line may break after a slash in prose (`and/or`), as the Unicode line breaking algorithm allows. |
 | `code_highlight` | `colors` | With `source-highlighter=highlight.js`: `colors`, the tokens colored as the `highlightjs-theme` colors them; `none`, the code as plain text. |
 | `code_wrap_indent` | `1em` | How far past its own indentation a code line that is too long goes on, on the next line. |
 | `code_wrap_marker` | arrow | `none` leaves out the return arrow drawn past the end of a line that wraps. |

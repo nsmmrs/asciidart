@@ -211,6 +211,7 @@ final class TextContext {
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
     this.lineBreaking = LineBreaking.auto,
+    this.spaceBreaksAll = false,
     this.hyphenRepetition = HyphenRepetition.none,
     this.typographicScripts = false,
     this.labels,
@@ -240,6 +241,11 @@ final class TextContext {
 
   /// How the modern engine breaks lines.
   final LineBreaking lineBreaking;
+
+  /// Whether a line may break at every space, rather than as UAX #14 has
+  /// it (no break before closing punctuation or after opening
+  /// punctuation, spaces between or not: LB13, LB14).
+  final bool spaceBreaksAll;
 
   /// Whether a line broken after a compound's hyphen starts with it again
   /// (the document's language: Portuguese, Spanish...).
@@ -2464,9 +2470,10 @@ final class _OptimalWrap extends _Wrap {
           // LB13: `{{ x }}` stays whole).
           final before = p > 0 ? pieces[p - 1].$2 : '';
           final after = p + 1 < pieces.length ? pieces[p + 1].$2 : '';
-          if ((before.isNotEmpty &&
-                  '([{'.contains(before[before.length - 1])) ||
-              (after.isNotEmpty && ')]}!?,.:;/'.contains(after[0]))) {
+          if (!_context.spaceBreaksAll &&
+              ((before.isNotEmpty &&
+                      '([{'.contains(before[before.length - 1])) ||
+                  (after.isNotEmpty && ')]}!?,.:;/'.contains(after[0])))) {
             add(const PenaltyItem(0, PenaltyItem.never), p);
           }
           add(GlueItem(null, spaces, width, width / 2, width / 3), p);

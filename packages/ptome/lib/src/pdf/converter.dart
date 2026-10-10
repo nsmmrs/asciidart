@@ -370,6 +370,8 @@ final class PdfConverter extends BuiltInConverter
         'greedy' => LineBreaking.greedy,
         _ => LineBreaking.auto,
       },
+      spaceBreaksAll:
+          _choice('base_space_breaks', const ['unicode', 'all']) == 'all',
       // (As the language's orthography has it; the gem never repeats a
       // hyphen.)
       hyphenRepetition: asciidoctorCompat(document, CompatFormat.pdf)
@@ -596,12 +598,6 @@ final class PdfConverter extends BuiltInConverter
             )
           : null,
     );
-    if (_index.isEmpty) {
-      for (final (list, box) in _indexTocEntries) {
-        list.remove(box);
-      }
-    }
-    _indexTocEntries.clear();
     if (onWalked case final walked?) {
       _phase(null);
       walked(layout, _out);
@@ -1453,10 +1449,20 @@ final class PdfConverter extends BuiltInConverter
             margin: EdgeInsets(left: left, top: first ? 0 : gap),
           ),
         );
-        _out.add(entryBox);
-        // An empty index is left out, its entry with it (known once the
-        // whole document is read).
-        if (entry.sectname == 'index') _indexTocEntries.add((_out, entryBox));
+        // An empty index is left out, its entry with it: known when the
+        // contents are laid out, once the whole document is read.
+        _out.add(
+          entry.sectname == 'index'
+              ? CustomBox(
+                  _Unless(
+                    () => _index.isEmpty,
+                    entryBox.content,
+                    gap: first ? 0 : gap,
+                  ),
+                  style: BoxStyle(margin: EdgeInsets(left: left)),
+                )
+              : entryBox,
+        );
         first = false;
         if (entryLevels >= entryLevel) {
           level(_sectionsOf(entry), entryLevels, left + indent);
@@ -1933,7 +1939,8 @@ final class PdfConverter extends BuiltInConverter
     final inner = _n('page_margin_inner')?.toDouble();
     if (outer == null && inner == null) return template;
     final m = template.margins;
-    final recto = number.isOdd;
+    // (An inverted folio placement swaps the sides, margins too.)
+    final recto = number.isOdd != _folio.inverted;
     return PageTemplate(
       template.size,
       margins: EdgeInsets(
@@ -2264,6 +2271,9 @@ final class PdfConverter extends BuiltInConverter
     'code_widows': ThemeNumber(1),
     'block_split_end': ThemeString('region'),
     'code_highlight': ThemeString('none'),
+    'url_breaks': ThemeString('delimiters'),
+    'base_slash_breaks': ThemeBool(false),
+    'base_space_breaks': ThemeString('all'),
     'code_wrap_indent': ThemeNumber(0),
     'code_wrap_marker': ThemeString('none'),
     'footnotes_placement': ThemeString('end'),
@@ -4620,12 +4630,13 @@ final class PdfConverter extends BuiltInConverter
   }
 
   /// Inserts the pages of the PDF file the block image [node] refers to
-  /// by [target] (its `page`, or its `pages`: numbers and ranges).
-  void _insertPdf(Block node, String target) {
+  /// by [target] (its `page`, or its `pages`: numbers and ranges); false
+  /// when there's no such file.
+  bool _insertPdf(Block node, String target) {
     final path = Helpers.isUriish(target) ? null : _imagePath(node, target);
     if (path == null || !io.isFile(path) || !io.isReadable(path)) {
       logger.warn('pdf to insert not found or not readable: ${path ?? target}');
-      return;
+      return false;
     }
     final pages = _pdfPages(path, target) ?? const [];
     final numbers = switch (node.attr('pages')) {
@@ -4650,6 +4661,7 @@ final class PdfConverter extends BuiltInConverter
         _out.add(BreakBox.page(template: _layout));
       }
     }
+    return true;
   }
 
   /// [text] as Ruby's `to_i` reads it: the leading integer, else 0.
@@ -4932,8 +4944,8 @@ final class PdfConverter extends BuiltInConverter
     if (format == 'gif') {
       logger.warn('GIF image format not supported; convert $target to PNG');
     } else if (format == 'pdf' && data == null) {
-      _insertPdf(node, target);
-      return;
+      // (A PDF file that isn't there: its alt text, as a missing image's.)
+      if (_insertPdf(node, target)) return;
     } else if (data != null) {
       try {
         bytes = base64.decode(data[2]!);
@@ -7998,13 +8010,14 @@ final class PdfConverter extends BuiltInConverter
     text = text.replaceAll(RegExp('[\ufe00-\ufe0f]'), '');
 
     if (_cjkLineBreaks && !cell) text = _breakCjk(text);
-    // (`www.` links too; not as asciidoctor-pdf breaks.)
-    final www = !asciidoctorCompat(_document, CompatFormat.pdf);
-    if (text.contains('://') || (www && text.contains('www.'))) {
-      text = _breakUrls(text, markup: inlineFormat, www: www);
+    // Links broken at The Chicago Manual of Style's points (`www.` links
+    // too), or after their delimiters alone (`url_breaks: delimiters`).
+    final delimiters = _urlDelimiterBreaks;
+    if (text.contains('://') || (!delimiters && text.contains('www.'))) {
+      text = _breakUrls(text, markup: inlineFormat, delimiters: delimiters);
     }
     // (Prose: preformatted text, set as it is, keeps its lines.)
-    if (normalize && text.contains('/')) {
+    if (normalize && text.contains('/') && _slashBreaks) {
       text = _breakAfterSlashes(text, markup: inlineFormat);
     }
     final nodes = inlineFormat ? parseMarkup(text) : [MarkupText(text)];
@@ -9379,9 +9392,15 @@ final class PdfConverter extends BuiltInConverter
   /// before a single slash, a tilde, a period, a comma, a hyphen, an
   /// underscore, a question mark, a number sign or a percent sign; before
   /// or after an equals sign or an ampersand; never with a hyphen added.
-  /// The modern engine's, in place of the gem's breaks after `/`, `?`, `&`
-  /// and `#`. [www] reads a word that starts with `www.` as a URL too.
-  static String _breakUrls(String text, {bool markup = true, bool www = true}) {
+  /// The modern engine's; with [delimiters], after `/`, `?`, `&` and `#`
+  /// alone ([_delimiterBreaks]), and a word that starts with `www.` isn't
+  /// read as a URL.
+  static String _breakUrls(
+    String text, {
+    bool markup = true,
+    bool delimiters = false,
+  }) {
+    final www = !delimiters;
     final out = StringBuffer();
     // The text between tags only (an href stays whole).
     final pieces = markup
@@ -9399,7 +9418,9 @@ final class PdfConverter extends BuiltInConverter
             return www ? '${m[3]}${_linkBreaks(link)}' : m[0]!;
           }
           final link = m[2]!;
-          return '${m[1]}\u200b${_linkBreaks(link)}';
+          return delimiters
+              ? '${m[1]}${_delimiterBreaks(link)}'
+              : '${m[1]}\u200b${_linkBreaks(link)}';
         }),
       );
     }
@@ -9469,6 +9490,32 @@ final class PdfConverter extends BuiltInConverter
     }
     return out.toString();
   }
+
+  /// [link] (the part after `://`) with a zero-width space after each `/`,
+  /// `?`, `&amp;` and `#` but its last character, and none that would
+  /// leave a single character after it.
+  static String _delimiterBreaks(String link) {
+    var out = link.replaceAllMapped(
+      RegExp(r'(?:/|\?|&amp;|#)(?!$)'),
+      (m) => '${m[0]}\u200b',
+    );
+    if (out.length > 1 && out[out.length - 2] == '\u200b') {
+      out = out.substring(0, out.length - 2) + out.substring(out.length - 1);
+    }
+    return out;
+  }
+
+  /// Whether links break after their delimiters alone (`url_breaks:
+  /// delimiters`) rather than at The Chicago Manual of Style's points.
+  bool get _urlDelimiterBreaks =>
+      _choice('url_breaks', const ['chicago', 'delimiters']) == 'delimiters';
+
+  /// Whether a line may break after a slash in prose (`base_slash_breaks`,
+  /// as the Unicode line breaking algorithm allows).
+  bool get _slashBreaks => switch (_theme.value('base_slash_breaks')) {
+    ThemeBool(value: false) => false,
+    _ => true,
+  };
 
   String _inlineCallout(Inline node) {
     var glyph = _conumGlyph(int.tryParse(node.text ?? '') ?? 0);
@@ -9624,10 +9671,6 @@ final class PdfConverter extends BuiltInConverter
   /// The index of the document (terms in titles are stored while the
   /// document is parsed).
   final IndexCatalog _index = IndexCatalog();
-
-  /// The contents' entries of index sections, with the boxes they're in:
-  /// left out when the index turns out empty.
-  final List<(List<LayoutBox>, LayoutBox)> _indexTocEntries = [];
 
   IndexName _indexName(String markup) => IndexName(_plain(markup), markup);
 
@@ -11182,6 +11225,41 @@ final class _TocEntry implements CustomContent {
 
   @override
   (double, double) intrinsicWidths() => title.intrinsicWidths();
+}
+
+/// [content] [gap] below what comes before it, or nothing (no room, no
+/// gap) when [hidden] says so as it's laid out.
+final class _Unless implements CustomContent {
+  const new(this.hidden, this.content, {this.gap = 0});
+
+  final bool Function() hidden;
+  final CustomContent content;
+  final double gap;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) {
+    if (hidden()) return CustomPlacement(height: 0, paint: (page, x, top) {});
+    final placed = content.place(width, available - gap, atTop: atTop);
+    if (placed == null) return null;
+    return CustomPlacement(
+      height: placed.height + gap,
+      anchors: [for (final (name, x, y) in placed.anchors) (name, x, y + gap)],
+      rest: placed.rest,
+      paint: (page, x, top) => placed.paint(page, x, top - gap),
+    );
+  }
+
+  @override
+  double minHeight(double width) =>
+      hidden() ? 0 : content.minHeight(width) + gap;
+
+  @override
+  (double, double) intrinsicWidths() =>
+      hidden() ? (0, 0) : content.intrinsicWidths();
 }
 
 /// An index entry with its page numbers in a column: the [term] at the
