@@ -1941,6 +1941,10 @@ base class _Wrap {
     }
     _fragments = [];
     var blankTop = 0.0;
+    // (A line of markers alone, an anchor's empty paragraph, is as tall
+    // as their text would be.)
+    var anyText = false;
+    double? markerAscender;
     for (final item in _consumed) {
       var text = item.text.replaceAll(_zwsp, '');
       if (item.excludeTrailingWhiteSpace) {
@@ -1967,6 +1971,14 @@ base class _Wrap {
       _fragments.add(printed);
       final font = format.font;
       final image = format.image;
+      if (isMarker) {
+        markerAscender = math.max(
+          markerAscender ?? 0,
+          font.ascenderAt(format.size),
+        );
+      } else {
+        anyText = true;
+      }
       if (_layout.capLines) {
         // (A line break or spaces count only on a line without other
         // text: an empty line is as tall as its font's cap height.)
@@ -1993,6 +2005,9 @@ base class _Wrap {
     }
     if (_layout.capLines && _maxLineHeight == 0 && blankTop > 0) {
       _maxLineHeight = _maxAscender = blankTop;
+    }
+    if (!anyText && !_layout.capLines && markerAscender != null) {
+      _maxAscender = math.max(_maxAscender, markerAscender);
     }
     _spaceCount = _fragments.fold(0, (sum, f) => sum + f.spaces);
   }
@@ -2407,8 +2422,8 @@ final class _OptimalWrap extends _Wrap {
     _source = [..._unconsumed];
     // The pieces: the items' tokens (newlines are items of their own).
     // Spaces at the start of a line are left out, also after zero-width
-    // markers (an index term's anchor before the first word) and zero-width
-    // spaces.
+    // markers (an index term's anchor before the first word), zero-width
+    // spaces and NULs (an anchor's text left in a title).
     final pieces = <(int, String)>[];
     // The pieces a word longer than a line may break before.
     final charBreaks = <int>{};
@@ -2422,7 +2437,7 @@ final class _OptimalWrap extends _Wrap {
           if (_isSpaces(token)) {
             if (lineStart) continue;
           } else if (!item.format.fragment.isMarker &&
-              token.replaceAll(_zwsp, '').isNotEmpty) {
+              token.replaceAll(_zwsp, '').replaceAll('\u0000', '').isNotEmpty) {
             lineStart = false;
           }
           // A word longer than a line: a piece per character, so that the

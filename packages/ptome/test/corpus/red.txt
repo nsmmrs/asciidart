@@ -21,6 +21,4 @@ asciidoctor-pdf-image_spec-pdf-aaa6566d pdf
 asciidoctor-pdf-table-086 pdf
 asciidoctor.js-semantic-html5-converter-pdf-33e1c237 pdf
 asciidoctor.js-semantic-html5-reference-pdf-0d63b137 pdf
-progit2-contributing-pdf-a877a801 pdf
 progit2-progit-pdf-cdcc4e6f pdf
-quarkus-security-openid-connect-providers-pdf-f0753547 pdf

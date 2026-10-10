@@ -39,6 +39,7 @@ same (`benchmark/PARITY.md`).
 | `base_space_breaks` | `all` | `unicode` |
 | `base_border_offset_fit` | `false` | `true` |
 | `base_hyphen_breaks` | `around` | `after` |
+| `index_terms_paragraph` | `line` | `none` |
 | `svg_placement` | `page_origin` | `exact` |
 | `table_borders` | `with-cells` | `above` |
 | `stem_math` | `source` | `typeset` |
@@ -247,6 +248,7 @@ number, fill its center column this way.
 | `code_widows` | `2` | The fewest lines of a listing carried to the top of the next page. |
 | `block_split_end` | `content` | Where the piece of a framed block (code, sidebar, example, admonition...) that a page's end cuts off ends: `content`, under its last line; `region`, at the page's bottom margin, its background and border with it. |
 | `url_breaks` | `chicago` | Where a link's URL may break across lines: `chicago`, at The Chicago Manual of Style's points (before a slash, a period, a hyphen..., after `://`), `www.` links too; `delimiters`, after `/`, `?`, `&` and `#` only, never leaving a single character, links with a scheme only. |
+| `index_terms_paragraph` | `none` | A paragraph of hidden index terms alone (`(((term)))` on a line of its own): `none`, it takes no room (its anchors go with the block after it); `line`, it is an empty line, as any paragraph. |
 | `base_hyphen_breaks` | `after` | Where a word with hyphens in it may break: `after`, after a hyphen (as the Unicode line breaking algorithm has it); `around`, before a hyphen too (`--kef` / `-mnuthn`). |
 | `base_border_offset_fit` | `true` | Whether the room around a highlighted or boxed word (its `border_offset`) counts when a line is fit; with `false` the line is fit without it and set a little tighter. |
 | `base_space_breaks` | `unicode` | Where a space breaks a line: `unicode`, as the Unicode line breaking algorithm has it (not before closing punctuation, a colon, a slash..., nor after an opening bracket, spaces between or not); `all`, at every space. |

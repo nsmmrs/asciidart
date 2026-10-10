@@ -2283,6 +2283,7 @@ final class PdfConverter extends BuiltInConverter
     'base_space_breaks': ThemeString('all'),
     'base_border_offset_fit': ThemeBool(false),
     'base_hyphen_breaks': ThemeString('around'),
+    'index_terms_paragraph': ThemeString('line'),
     'code_wrap_indent': ThemeNumber(0),
     'code_wrap_marker': ThemeString('none'),
     'footnotes_placement': ThemeString('end'),
@@ -3538,8 +3539,10 @@ final class PdfConverter extends BuiltInConverter
 
     var content = node.content() ?? '';
     // The modern engine: a paragraph of concealed index terms alone takes
-    // no room (their anchors where it is).
-    if (!node.hasTitle) {
+    // no room (their anchors where it is); `index_terms_paragraph: line`
+    // sets it as an empty line, as any paragraph.
+    if (!node.hasTitle &&
+        _choice('index_terms_paragraph', const ['none', 'line']) != 'line') {
       final terms = RegExp('<a id="([^"]+)" type="indexterm">$_dummyText</a>')
           .allMatches(content)
           .toList();
