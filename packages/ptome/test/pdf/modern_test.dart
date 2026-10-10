@@ -2154,6 +2154,26 @@ base:
       expect(set.$3 - plain, closeTo(12, 0.01));
     });
 
+    test('example_collapsible: details sets a collapsible block open', () {
+      const source = 'Before.\n\n.More\n[%collapsible]\n====\nInside.\n====\n';
+      // A frame by default: the content inside its padding.
+      final framed = _pdf(source, theme: 'example_padding: 12\n');
+      expect(
+        word(framed, 'Inside.').$3 - word(framed, 'Before.').$3,
+        closeTo(12, 0.01),
+      );
+      // Details: the title after a marker, the content set in by it.
+      final details = _pdf(
+        source,
+        theme: 'example_padding: 12\nexample_collapsible: details\n',
+      );
+      final title = word(details, 'More');
+      final inside = word(details, 'Inside.');
+      expect(title.$3, greaterThan(word(details, 'Before.').$3));
+      expect(inside.$3, closeTo(title.$3, 0.01));
+      expect(_pages(details).first, contains('▼ More'));
+    });
+
     test('lines break after a slash, not next to a bracket (UAX #14)', () {
       // A narrow page: the words must break.
       const theme =

@@ -2288,6 +2288,7 @@ final class PdfConverter extends BuiltInConverter
     'base_kerning_source': ThemeString('kern_table'),
     'table_borders': ThemeString('with-cells'),
     'table_cell_margin_top': ThemeString('keep'),
+    'example_collapsible': ThemeString('details'),
     'stem_math': ThemeString('source'),
   };
 
@@ -4374,6 +4375,12 @@ final class PdfConverter extends BuiltInConverter
   }
 
   void _convertExample(Block node) {
+    if (node.hasOption('collapsible') &&
+        _choice('example_collapsible', const ['frame', 'details']) ==
+            'details') {
+      _convertDetails(node);
+      return;
+    }
     final captionBelow = _s('example_caption_end') == 'bottom';
     if (!captionBelow && node.hasTitle) _caption(node, category: 'example');
     final children = _collect(
@@ -4395,6 +4402,38 @@ final class PdfConverter extends BuiltInConverter
       ),
     );
     if (node.hasTitle) _caption(node, category: 'example');
+    final margin = _marginBelow(node);
+    if (margin > 0) _out.add(SpacerBox(margin));
+  }
+
+  /// Converts the collapsible example block [node] as an open details
+  /// element shows (`example_collapsible: details`): its title (else
+  /// "Details") after a ▼, as a caption, over its content set in by the
+  /// marker's width, with no frame.
+  void _convertDetails(Block node) {
+    const marker = '\u25bc ';
+    final font = _themeFont('caption', _font);
+    final indent = _fonts
+        .font(font.family, font.style)
+        .widthOf(marker, font.size, kerning: font.kerning);
+    _out.add(
+      _captionBox(
+        node,
+        labeled: false,
+        title: '$marker${node.title ?? 'Details'}',
+      ),
+    );
+    final children = _collect(() => _traverse(node));
+    _out.add(
+      BlockBox(
+        children,
+        style: BoxStyle(
+          margin: EdgeInsets(left: indent),
+          keepTogether: node.hasOption('unbreakable'),
+          anchor: node.id,
+        ),
+      ),
+    );
     final margin = _marginBelow(node);
     if (margin > 0) _out.add(SpacerBox(margin));
   }
@@ -6893,8 +6932,9 @@ final class PdfConverter extends BuiltInConverter
     bool labeled = true,
     bool bottom = false,
     String? blockAlign,
+    String? title,
   }) {
-    final title = labeled ? node.captionedTitle() : node.title;
+    title ??= labeled ? node.captionedTitle() : node.title;
     if (title == null || title.isEmpty) {
       return const CustomBox(_Nothing());
     }

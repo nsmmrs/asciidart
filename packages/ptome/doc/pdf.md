@@ -40,6 +40,7 @@ same (`benchmark/PARITY.md`).
 | `svg_placement` | `page_origin` | `exact` |
 | `table_borders` | `with-cells` | `above` |
 | `table_cell_margin_top` | `keep` | `drop` |
+| `example_collapsible` | `details` | `frame` |
 | `stem_math` | `source` | `typeset` |
 
 ## The modern engine
@@ -390,6 +391,7 @@ beside it.
 | `role_<role>_float` | | `left` or `right`: blocks with the role (an open block, a sidebar, an image) float to that side. |
 | `role_<role>_float_width` | a third of the text's width | Its width: a length or a percentage of the page's text width. |
 | `role_<role>_float_gap` | the font size | The space between it and the blocks beside it. |
+| `example_collapsible` | `frame` | A collapsible example block (`[%collapsible]`), which print can't collapse: `frame`, as any example block; `details`, as an open details element shows: its title (else "Details") after a ▼, as a caption, over its content set in by the marker's width, with no frame. |
 | `example_role_<role>_<key>`, `sidebar_role_<role>_<key>` | | For an example block or a sidebar with the role (`[.callout]`), replaces `example_<key>` or `sidebar_<key>`; `_link_font_color` and `_link_text_decoration` style the links in it (a pill-shaped link). |
 | `<category>_shadow_color` | | A shadow under a framed block (`example`, `sidebar`, their roles' keys): `_shadow_offset` (right and down, `[0, 2]`), `_shadow_blur` (`4`), `_shadow_opacity` (`0.3`). |
 | `<category>_background_image` | | An image over a framed block's background, clipped to it: `image:stripes.svg[fit=contain,position=right top]`, as `page_background_image`. |
