@@ -1,5 +1,7 @@
 // The text path pinned to what plain_pdf wrote before it was made faster
-// (commit 17001e86): digests of the shaped glyphs of the 14 standard fonts
+// (commit 17001e86; since 2026-10-10 with `TJ` adjustments to five
+// decimals and word spacing to a hundred-thousandth of a point):
+// digests of the shaped glyphs of the 14 standard fonts
 // and of the content streams drawing seeded random text in standard and
 // embedded fonts, with kerning, word and character spacing, rise, skew and
 // emboldening.
@@ -99,6 +101,6 @@ void main() {
         ..write(latin1.decode(pdf))
         ..write('\n');
     }
-    expect(digest(out), '8f310e833e583d8a362a12beb84d7521');
+    expect(digest(out), '65844065e866adf1895d9bf95dcf9a82');
   });
 }

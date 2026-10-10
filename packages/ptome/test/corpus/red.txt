@@ -2,9 +2,7 @@
 # compatibility settings haven't closed yet. Written by
 # `dart run tool/corpus_red.dart REPORT.json --update`.
 asciidoc-docs-add-header-row-pdf-9bce4f1d pdf
-asciidoc-docs-asciidoc-vs-markdown-pdf-69342eb4 pdf
 asciidoc-docs-syntax-quick-reference-pdf-723cd495 pdf
-asciidoc-lang-outline-pdf-d3e5a5b3 pdf
 asciidoctor-2.0.26-CONTRIBUTING-epub3-eddbfdec pdf
 asciidoctor-2.0.26-README-de-epub3-57f4a238 pdf
 asciidoctor-2.0.26-README-fr-pdf-3c3a86cc pdf
@@ -19,14 +17,9 @@ asciidoctor-2.0.26-mathjax-pdf-9b94c05e pdf
 asciidoctor-2.0.26-options-pdf-6129316b pdf
 asciidoctor-2.0.26-syntax-epub3-9b9912c5 pdf
 asciidoctor-2.0.26-tables_test-pdf-c8f0a4bd pdf
-asciidoctor-2.0.26-templates-pdf-7b44e229 pdf
-asciidoctor-2.0.26-tree-processor-pdf-8e22d6b3 pdf
-asciidoctor-2.0.26-whats-new-epub3-3a934743 pdf
 asciidoctor-main-CHANGELOG-pdf-0615774a pdf
-asciidoctor-pdf-abstract-018 pdf
 asciidoctor-pdf-abstract_spec-pdf-024a884a pdf
 asciidoctor-pdf-arrange-block-at-top-does-not-fit-epub3-1de00c5a pdf
-asciidoctor-pdf-font-007 pdf
 asciidoctor-pdf-footnote-011 pdf
 asciidoctor-pdf-hyphens-006 pdf
 asciidoctor-pdf-i18n-font-test-pdf-22b97853 pdf
@@ -34,13 +27,11 @@ asciidoctor-pdf-icon-001 pdf
 asciidoctor-pdf-image-070 pdf
 asciidoctor-pdf-image_spec-pdf-aaa6566d pdf
 asciidoctor-pdf-source-069 pdf
-asciidoctor-pdf-table-031 pdf
 asciidoctor-pdf-table-086 pdf
 asciidoctor-pdf-table-102 pdf
 asciidoctor.js-CONTRIBUTING-CODE-epub3-39a85547 pdf
 asciidoctor.js-semantic-html5-converter-pdf-33e1c237 pdf
 asciidoctor.js-semantic-html5-reference-pdf-0d63b137 pdf
-hypermedia-systems-CH13_ExtendingTheHyperviewClient-pdf-6be97d3b pdf
 progit2-contributing-pdf-a877a801 pdf
 progit2-progit-pdf-cdcc4e6f pdf
 quarkus-security-openid-connect-providers-pdf-f0753547 pdf

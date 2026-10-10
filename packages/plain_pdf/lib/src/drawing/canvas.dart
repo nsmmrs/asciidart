@@ -707,8 +707,10 @@ final class PdfCanvas implements Canvas {
       EmbeddedFont() => 2,
     };
     final hex = font is EmbeddedFont;
+    // (The word spacing to a hundred-thousandth of a point, as a `Tw`
+    // operand would give it, in thousandths of the size.)
     final wordSpacing = style.wordSpacing != 0
-        ? style.wordSpacing * 1000 / style.size
+        ? (style.wordSpacing * 1e5).round() / 1e5 * 1000 / style.size
         : 0.0;
     final out = _content..byte(0x5b); // [
     final last = glyphs.length - 1;
@@ -724,7 +726,7 @@ final class PdfCanvas implements Canvas {
         start = end;
         out
           ..byte(0x20)
-          ..number(adjustment, 3)
+          ..number(adjustment, 5)
           ..byte(0x20);
       }
     }

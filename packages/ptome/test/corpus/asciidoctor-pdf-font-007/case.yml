@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "a line breaks before a no-break hyphen isolated in its own fragment (a Prawn bug, as asciidoctor-pdf's own spec says)"

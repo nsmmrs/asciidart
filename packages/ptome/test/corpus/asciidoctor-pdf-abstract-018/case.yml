@@ -5,3 +5,5 @@ attributes:
   "nofooter": ""
   "pdf-theme": "theme.yml"
   "pdf-themesdir": "{docdir}"
+defects:
+  pdf: "a built-in (AFM) font's kerning pairs with a space are never applied: Prawn reads `space` as the no-break space (both are named so in WinAnsi)"

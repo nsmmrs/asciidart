@@ -6434,7 +6434,12 @@ final class PdfConverter extends BuiltInConverter
     // Without a hanging indent or a marker, a long line wraps at the
     // line breaking algorithm's breaks (UAX #14; after a slash too), as
     // many words on a line as fit.
-    final plainWrap = wrapIndent == 0 && !wrapMarker;
+    // (With greedy line breaking, code wraps one line at a time as Prawn's
+    // line wrap does: at spaces and hyphens, else between characters.)
+    final greedy =
+        _choice('base_line_breaking', const ['auto', 'optimal', 'greedy']) ==
+        'greedy';
+    final plainWrap = wrapIndent == 0 && !wrapMarker && !greedy;
     // (Autofit text is sized so its lines don't wrap, measured as they
     // are.)
     final autofit =

@@ -2,6 +2,10 @@
 
 ## 0.1.0-dev (unreleased)
 
+- Text set with word spacing places its words as a `Tw` operand would:
+  the spacing to a hundred-thousandth of a point, and the `TJ` adjustments
+  written to five decimals (they were rounded to three: positions drifted
+  by up to a few hundred-thousandths of a point along a line).
 - Layout moved to plain_typesetting with its history: paragraphs and the
   line breakers, `FlowLayout` and its boxes, the math layout, geometry,
   colors, `TextStyle`, `Graphic`, `ShapedGlyph`, and the shaping loop of

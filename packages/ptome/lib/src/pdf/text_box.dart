@@ -1690,7 +1690,11 @@ base class _Wrap {
   /// [TextLayout.wrapIndent], at most half the width.
   void _markWrap(double indent) {
     final wrapIndent = _layout.wrapIndent;
-    if (wrapIndent == null && !_layout.wrapMarker) return;
+    // (No hanging indent and no marker: the lines go on at the left, as
+    // Prawn wraps.)
+    if ((wrapIndent == null || wrapIndent == 0) && !_layout.wrapMarker) {
+      return;
+    }
     if (_paragraphFinished) {
       continuedIndent = null;
       return;
@@ -2389,7 +2393,8 @@ final class _OptimalWrap extends _Wrap {
     _source = [..._unconsumed];
     // The pieces: the items' tokens (newlines are items of their own).
     // Spaces at the start of a line are left out, also after zero-width
-    // markers (an index term's anchor before the first word).
+    // markers (an index term's anchor before the first word) and zero-width
+    // spaces.
     final pieces = <(int, String)>[];
     // The pieces a word longer than a line may break before.
     final charBreaks = <int>{};
@@ -2402,7 +2407,8 @@ final class _OptimalWrap extends _Wrap {
         for (final token in _tokenize(item.text)) {
           if (_isSpaces(token)) {
             if (lineStart) continue;
-          } else if (!item.format.fragment.isMarker) {
+          } else if (!item.format.fragment.isMarker &&
+              token.replaceAll(_zwsp, '').isNotEmpty) {
             lineStart = false;
           }
           // A word longer than a line: a piece per character, so that the
