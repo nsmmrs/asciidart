@@ -39,6 +39,7 @@ same (`benchmark/PARITY.md`).
 | `index_terms_paragraph` | `line` | `none` |
 | `svg_placement` | `page_origin` | `exact` |
 | `table_borders` | `with-cells` | `above` |
+| `table_cell_margin_top` | `keep` | `drop` |
 | `stem_math` | `source` | `typeset` |
 
 ## The modern engine
@@ -317,6 +318,7 @@ the text in print with an attribute:
 | --- | --- |
 | `stem_math` | `typeset` | How math (`stem`, `latexmath`, `asciimath`) is set: `typeset`, as a formula; `source`, its source, in a code block or as code inline (as asciidoctor-pdf sets it without a math renderer). |
 | `table_borders` | `above` | When a table's cell borders are painted: `above`, after every cell's content, so nothing covers them; `with-cells`, each cell's before its content. |
+| `table_cell_margin_top` | `drop` | The margin above the first block in a cell (an AsciiDoc cell's heading): `drop`, the block starts at the cell's padding, as at the top of a page; `keep`, the cell keeps it, as CSS's table cells contain their content's margins. |
 | `table_role_<role>_<key>` | For a table with the role (`[.wide]`), replaces `table_<key>`: every table with the role is styled once, in the theme. |
 | `table_base_<key>` | In the modern engine, the base keys inside an AsciiDoc cell (`table_base_text_align_last: center`). |
 | `table_cell_role_<role>_background_color`, `_font_color`, `_font_style`, `_font_size`, `_font_family`, `_text_align` | Style a cell whose whole text is a phrase with the role (`\|[.paid]#Paid#`). |

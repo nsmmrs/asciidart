@@ -464,9 +464,10 @@ final class _Pass {
 
   /// The height of [box] laid out with no limit (beside no block floating
   /// to a side).
-  double _measure(LayoutBox box, double width) => _withoutExclusions(
-    () => _place(box, width, double.infinity, atTop: false),
-  ).height;
+  double _measure(LayoutBox box, double width, {bool atTop = false}) =>
+      _withoutExclusions(
+        () => _place(box, width, double.infinity, atTop: atTop),
+      ).height;
 
   /// The least height [box] needs where it starts (to keep a box with
   /// it).
@@ -508,6 +509,7 @@ final class _Pass {
             shrinkToContent: box.shrinkToContent,
             align: box.align,
             stripes: box.stripes,
+            cellsContainMargins: box.cellsContainMargins,
             style: box.style,
           ),
           width,
@@ -680,7 +682,7 @@ final class _Pass {
     final carried = <LayoutBox>[];
     var cursor = 0.0;
     var trailing = 0.0;
-    final atTopInside = atTop && top == 0;
+    final atTopInside = atTop && top == 0 && !box._containsMargins;
     // Where the content starts in the region, for blocks floating to a
     // side; the blocks floating there before the children.
     final contentY = _y + top;
@@ -754,6 +756,7 @@ final class _Pass {
                 [if (repeat) ...box.children.take(head), ...rest],
                 style,
                 repeatedHead: head,
+                containsMargins: box._containsMargins,
               ),
         hit: hit,
         floated: floated,

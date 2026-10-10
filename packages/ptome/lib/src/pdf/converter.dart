@@ -2104,8 +2104,10 @@ final class PdfConverter extends BuiltInConverter
             headerRows: table.headerRows,
             width: table.width,
             shrinkToContent: table.shrinkToContent,
+            borders: table.borders,
             align: table.align,
             stripes: table.stripes,
+            cellsContainMargins: table.cellsContainMargins,
             style: style.withTag(tag),
           ),
         _ => null,
@@ -2285,6 +2287,7 @@ final class PdfConverter extends BuiltInConverter
     'base_glyph_widths': ThemeString('thousandths'),
     'base_kerning_source': ThemeString('kern_table'),
     'table_borders': ThemeString('with-cells'),
+    'table_cell_margin_top': ThemeString('keep'),
     'stem_math': ThemeString('source'),
   };
 
@@ -5962,6 +5965,8 @@ final class PdfConverter extends BuiltInConverter
             ? TableBorders.withCells
             : TableBorders.above,
         stripes: [for (final color in stripes) pdfColorOf(color)],
+        cellsContainMargins:
+            _choice('table_cell_margin_top', const ['drop', 'keep']) == 'keep',
         align: switch (align) {
           'center' => BoxAlign.center,
           'right' => BoxAlign.right,

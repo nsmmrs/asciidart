@@ -328,11 +328,24 @@ final class BlockBox extends LayoutBox {
     BoxStyle style = const BoxStyle(),
     this.repeatedHead = 0,
   }) : _continued = false,
+       _containsMargins = false,
        super._(style);
 
-  const new _rest(this.children, BoxStyle style, {this.repeatedHead = 0})
-    : _continued = true,
-      super._(style);
+  const new _rest(
+    this.children,
+    BoxStyle style, {
+    this.repeatedHead = 0,
+    this._containsMargins = false,
+  }) : _continued = true,
+       super._(style);
+
+  /// The content of a table cell, keeping its first child's margin above
+  /// when it contains margins (as CSS's table cells contain their
+  /// content's margins) rather than starting at the cell's edge.
+  const new _cell(this.children, {required this._containsMargins})
+    : repeatedHead = 0,
+      _continued = false,
+      super._(const BoxStyle());
 
   /// The children.
   final List<LayoutBox> children;
@@ -344,6 +357,10 @@ final class BlockBox extends LayoutBox {
   /// Whether this is the rest of a block split by a break (no top margin,
   /// border or padding).
   final bool _continued;
+
+  /// Whether its first child keeps its margin above where the block
+  /// starts at the top of a region.
+  final bool _containsMargins;
 }
 
 /// A paragraph: lines broken from inline content. Its style's margins
@@ -807,6 +824,7 @@ final class TableBox extends LayoutBox {
     this.borders = TableBorders.above,
     this.align = BoxAlign.left,
     this.stripes = const [],
+    this.cellsContainMargins = false,
     BoxStyle style = const BoxStyle(),
   }) : _grid = null,
        _widths = null,
@@ -821,6 +839,7 @@ final class TableBox extends LayoutBox {
       borders = table.borders,
       align = table.align,
       stripes = table.stripes,
+      cellsContainMargins = table.cellsContainMargins,
       super._(table.style);
 
   /// The rows.
@@ -847,6 +866,11 @@ final class TableBox extends LayoutBox {
   /// The backgrounds the body rows take in turn (cells without their own),
   /// counting from the first body row in each region.
   final List<Color?> stripes;
+
+  /// Whether a cell's first block keeps its margin above, as CSS's table
+  /// cells contain their content's margins, rather than starting at the
+  /// cell's padding.
+  final bool cellsContainMargins;
 
   /// The rows left to place (with their cells' columns), when this is the
   /// rest of a split table.

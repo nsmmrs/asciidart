@@ -75,6 +75,50 @@ void main() {
     );
   });
 
+  test("a cell's first margin: dropped, or kept, as measured", () {
+    // The y of each line, for a table of one cell whose paragraph has a
+    // margin above, with a line after the table.
+    Map<String, double> lines({required bool keep}) {
+      final document = RecordingDocument();
+      FlowLayout(template: _rows(6))
+          .layout([
+            TableBox(
+              [
+                TableRow([
+                  TableCell([
+                    ParagraphBox(
+                      Paragraph([TextRun('cell', _body)]),
+                      style: const BoxStyle(margin: EdgeInsets(top: 10)),
+                    ),
+                  ], padding: EdgeInsets.zero),
+                ]),
+              ],
+              columns: const [ColumnWidth.fraction(1)],
+              cellsContainMargins: keep,
+            ),
+            _para('after'),
+          ])
+          .render(document);
+      return {
+        for (final call in document.pages.single.canvas.calls)
+          if (RegExp(r'^glyphs "\s*(\S+)\s*" at \S+ (\S+)').firstMatch(call)
+              case final m?)
+            m[1]!: double.parse(m[2]!),
+      };
+    }
+
+    // Dropped, the cell is as tall as its line (it was measured with the
+    // margin it isn't placed with); kept, all is 10 lower.
+    final dropped = lines(keep: false);
+    expect(
+      (dropped['after']! - dropped['cell']!).abs(),
+      closeTo(_lineHeight, .01),
+    );
+    final kept = lines(keep: true);
+    expect((kept['after']! - kept['cell']!).abs(), closeTo(_lineHeight, .01));
+    expect((kept['cell']! - dropped['cell']!).abs(), closeTo(10, .01));
+  });
+
   test("anchors become the document's, at their page and point", () {
     final document = RecordingDocument();
     final result = FlowLayout(template: _rows(4)).layout([

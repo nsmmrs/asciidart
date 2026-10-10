@@ -1,3 +1,5 @@
 source: "pool:asciidoctor-pdf/spec/abstract_spec.rb:95"
 formats: [pdf]
 safe: safe
+defects:
+  pdf: "a quote in an abstract has its left border measured at the base line height while its text is set at the abstract's, so the border stops short of the text"

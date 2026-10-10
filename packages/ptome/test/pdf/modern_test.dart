@@ -2340,7 +2340,7 @@ base:
         messages,
         contains(
           'theme key base_line_breaking: unknown value optimum; expected '
-          'one of auto, optimal, greedy',
+          'one of auto, optimal, greedy, segments',
         ),
       );
       // A value in the set is not.

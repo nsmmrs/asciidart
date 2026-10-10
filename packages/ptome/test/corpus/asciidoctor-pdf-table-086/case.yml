@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "an autowidth column is measured with its cell's lines end to end, as one line (Prawn's width_of), so it is wider than its longest line"

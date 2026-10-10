@@ -8,13 +8,10 @@ asciidoctor-2.0.26-blocks_test-pdf-3816ff3b pdf
 asciidoctor-2.0.26-index-epub3-d6e112b2 pdf
 asciidoctor-2.0.26-lists-epub3-4f4a3b7b pdf
 asciidoctor-2.0.26-syntax-epub3-9b9912c5 pdf
-asciidoctor-2.0.26-tables_test-pdf-c8f0a4bd pdf
 asciidoctor-main-CHANGELOG-pdf-0615774a pdf
-asciidoctor-pdf-abstract_spec-pdf-024a884a pdf
 asciidoctor-pdf-arrange-block-at-top-does-not-fit-epub3-1de00c5a pdf
 asciidoctor-pdf-i18n-font-test-pdf-22b97853 pdf
 asciidoctor-pdf-image-070 pdf
 asciidoctor-pdf-image_spec-pdf-aaa6566d pdf
-asciidoctor-pdf-table-086 pdf
 asciidoctor.js-semantic-html5-reference-pdf-0d63b137 pdf
 progit2-progit-pdf-cdcc4e6f pdf

@@ -169,15 +169,26 @@ extension _Tables on _Pass {
   }
 
   /// The heights of [rows] (cells spanning down add to the last row they
-  /// span).
-  List<double> _rowHeights(List<_GridRow> rows, List<double> widths) {
+  /// span), their cells' first blocks keeping their margins above when
+  /// [containsMargins].
+  List<double> _rowHeights(
+    List<_GridRow> rows,
+    List<double> widths, {
+    required bool containsMargins,
+  }) {
     final heights = [for (final row in rows) row.minHeight];
     final spans = <(int, int, double)>[];
     for (final (i, row) in rows.indexed) {
       for (final (col, cell) in row.cells) {
         final width = _cellWidth(col, cell, widths) - cell.padding.horizontal;
+        // (Measured as placed: at the top of the cell.)
         final needs =
-            _measure(BlockBox(cell.content), width) + cell.padding.vertical;
+            _measure(
+              BlockBox._cell(cell.content, containsMargins: containsMargins),
+              width,
+              atTop: true,
+            ) +
+            cell.padding.vertical;
         final span = math.min(cell.rowSpan, rows.length - i);
         if (span == 1) {
           heights[i] = math.max(heights[i], needs);
@@ -254,7 +265,7 @@ extension _Tables on _Pass {
       final width = _cellWidth(col, cell, widths);
       final padding = cell.padding;
       final fit = _place(
-        BlockBox(cell.content),
+        BlockBox._cell(cell.content, containsMargins: box.cellsContainMargins),
         width - padding.horizontal,
         height - padding.vertical,
         atTop: true,
@@ -310,7 +321,11 @@ extension _Tables on _Pass {
       for (final row in grid)
         if (!row.header) row,
     ];
-    final headerHeights = _rowHeights(headers, widths);
+    final headerHeights = _rowHeights(
+      headers,
+      widths,
+      containsMargins: box.cellsContainMargins,
+    );
     final headerHeight = headerHeights.fold<double>(0, (a, b) => a + b);
     if (headerHeight > space + 1e-6 && !atTop) return _Fit.moved(box);
     placeRows(headers, headerHeights, body: false);
@@ -321,7 +336,11 @@ extension _Tables on _Pass {
     while (i < body.length) {
       final end = _groupEnd(body, i);
       final group = body.sublist(i, end + 1);
-      final heights = _rowHeights(group, widths);
+      final heights = _rowHeights(
+        group,
+        widths,
+        containsMargins: box.cellsContainMargins,
+      );
       final groupHeight = heights.fold<double>(0, (a, b) => a + b);
       if (used + groupHeight <= space + 1e-6) {
         placeRows(group, heights);

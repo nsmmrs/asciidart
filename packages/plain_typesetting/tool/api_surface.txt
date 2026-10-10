@@ -535,7 +535,8 @@ final class TableBox extends LayoutBox
   List<ColumnWidth> columns
   List<TableRow> rows
   TableBorders borders
-  TableBox(List<TableRow> rows, {required List<ColumnWidth> columns, int headerRows = 0, double? width, bool shrinkToContent = false, TableBorders borders = TableBorders.above, BoxAlign align = BoxAlign.left, List<Color?> stripes = const [], BoxStyle style = const BoxStyle()})
+  TableBox(List<TableRow> rows, {required List<ColumnWidth> columns, int headerRows = 0, double? width, bool shrinkToContent = false, TableBorders borders = TableBorders.above, BoxAlign align = BoxAlign.left, List<Color?> stripes = const [], bool cellsContainMargins = false, BoxStyle style = const BoxStyle()})
+  bool cellsContainMargins
   bool shrinkToContent
   double? width
   int headerRows
