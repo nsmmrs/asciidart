@@ -52,6 +52,29 @@ void main() {
     );
   });
 
+  test('a block whose bottom padding is past the page end splits', () {
+    // Three rows left for a three-line block: its lines fit, its bottom
+    // padding doesn't (and its margin below, larger, goes at the page's
+    // end), so its last line goes on to the next page with the padding.
+    final document = RecordingDocument();
+    final pages = FlowLayout(template: _rows(4))
+        .layout([
+          _para('first'),
+          BlockBox(
+            [_para('line1\nline2\nline3')],
+            style: BoxStyle(
+              padding: EdgeInsets(bottom: _lineHeight / 2),
+              margin: EdgeInsets(bottom: _lineHeight),
+            ),
+          ),
+        ])
+        .render(document);
+    expect(
+      [for (final page in pages) page.texts.map((t) => t.trim()).join(' ')],
+      ['first line1 line2', 'line3'],
+    );
+  });
+
   test("anchors become the document's, at their page and point", () {
     final document = RecordingDocument();
     final result = FlowLayout(template: _rows(4)).layout([

@@ -16,7 +16,6 @@ asciidoctor-2.0.26-index-epub3-b23c2b43 pdf
 asciidoctor-2.0.26-index-epub3-d6e112b2 pdf
 asciidoctor-2.0.26-lists-epub3-4f4a3b7b pdf
 asciidoctor-2.0.26-mathjax-pdf-9b94c05e pdf
-asciidoctor-2.0.26-mdbasics-epub3-26028d53 pdf
 asciidoctor-2.0.26-options-pdf-6129316b pdf
 asciidoctor-2.0.26-syntax-epub3-9b9912c5 pdf
 asciidoctor-2.0.26-tables_test-pdf-c8f0a4bd pdf
@@ -27,7 +26,6 @@ asciidoctor-main-CHANGELOG-pdf-0615774a pdf
 asciidoctor-pdf-abstract-018 pdf
 asciidoctor-pdf-abstract_spec-pdf-024a884a pdf
 asciidoctor-pdf-arrange-block-at-top-does-not-fit-epub3-1de00c5a pdf
-asciidoctor-pdf-background-images-pdf-ae4e6bcf pdf
 asciidoctor-pdf-font-007 pdf
 asciidoctor-pdf-footnote-011 pdf
 asciidoctor-pdf-hyphens-006 pdf
@@ -44,6 +42,5 @@ asciidoctor.js-semantic-html5-converter-pdf-33e1c237 pdf
 asciidoctor.js-semantic-html5-reference-pdf-0d63b137 pdf
 hypermedia-systems-CH13_ExtendingTheHyperviewClient-pdf-6be97d3b pdf
 progit2-contributing-pdf-a877a801 pdf
-progit2-generating-ssh-key-pdf-8479d3f1 pdf
 progit2-progit-pdf-cdcc4e6f pdf
 quarkus-security-openid-connect-providers-pdf-f0753547 pdf

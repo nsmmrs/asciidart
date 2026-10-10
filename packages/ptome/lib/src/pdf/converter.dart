@@ -6516,6 +6516,7 @@ final class PdfConverter extends BuiltInConverter
   /// Converts the passthrough block [node]: its content as code text
   /// (the gem's `convert_pass`).
   void convertPass(Block node) {
+    // (Left aligned, as raw text is set.)
     final font = _themeFont(
       'code',
       _font,
@@ -6525,7 +6526,7 @@ final class PdfConverter extends BuiltInConverter
         _textBox(
           _guardIndentation(node.content() ?? ''),
           font,
-          align: _baseTextAlign,
+          align: 'left',
           normalize: false,
           inlineFormat: false,
         ),

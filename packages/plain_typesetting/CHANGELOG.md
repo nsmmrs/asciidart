@@ -56,6 +56,11 @@
 - A table's cell borders can be painted with each cell, before its content
   (`TableBox.borders: TableBorders.withCells`, as prawn-table paints
   them), or after all of it (`TableBorders.above`, the default).
+- A block whose content fits a region but whose bottom padding doesn't
+  splits there, rather than running past the region's end: its fit was
+  checked against its full margin below, where the margin placed is
+  clamped to the room left (the random documents of seeds 14, 43 and 50
+  laid out again).
 - `BoxStyle.splitToRegionEnd`: the piece of a block split across regions
   that a region's end cuts off reaches that end, its background and
   border with it (as engines that draw a block's box after its content

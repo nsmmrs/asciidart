@@ -633,11 +633,16 @@ final class _Pass {
       atTop: atTop,
       reserved: clone,
     );
+    // (The margin below as placed: no more than the room left.)
+    final marginPlaced = switch (fit.placed) {
+      _PlacedBlock(:final marginBottom?) => marginBottom,
+      _ => style.margin.bottom,
+    };
     if (!clone &&
         fit.rest == null &&
         fit.hit == null &&
         bottom > 0 &&
-        fit.height - style.margin.bottom > available + 1e-6) {
+        fit.height - marginPlaced > available + 1e-6) {
       _exclusions.length = mark;
       _y = y;
       _left = left;
@@ -724,8 +729,9 @@ final class _Pass {
       final placed = _PlacedBlock(
         style,
         width,
+        // ([room] has the bottom edge's room taken out when [reserved].)
         toEnd
-            ? top + room + (style.cloneEdges ? bottom : 0)
+            ? top + room + (reserved ? bottom : 0)
             : top +
                   cursor -
                   (style.cloneEdges ? trailing : 0) +
