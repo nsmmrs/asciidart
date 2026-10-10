@@ -1062,8 +1062,9 @@ final class TextBox implements CustomContent {
     bool quiet = false,
   }) {
     if (_items.isEmpty) {
+      // (No lines: the room above and below them still taken.)
       return CustomPlacement(
-        height: _layout.paddingBottom,
+        height: _layout.initialGap + _layout.paddingBottom,
         paint: (page, x, top) {},
       );
     }

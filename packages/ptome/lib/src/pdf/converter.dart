@@ -346,6 +346,7 @@ final class PdfConverter extends BuiltInConverter
       shaping: _shaping,
       synthesizeFaces: true,
       thousandthWidths: _thousandthWidths,
+      kernTableOnly: _kernTableOnly,
       warn: logger.warn,
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
@@ -2253,12 +2254,16 @@ final class PdfConverter extends BuiltInConverter
     'prose_widows': ThemeNumber(1),
     'code_orphans': ThemeNumber(1),
     'code_widows': ThemeNumber(1),
+    'block_split_end': ThemeString('region'),
+    'code_wrap_indent': ThemeNumber(0),
+    'code_wrap_marker': ThemeString('none'),
     'footnotes_placement': ThemeString('end'),
     'toc_macro_in_section': ThemeBool(false),
     'running_content_on_openers': ThemeBool(true),
     'running_content_on_blank_pages': ThemeBool(true),
     'base_emphasis_inversion': ThemeBool(false),
     'base_glyph_widths': ThemeString('thousandths'),
+    'base_kerning_source': ThemeString('kern_table'),
     'table_borders': ThemeString('with-cells'),
     'stem_math': ThemeString('source'),
   };
@@ -2870,6 +2875,7 @@ final class PdfConverter extends BuiltInConverter
           style: BoxStyle(
             padding: _padding('${category}_padding'),
             cloneEdges: _cloneEdges(category),
+            splitToRegionEnd: _splitToRegionEnd,
             margin: _outdented(
               EdgeInsets(
                 top: (_n('${category}_margin_top') ?? 0).toDouble(),
@@ -4069,6 +4075,12 @@ final class PdfConverter extends BuiltInConverter
       _choice('${category}_box_decoration_break', const ['slice', 'clone']) ==
       'clone';
 
+  /// Whether the piece of a framed block a page's end cuts off reaches it
+  /// (`block_split_end: region`) rather than ending under its last line
+  /// (`content`).
+  bool get _splitToRegionEnd =>
+      _choice('block_split_end', const ['content', 'region']) == 'region';
+
   /// A block of [children] with the padding, the background and the
   /// border of theme [category], [node]'s anchor, and the block margin
   /// below it.
@@ -4087,6 +4099,7 @@ final class PdfConverter extends BuiltInConverter
           margin: EdgeInsets(bottom: _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
           cloneEdges: _cloneEdges(category),
+          splitToRegionEnd: _splitToRegionEnd,
           anchor: node.id,
           decoration: _blockDecoration(
             category,
@@ -6386,7 +6399,11 @@ final class PdfConverter extends BuiltInConverter
     // line breaking algorithm's breaks (UAX #14; after a slash too), as
     // many words on a line as fit.
     final plainWrap = wrapIndent == 0 && !wrapMarker;
-    if (plainWrap) source = _breakAfterSlashes(source);
+    // (Autofit text is sized so its lines don't wrap, measured as they
+    // are.)
+    final autofit =
+        node.hasOption('autofit') || _document.hasAttr('autofit-option');
+    if (plainWrap && !autofit) source = _breakAfterSlashes(source);
     final box = _textBox(
       source,
       font.copyWith(color: _c('code_font_color') ?? font.color),
@@ -6398,7 +6415,7 @@ final class PdfConverter extends BuiltInConverter
       wrapMarker: wrapMarker,
     );
     CustomContent content = box;
-    if (node.hasOption('autofit') || _document.hasAttr('autofit-option')) {
+    if (autofit) {
       final minimum =
           _theme.value('code_font_size_min') ??
           _theme.value('base_font_size_min');
@@ -6422,6 +6439,7 @@ final class PdfConverter extends BuiltInConverter
           padding: _padding('code_padding'),
           margin: EdgeInsets(bottom: captionBelow ? 0 : _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
+          splitToRegionEnd: _splitToRegionEnd,
           anchor: node.id,
           decoration: _blockDecoration('code'),
         ),
@@ -6513,6 +6531,7 @@ final class PdfConverter extends BuiltInConverter
           padding: _padding('code_padding'),
           margin: EdgeInsets(bottom: _marginBelow(node)),
           keepTogether: node.hasOption('unbreakable'),
+          splitToRegionEnd: _splitToRegionEnd,
           anchor: node.id,
           decoration: _blockDecoration('code'),
         ),
@@ -9125,6 +9144,7 @@ final class PdfConverter extends BuiltInConverter
           _theme,
           shaping: _shaping,
           thousandthWidths: _thousandthWidths,
+          kernTableOnly: _kernTableOnly,
           warn: logger.warn,
         );
         _markup = MarkupTransform(
@@ -9171,6 +9191,12 @@ final class PdfConverter extends BuiltInConverter
   bool get _thousandthWidths =>
       _choice('base_glyph_widths', const ['exact', 'thousandths']) ==
       'thousandths';
+
+  /// Whether text is kerned by the font's `kern` table alone
+  /// (`base_kerning_source: kern_table`) rather than by its GPOS pairs.
+  bool get _kernTableOnly =>
+      _choice('base_kerning_source', const ['font', 'kern_table']) ==
+      'kern_table';
 
   /// Whether the document is being converted (rather than parsed: inline
   /// content converted for a title's id, which the gem converts before

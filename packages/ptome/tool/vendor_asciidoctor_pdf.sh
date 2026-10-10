@@ -53,10 +53,10 @@ curl -sSfL -o "$tmp/pf.css" \
   https://raw.githubusercontent.com/AlexanderPoellmann/PaymentFont/master/css/paymentfont.css
 curl -sSfL -o "$tmp/v4-shims.js" \
   https://raw.githubusercontent.com/FortAwesome/Font-Awesome/5.15.1/js-packages/%40fortawesome/fontawesome-free/js/v4-shims.js
-python3 - "$out/icons" "$tmp" "$icon_dir/data/fonts" <<'PY'
+python3 - "$out/icons" "$tmp" "$icon_dir/data/fonts" "$out/data/fonts" <<'PY'
 import re, sys
 from fontTools.ttLib import TTFont
-icons, tmp, prawn = sys.argv[1:4]
+icons, tmp, prawn, fonts = sys.argv[1:5]
 def write(name, entries):
     with open(f'{icons}/{name}.tsv', 'w') as f:
         for icon, cp in sorted(entries.items()):
@@ -83,15 +83,21 @@ for name in ('fi', 'pf'):
         # written for the gem may use either.
         entries['gpb'] = entries['gbp']
     write(name, entries)
-# Font Awesome 4 names (the deprecated fa set) to Font Awesome 5 icons,
-# from Font Awesome 5.15.1's shims (prawn-icon's own map differs for a
-# few names).
+# Font Awesome 4 names (the deprecated fa set) to Font Awesome 5 icons:
+# those Font Awesome 5.15.1's shims rename or restyle (asciidoctor-pdf's
+# own map differs for a few), and every other Font Awesome 4 name (the
+# names asciidoctor-pdf's data/fonts/fa-legacy-mapping.yml lists) as the
+# solid icon of the same name, as the shims leave them.
 import json
 shims = json.loads(re.search(r'var shims = (\[\[.*?\]\]);',
                              open(f'{tmp}/v4-shims.js').read(), re.S).group(1))
+legacy = {old: f'{prefix or "fas"}-{name or old}' for old, prefix, name in shims}
+for line in open(f'{fonts}/fa-legacy-mapping.yml'):
+    if m := re.match(r'fa-([\w-]+):', line):
+        legacy.setdefault(m[1], f'fas-{m[1]}')
 with open(f'{icons}/fa.tsv', 'w') as f:
-    for old, prefix, name in sorted(shims):
-        f.write(f'{old}\t{prefix or "fas"}-{name or old}\n')
+    for old in sorted(legacy):
+        f.write(f'{old}\t{legacy[old]}\n')
 PY
 
 git init -q "$tmp/repo"

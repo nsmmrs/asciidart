@@ -715,13 +715,21 @@ final class _Pass {
       // (The space below the last piece placed doesn't carry to the
       // region's end: a piece with its own bottom edge closes right
       // under it.)
+      // (A piece the region's end cuts off reaches it when the style
+      // says so.)
+      final toEnd =
+          style.splitToRegionEnd &&
+          (rest.isNotEmpty || repeat) &&
+          room.isFinite;
       final placed = _PlacedBlock(
         style,
         width,
-        top +
-            cursor -
-            (style.cloneEdges ? trailing : 0) +
-            (style.cloneEdges ? bottom : 0),
+        toEnd
+            ? top + room + (style.cloneEdges ? bottom : 0)
+            : top +
+                  cursor -
+                  (style.cloneEdges ? trailing : 0) +
+                  (style.cloneEdges ? bottom : 0),
         children,
         top: atTop || continued ? 0 : style.margin.top,
         openTop: continued,

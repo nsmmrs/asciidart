@@ -3,3 +3,5 @@ formats: [pdf]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  pdf: "math shown as its source with `&` as `&amp;`"

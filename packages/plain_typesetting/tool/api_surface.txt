@@ -207,7 +207,7 @@ final class BoxItem extends LineItem
 final class BoxStyle
   Border border
   BoxStyle withTag(String? tag)
-  BoxStyle({EdgeInsets margin = EdgeInsets.zero, EdgeInsets padding = EdgeInsets.zero, Border border = Border.none, Color? background, bool keepTogether = false, bool keepWithNext = false, String? anchor, Map<String, String> marks = const {}, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration, String? tag, FloatPlacement? float, bool floatBarrier = false, VerticalAlign? verticalAlign, bool cloneEdges = false, double floatClearance = 0, bool floatSpan = false, FloatSide? side, double sideWidth = 0, double sideGap = 0})
+  BoxStyle({EdgeInsets margin = EdgeInsets.zero, EdgeInsets padding = EdgeInsets.zero, Border border = Border.none, Color? background, bool keepTogether = false, bool keepWithNext = false, String? anchor, Map<String, String> marks = const {}, void Function(LayoutPage, Rect, {required bool first, required bool last})? decoration, String? tag, FloatPlacement? float, bool floatBarrier = false, VerticalAlign? verticalAlign, bool cloneEdges = false, bool splitToRegionEnd = false, double floatClearance = 0, bool floatSpan = false, FloatSide? side, double sideWidth = 0, double sideGap = 0})
   Color? background
   EdgeInsets margin
   EdgeInsets padding
@@ -223,6 +223,7 @@ final class BoxStyle
   bool floating
   bool keepTogether
   bool keepWithNext
+  bool splitToRegionEnd
   double floatClearance
   double sideGap
   double sideWidth

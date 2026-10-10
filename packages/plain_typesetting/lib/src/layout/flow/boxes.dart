@@ -109,6 +109,7 @@ final class BoxStyle {
     this.floatBarrier = false,
     this.verticalAlign,
     this.cloneEdges = false,
+    this.splitToRegionEnd = false,
     this.floatClearance = 0,
     this.floatSpan = false,
     this.side,
@@ -178,6 +179,12 @@ final class BoxStyle {
   /// clone`), rather than
   /// the first piece alone at its top and the last at its bottom.
   final bool cloneEdges;
+
+  /// Whether the piece of a block split across regions that a region's end
+  /// cuts off reaches that end (its background and border with it), as
+  /// the bounding boxes of engines that draw a block after placing its
+  /// content do, rather than ending under its last child.
+  final bool splitToRegionEnd;
 
   /// The space between a floating box set at the top or bottom of a
   /// region and the content (below it at the top, above it at the
@@ -256,6 +263,7 @@ final class BoxStyle {
         ? this.verticalAlign
         : verticalAlign.$1,
     cloneEdges: cloneEdges,
+    splitToRegionEnd: splitToRegionEnd,
     floatClearance: floatClearance,
     floatSpan: floatSpan ?? this.floatSpan,
     side: side == null ? this.side : side.$1,

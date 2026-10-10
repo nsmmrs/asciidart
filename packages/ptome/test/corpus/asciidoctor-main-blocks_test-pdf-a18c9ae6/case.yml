@@ -1,3 +1,5 @@
 source: "pool:asciidoctor-main/test/blocks_test.rb:2482"
 formats: [pdf]
 safe: safe
+defects:
+  pdf: "prawn-svg sizes an SVG without a viewBox as if its user units were points, not CSS pixels: its shapes come out a third larger than the image"

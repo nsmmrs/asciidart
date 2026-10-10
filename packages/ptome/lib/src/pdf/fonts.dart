@@ -387,6 +387,7 @@ final class FontCatalog {
     this.shaping = Shaping.opentype,
     this.synthesizeFaces = false,
     this.thousandthWidths = false,
+    this.kernTableOnly = false,
     FontIndex? installed,
     void Function(String message)? warn,
   }) : _installed = installed ?? Fonts.current,
@@ -413,6 +414,12 @@ final class FontCatalog {
   /// em (truncated), in the layout and in the widths the PDF gives, rather
   /// than exactly as wide (theme key `base_glyph_widths`).
   final bool thousandthWidths;
+
+  /// Whether text is kerned by the pairs of the font's `kern` table alone
+  /// (its first subtable, as early font engines read it), rather than by
+  /// its GPOS pair adjustments, else that table (theme key
+  /// `base_kerning_source`).
+  final bool kernTableOnly;
 
   final Map<String, Map<String, String>> _catalog;
   final List<String> _dirs;
@@ -596,6 +603,7 @@ final class FontCatalog {
     _bytes(path),
     index: index,
     truncateWidths: thousandthWidths,
+    kernTableSubtable: kernTableOnly ? 0 : null,
   );
 
   /// (Files are read once per process; fonts given as bytes belong to

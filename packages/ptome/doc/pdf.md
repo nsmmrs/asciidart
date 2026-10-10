@@ -25,10 +25,14 @@ same (`benchmark/PARITY.md`).
 | `base_line_breaking` | `greedy` | `auto` |
 | `base_hyphens` | `false` (unless `:hyphens:`) | justified text hyphenated |
 | `prose_orphans`, `prose_widows`, `code_orphans`, `code_widows` | `1` | `2` |
+| `block_split_end` | `region` | `content` |
+| `code_wrap_indent` | `0` | `1em` |
+| `code_wrap_marker` | `none` | `arrow` |
 | `footnotes_placement` | `end` | `page` |
 | `toc_macro_in_section` | `false` | `true` |
 | `running_content_on_openers` | `true` | `false` |
 | `base_glyph_widths` | `thousandths` | `exact` |
+| `base_kerning_source` | `kern_table` | `font` |
 | `table_borders` | `with-cells` | `above` |
 | `stem_math` | `source` | `typeset` |
 
@@ -61,6 +65,7 @@ its title.
 | Key | Default | What it does |
 | --- | --- | --- |
 | `base_glyph_widths` | `exact` | How wide a glyph is: `exact`, its advance in the font; `thousandths`, its advance in whole 1000ths of the em, truncated, both where lines are measured and in the widths the PDF gives viewers. |
+| `base_kerning_source` | `font` | Which pairs kern text: `font`, the font's GPOS pair adjustments (its `kern` feature), else its `kern` table; `kern_table`, the first subtable of its `kern` table alone, as early font engines read it. |
 | `base_line_breaking` | `auto` | How lines break: `auto` breaks justified and left-aligned text where the lines' demerits are least (Knuth and Plass's total fit with TeX's costs: even spacing, few hyphens, never two hyphens in a row if it can help it; ragged lines with even ends, as plain TeX's `\raggedright`) and centered or right-aligned text one line at a time; `optimal` optimizes any text; `greedy` fills one line at a time. A style change inside a word is never a break. |
 | `base_leading` | none | Lines measured from cap height to baseline: each line's box runs from its tallest cap height to its baseline, with this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are the visible space between their text (CSS's `text-box-trim` and `text-box-edge: cap alphabetic`). In place of `base_line_height`; a category's own (`title_page_title_leading`, `code_leading`...) for its text. |
 | `base_overhang` | `0` | How far a justified line's last character hangs into the margin, so the edge looks straight (margin kerning, Hàn Thế Thành's character protrusion): the line stretches into a part of the character's width, as LaTeX's microtype package's default protrusion has it (0.7 of a period; 0.5 of a comma, colon or hyphen; 0.3 of a semicolon; 0.2 of an en dash, 0.15 of an em dash; a little of some letters), times this amount. `1` (or `true`) hangs them that far, `0.5` half as far, `0` (or `false`) not at all. |
@@ -233,6 +238,7 @@ number, fill its center column this way.
 | --- | --- | --- |
 | `code_orphans` | `2` | The fewest lines of a listing left at the bottom of a page. |
 | `code_widows` | `2` | The fewest lines of a listing carried to the top of the next page. |
+| `block_split_end` | `content` | Where the piece of a framed block (code, sidebar, example, admonition...) that a page's end cuts off ends: `content`, under its last line; `region`, at the page's bottom margin, its background and border with it. |
 | `code_wrap_indent` | `1em` | How far past its own indentation a code line that is too long goes on, on the next line. |
 | `code_wrap_marker` | arrow | `none` leaves out the return arrow drawn past the end of a line that wraps. |
 | `code_role_<role>_<key>` | none | For a code block with the role (`[source.bare]`), replaces `code_<key>` (`code_role_bare_padding: 0`); its margins come from `role_<role>_margin_top` and `_bottom`. |
