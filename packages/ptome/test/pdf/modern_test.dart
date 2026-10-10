@@ -1,6 +1,7 @@
 // The modern engine (the default): what it does differently from the
 // asciidoctor-pdf compatibility mode, read back from the PDFs it makes.
 @TestOn('vm')
+@Tags(['slow'])
 library;
 
 import 'dart:convert';

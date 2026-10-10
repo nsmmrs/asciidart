@@ -33,18 +33,33 @@ dart pub get
 
 ## Checks
 
+From the repository root, the gate in two tiers (ADR-0022):
+
 ```sh
-dart analyze --fatal-infos .
-dart format --output=none --set-exit-if-changed .
-dart test                   # the library and CLI tests, and the corpus
-dart run tool/api_check.dart  # the public API is closed and matches tool/api_surface.txt
+tool/gate.sh          # every commit, about 40 s: format, analyze, ptome's
+                      # tests but the slow ones, the corpus included
+tool/gate.sh full     # before a push: every test with the coverage floor,
+                      # API and JavaScript projection checks, the CLI (bats),
+                      # the plain_* packages, the Node.js and npm suites
 ```
 
 The corpus (`test/corpus`, `dart test -t corpus`) checks ptome against the
-files the Asciidoctor command line writes for about 1,700 documents; it is
-red until compatibility settings close every difference, so `dart test -x
-corpus` is the rest (`test/corpus/README.md`). ptome's fixes of upstream
-bugs are tested in `test/upstream_fixes/`.
+files the Asciidoctor command line writes for about 1,700 documents. It is
+red until compatibility settings close every difference, so the gate holds
+it to the cases known red (`test/corpus/red.txt`): a case that newly fails
+fails the gate, and one that passes is to be taken off the list
+(`dart run tool/corpus_red.dart REPORT.json --update` rewrites it from a
+run's JSON report). ptome's fixes of upstream bugs are tested in
+`test/upstream_fixes/`.
+
+The full tier also holds the suite's coverage of ptome's code (lines and
+branch arms) to `tool/coverage_floor.txt`; new code comes with tests, the
+corpus's cases first. Tests that start processes or run long property
+checks are tagged `slow` (`dart test -x slow` leaves them out).
+
+The live oracles (the gem's CLI, asciidoctor-epub3 with EPUBCheck, and the
+goldens made again from their pinned bundle) and the slow tests on macOS
+and Windows run nightly in CI (`.github/workflows/nightly.yml`).
 
 The command line, on a built executable:
 

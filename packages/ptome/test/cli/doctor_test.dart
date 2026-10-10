@@ -2,6 +2,7 @@
 // choosing, downloads answered by a fake that serves the fonts vendored
 // with asciidoctor-pdf.
 @TestOn('vm')
+@Tags(['slow'])
 library;
 
 import 'dart:convert';

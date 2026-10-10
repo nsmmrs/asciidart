@@ -5,6 +5,7 @@
 // pages, outline and page labels, and look the same: no page more than
 // 0.5% different (tool/pdf_look.dart).
 @TestOn('vm')
+@Tags(['slow'])
 library;
 
 import 'dart:convert';

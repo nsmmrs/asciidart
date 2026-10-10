@@ -82,11 +82,41 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Resolve and analyze each package alone
       run: tool/standalone.sh
+  gate:
+    # The full gate (tool/gate.sh full): every test with the coverage floor,
+    # the corpus held to its red list, the API and JavaScript projection,
+    # the CLI on the executable, the plain_* packages, the Node.js and npm
+    # suites. Live oracles run nightly (nightly.yml).
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install Dart dependencies (the whole workspace)
+      run: dart pub get
+    - name: Install poppler, qpdf, unzip and bats
+      run: |
+        sudo apt-get update -q && sudo apt-get install -y -q poppler-utils qpdf unzip
+        sudo npm i -g bats
+    - name: Run the full gate
+      env:
+        CHROMIUM_PATH: /usr/bin/google-chrome
+      run: tool/gate.sh full
   dart:
+    # The tests on the other systems, but the slow ones and the corpus
+    # (nightly.yml runs those there).
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
@@ -95,100 +125,11 @@ jobs:
       uses: dart-lang/setup-dart@v1
     - name: Install Dart dependencies
       run: dart pub get
-    - name: Build the executable (every test that runs the CLI uses it)
-      shell: bash
-      run: |
-        ./tool/build-exes.sh
-        exe="$(pwd)/dist/$(ls dist | grep '^ptome-')"
-        # (A Windows path on Windows, for Dart's Process.run.)
-        if command -v cygpath >/dev/null; then exe="$(cygpath -w "$exe")"; fi
-        echo "PTOME_EXE=$exe" >> "$GITHUB_ENV"
-    - name: Install poppler and qpdf (PDF pages and structure in tests)
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils qpdf
-    - name: Analyze Dart code
-      run: dart analyze --fatal-infos .
-    - name: Check Dart formatting
-      run: dart format --output=none --set-exit-if-changed .
-    - name: Run Dart tests (the corpus has a job of its own)
-      run: dart test -x corpus
-    - name: Check that the public API is closed
-      run: dart run tool/api_check.dart
-    - name: Check that the JavaScript projection is up to date
-      run: dart run tool/generate_js.dart --check
-    - name: Set up Ruby (oracle only)
-      if: matrix.os == 'ubuntu-latest'
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '3.4'
-    - name: Install the asciidoctor gem from upstream main (e2e oracle)
-      if: matrix.os == 'ubuntu-latest'
-      # With asciimath, whose conversion ptome ports (AsciiMath becomes
-      # MathML in DocBook, ADR-0014). No other optional gems: ptome
-      # highlights with highlight.js only, and Rouge, Pygments and CodeRay
-      # behave as when their gems are missing.
-      run: |
-        # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
-        git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
-        git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
-        (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
-        gem install --no-document asciimath:2.0.6
-    - name: Install bats
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo npm i -g bats
-    - name: Run e2e CLI tests (Dart exe)
-      if: matrix.os == 'ubuntu-latest'
-      run: ASCIIDOCTOR_EXE="$PTOME_EXE" bats test/e2e/
-    - name: Run e2e CLI tests (Ruby oracle)
-      if: matrix.os == 'ubuntu-latest'
-      # The same suite against the gem, so every test states the gem's
-      # behavior.
-      env:
-        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-ruby
-      run: bats test/e2e/
-    - name: Run differential selfcheck
-      if: matrix.os == 'ubuntu-latest'
-      run: bats test/differential/
-    - name: Install asciidoctor-epub3 gem on the main gem (EPUB oracle)
-      if: matrix.os == 'ubuntu-latest'
-      # Without its asciidoctor dependency, which would bring in the 2.0
-      # release; the version line shows the Asciidoctor it runs on.
-      run: |
-        gem install --no-document gepub -v 1.0.17
-        gem install --no-document mime-types sass
-        gem install --no-document --ignore-dependencies asciidoctor-epub3 -v 2.3.0
-        asciidoctor-epub3 -v | tee /dev/stderr | grep -q 'using Asciidoctor 2.1.0'
-    - name: Download EPUBCheck
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        curl -sSLo "$RUNNER_TEMP/epubcheck.zip" https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip
-        unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP"
-    - name: Check EPUB parity with asciidoctor-epub3 2.3.0 on the main gem
-      if: matrix.os == 'ubuntu-latest'
-      run: >-
-        dart run tool/epub_parity.dart
-        --exe-a "$(command -v asciidoctor-epub3)"
-        --exe-b "$PTOME_EXE"
-        --epubcheck "$RUNNER_TEMP/epubcheck-5.4.0/epubcheck.jar"
-        $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc' | sort)
-  corpus:
-    # ptome against the files the Asciidoctor command line writes
-    # (test/corpus, ADR-0022): red until compatibility settings close every
-    # difference, so apart from the rest.
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Set up Dart
-      uses: dart-lang/setup-dart@v1
-    - name: Install Dart dependencies
-      run: dart pub get
-    - name: Install poppler and unzip (PDF pages, EPUB files)
-      run: sudo apt-get update -q && sudo apt-get install -y -q poppler-utils unzip
-    - name: Compare with Asciidoctor's files
-      run: dart test -t corpus
+    - name: Run Dart tests
+      run: dart test -x corpus -x slow
   npm:
-    # Node.js's current LTS.
+    # What only the npm package needs, on Node.js's current LTS (the gate
+    # runs its tests): type declarations, lint, a publish dry run, the CLI.
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -204,11 +145,6 @@ jobs:
     - name: Install the package test dependencies
       working-directory: packages/ptome/test/npm
       run: npm ci
-    - name: Run the package tests (API, exports, contents, bundler, browser)
-      working-directory: packages/ptome/test/npm
-      env:
-        CHROMIUM_PATH: /usr/bin/google-chrome
-      run: node --test
     - name: Check the type declarations
       working-directory: packages/ptome/test/npm
       run: npm run types
@@ -218,8 +154,6 @@ jobs:
     - name: Check the package for npm (dry run, nothing is published)
       working-directory: packages/ptome/build/npm
       run: npm publish --dry-run
-    - name: Run the Dart tests on Node.js
-      run: dart test -p node -x corpus
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)

@@ -2,6 +2,9 @@
 // match. Each check must be a necessary condition: these tests hold it to
 // the pattern on random text made of the characters the pattern cares
 // about, two-byte letters included.
+@Tags(['slow'])
+library;
+
 import 'dart:math';
 
 import 'package:ptome/src/internal.dart';

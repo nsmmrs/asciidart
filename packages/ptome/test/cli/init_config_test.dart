@@ -8,6 +8,7 @@
 /// stock binary serves `init-config`, and the generated project analyzes
 /// cleanly offline with a path override to this checkout.
 @TestOn('vm')
+@Tags(['slow'])
 library;
 
 import 'dart:io';

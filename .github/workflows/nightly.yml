@@ -1,0 +1,123 @@
+name: Nightly
+# What the per-push gate leaves out (ADR-0022): the slow tests on macOS and
+# Windows, and the live oracles (the gem's CLI, asciidoctor-epub3 and
+# EPUBCheck, and the goldens made again from the pinned bundle).
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+permissions: read-all
+defaults:
+  run:
+    working-directory: packages/ptome
+jobs:
+  systems:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Build the executable (every test that runs the CLI uses it)
+      shell: bash
+      run: |
+        ./tool/build-exes.sh
+        exe="$(pwd)/dist/$(ls dist | grep '^ptome-')"
+        # (A Windows path on Windows, for Dart's Process.run.)
+        if command -v cygpath >/dev/null; then exe="$(cygpath -w "$exe")"; fi
+        echo "PTOME_EXE=$exe" >> "$GITHUB_ENV"
+    - name: Run every Dart test but the corpus
+      run: dart test -x corpus
+  oracles:
+    # The CLI suite against the gem (each test states the gem's behavior),
+    # the differential harness's self-check, and EPUB parity with
+    # asciidoctor-epub3 with every book checked by EPUBCheck.
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Dart
+      uses: dart-lang/setup-dart@v1
+    - name: Install Dart dependencies
+      run: dart pub get
+    - name: Build the executable
+      run: |
+        ./tool/build-exes.sh
+        echo "PTOME_EXE=$(pwd)/dist/$(ls dist | grep '^ptome-')" >> "$GITHUB_ENV"
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+    - name: Install the asciidoctor gem from upstream main
+      # With asciimath, whose conversion ptome ports (AsciiMath becomes
+      # MathML in DocBook, ADR-0014). No other optional gems: ptome
+      # highlights with highlight.js only, and Rouge, Pygments and CodeRay
+      # behave as when their gems are missing.
+      run: |
+        # Upstream main at the pin in tool/vendor.sh (2.1.0.alpha.0).
+        git clone -q https://github.com/asciidoctor/asciidoctor.git "$RUNNER_TEMP/asciidoctor"
+        git -C "$RUNNER_TEMP/asciidoctor" checkout -q 30fb8cd5f7145c57274b04524ceaa99812f830e0
+        (cd "$RUNNER_TEMP/asciidoctor" && gem build asciidoctor.gemspec && gem install --no-document asciidoctor-*.gem)
+        gem install --no-document asciimath:2.0.6
+    - name: Install bats
+      run: sudo npm i -g bats
+    - name: Run e2e CLI tests (Ruby oracle)
+      env:
+        ASCIIDOCTOR_EXE: test/e2e/bin/asciidoctor-ruby
+      run: bats test/e2e/
+    - name: Run the differential harness's self-check
+      run: bats test/differential/
+    - name: Install asciidoctor-epub3 on the main gem
+      # Without its asciidoctor dependency, which would bring in the 2.0
+      # release; the version line shows the Asciidoctor it runs on.
+      run: |
+        gem install --no-document gepub -v 1.0.17
+        gem install --no-document mime-types sass
+        gem install --no-document --ignore-dependencies asciidoctor-epub3 -v 2.3.0
+        asciidoctor-epub3 -v | tee /dev/stderr | grep -q 'using Asciidoctor 2.1.0'
+    - name: Download EPUBCheck
+      run: |
+        curl -sSLo "$RUNNER_TEMP/epubcheck.zip" https://github.com/w3c/epubcheck/releases/download/v5.4.0/epubcheck-5.4.0.zip
+        unzip -q "$RUNNER_TEMP/epubcheck.zip" -d "$RUNNER_TEMP"
+    - name: Check EPUB parity with asciidoctor-epub3 2.3.0 on the main gem
+      run: >-
+        dart run tool/epub_parity.dart
+        --exe-a "$(command -v asciidoctor-epub3)"
+        --exe-b "$PTOME_EXE"
+        --epubcheck "$RUNNER_TEMP/epubcheck-5.4.0/epubcheck.jar"
+        $(find vendor/asciidoctor-epub3/test/fixtures -name '*.adoc' | sort)
+  goldens:
+    # The corpus's goldens made again from the bundle pinned in
+    # packages/ptome_corpus_tools/goldens: they must be the committed files.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/ptome_corpus_tools/goldens
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/packages/ptome_corpus_tools/goldens/asciidoctor-2.0.26/Gemfile
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Ruby with the goldens' bundle
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+        bundler-cache: true
+    - name: Make every golden again and compare
+      run: |
+        copy="$RUNNER_TEMP/corpus"
+        cp -r ../../ptome/test/corpus "$copy"
+        bundle exec ruby generate.rb --replace -j 4 "$copy"
+        status=0
+        for dir in ../../ptome/test/corpus/*/; do
+          name="$(basename "$dir")"
+          [ -d "$dir/expected" ] || continue
+          diff -rq "$dir/expected" "$copy/$name/expected" || status=1
+        done
+        exit $status

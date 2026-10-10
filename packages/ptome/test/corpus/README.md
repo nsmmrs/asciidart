@@ -40,6 +40,11 @@ attributes in `goldens.yml` and the case's own:
   golden's pixel for pixel.
 - **epub3:** the files in it (`unzip`) must equal the golden's.
 
+The corpus is red until compatibility settings close every difference;
+`red.txt` lists the cases known red, and the gate (`tool/gate.sh`) fails on
+any other failure and reports a listed case that passes, to be taken off
+the list.
+
 A PDF or EPUB whose hash is in `ptome.yml` passes at once. When it changed
 and still compares equal, the test records the new hash there: commit it.
 Without `pdftoppm` or `unzip`, a changed one is skipped. Page images and

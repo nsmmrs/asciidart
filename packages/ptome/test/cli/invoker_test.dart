@@ -11,6 +11,7 @@
 /// `PERMANENT:` reason; tests awaiting a later wave keep a `WAVE-GATED:`
 /// reason with their ported bodies intact.
 @TestOn('vm')
+@Tags(['slow'])
 library;
 
 import 'dart:io';

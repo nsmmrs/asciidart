@@ -42,8 +42,9 @@ page comparisons: more bookkeeping than the question it answers.
    (output that is invalid or broken, or that ignores what the release
    documents): a case whose golden shows one names it in `case.yml`
    (`defects`), and that format isn't compared. The corpus is red until
-   every other difference is closed; it runs as a job of its own
-   (`dart test -t corpus`), and the rest of the suite without it.
+   every other difference is closed; the gate holds it to the cases known
+   red (`test/corpus/red.txt`), so a new failure fails and a fixed case is
+   taken off the list.
 5. **ptome's deliberate differences are not in the corpus.** A fix of a bug
    Asciidoctor still has, or another deliberate difference, is a folder of
    `test/upstream_fixes` with what ptome's output must contain
@@ -55,6 +56,21 @@ page comparisons: more bookkeeping than the question it answers.
    two directories, and a result that differs between them is refused; a
    conversion that fails has no golden; a release's goldens are not
    rewritten without `--replace`.
+7. **The gate has two tiers and a nightly run** (`tool/gate.sh`). The fast
+   tier (every commit, about 40 s) is formatting, analysis and ptome's
+   tests but those tagged `slow` (processes, long property checks), the
+   corpus included. The full tier (before a push, and CI's `gate` job) runs
+   every test under coverage, holds ptome's line and branch coverage to a
+   floor (`tool/coverage_floor.txt`, raised as it rises), and adds the API
+   and JavaScript projection checks, the CLI on a built executable, the
+   `plain_*` packages and the Node.js and npm suites. Live oracles (the
+   gem's CLI, asciidoctor-epub3 with EPUBCheck, the goldens made again from
+   the pinned bundle) and the slow tests on macOS and Windows run nightly.
+8. **A unit test the black-box suites make redundant goes.** When the
+   corpus and the upstream fixes reach everything a test file reaches, it
+   is deleted; property tests (an optimized scan against its pattern on
+   random input) and checks with no output (the API surface, static
+   typing, the platform seam, the npm package) stay.
 
 ## Consequences
 
@@ -63,5 +79,11 @@ page comparisons: more bookkeeping than the question it answers.
 - The corpus started with 1,679 cases and 1,854 goldens, from the earlier
   corpus (anchors from real documents, the fuzzer's finds, Asciidoctor's
   fixtures, asciidoctor-pdf's spec documents, our parity documents).
+- On 2026-10-10 the corpus and upstream fixes reached 62% of ptome's lines
+  and 57% of its branch arms, every test 91% and 85%: what only unit tests
+  reach is mostly ptome's own features, which Asciidoctor has no goldens
+  for (the units language, the API, the CLI, extensions, templates, the
+  PDF engine outside compatibility). Six test files that added nothing
+  were deleted.
 - The EPUB goldens hold the fonts asciidoctor-epub3 embeds (about 450 KB
   each).

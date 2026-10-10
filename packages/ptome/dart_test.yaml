@@ -4,3 +4,6 @@
 tags:
   corpus:
     timeout: 2x
+  # Tests that start processes or run long property checks: the full gate
+  # runs them, the fast one (`dart test -x slow`) doesn't.
+  slow:
