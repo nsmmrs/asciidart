@@ -143,7 +143,10 @@ void main() {
               decoration: (page, rect, {required first, required last}) =>
                   pieces.add((rect, first, last)),
             ),
-            const TableCell([SpacerBox(100)], padding: EdgeInsets.zero),
+            // (A spacer would be dropped: the cell's top is a region's.)
+            TableCell([
+              DrawingBox(100, (canvas, rect) {}),
+            ], padding: EdgeInsets.zero),
           ]),
         ],
         columns: const [ColumnWidth.fixed(100), ColumnWidth.fixed(100)],

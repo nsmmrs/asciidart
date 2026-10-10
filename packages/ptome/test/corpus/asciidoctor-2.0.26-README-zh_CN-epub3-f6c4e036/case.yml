@@ -3,3 +3,5 @@ formats: [xhtml5, pdf, epub3]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  pdf: "a character the font lacks can show as a space rather than the missing glyph: Prawn's subset gives it code 160 in a font that declares WinAnsiEncoding, where 160 is the no-break space"

@@ -1,3 +1,5 @@
 source: "pool:asciidoctor-2.0.26/test/blocks_test.rb:3025"
 formats: [pdf]
 safe: safe
+defects:
+  pdf: "the alt text of an image given as a data URI shows the URI's base64 data alone, without its media type, as its target"

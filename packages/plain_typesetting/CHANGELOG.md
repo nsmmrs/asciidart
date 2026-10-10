@@ -66,9 +66,9 @@
   border with it (as engines that draw a block's box after its content
   do), rather than ending under its last child.
 - A table cell is as tall as its content placed: rows were measured with
-  the margin above a cell's first block, which placing drops, so such a
-  cell had that much room left at its bottom (29 random documents laid
-  out again). `TableBox.cellsContainMargins` keeps that margin instead,
+  the margin above a cell's first block (or a spacer starting it), which
+  placing drops, so such a cell had that much room left at its bottom (29
+  random documents laid out again). `TableBox.cellsContainMargins` keeps that margin instead,
   as CSS's table cells contain their content's margins.
 - Faster, with the same output: math items moved in place and glyph
   metrics cached; a `FlowLayout` keeps its paragraphs' lines and widths

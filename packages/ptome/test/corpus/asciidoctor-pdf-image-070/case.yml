@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "a PNG's alpha channel is kept as a soft mask when every pixel is opaque, which changes only the file's size and how a renderer samples the image"
