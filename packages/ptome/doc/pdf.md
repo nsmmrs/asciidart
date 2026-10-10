@@ -37,6 +37,8 @@ same (`benchmark/PARITY.md`).
 | `url_breaks` | `delimiters` | `chicago` |
 | `base_slash_breaks` | `false` | `true` |
 | `base_space_breaks` | `all` | `unicode` |
+| `base_border_offset_fit` | `false` | `true` |
+| `base_hyphen_breaks` | `around` | `after` |
 | `svg_placement` | `page_origin` | `exact` |
 | `table_borders` | `with-cells` | `above` |
 | `stem_math` | `source` | `typeset` |
@@ -245,6 +247,8 @@ number, fill its center column this way.
 | `code_widows` | `2` | The fewest lines of a listing carried to the top of the next page. |
 | `block_split_end` | `content` | Where the piece of a framed block (code, sidebar, example, admonition...) that a page's end cuts off ends: `content`, under its last line; `region`, at the page's bottom margin, its background and border with it. |
 | `url_breaks` | `chicago` | Where a link's URL may break across lines: `chicago`, at The Chicago Manual of Style's points (before a slash, a period, a hyphen..., after `://`), `www.` links too; `delimiters`, after `/`, `?`, `&` and `#` only, never leaving a single character, links with a scheme only. |
+| `base_hyphen_breaks` | `after` | Where a word with hyphens in it may break: `after`, after a hyphen (as the Unicode line breaking algorithm has it); `around`, before a hyphen too (`--kef` / `-mnuthn`). |
+| `base_border_offset_fit` | `true` | Whether the room around a highlighted or boxed word (its `border_offset`) counts when a line is fit; with `false` the line is fit without it and set a little tighter. |
 | `base_space_breaks` | `unicode` | Where a space breaks a line: `unicode`, as the Unicode line breaking algorithm has it (not before closing punctuation, a colon, a slash..., nor after an opening bracket, spaces between or not); `all`, at every space. |
 | `base_slash_breaks` | `true` | Whether a line may break after a slash in prose (`and/or`), as the Unicode line breaking algorithm allows. |
 | `svg_placement` | `exact` | Where an SVG image is placed when it's scaled: `exact`, at its box; `page_origin`, as one drawn at its own size and scaled about the page's origin, with the scale and the translation each to five decimals (a hundred-thousandth of a point or so off). |

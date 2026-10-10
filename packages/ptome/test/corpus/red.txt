@@ -3,8 +3,6 @@
 # `dart run tool/corpus_red.dart REPORT.json --update`.
 asciidoc-docs-add-header-row-pdf-9bce4f1d pdf
 asciidoc-docs-syntax-quick-reference-pdf-723cd495 pdf
-asciidoctor-2.0.26-CONTRIBUTING-epub3-eddbfdec pdf
-asciidoctor-2.0.26-README-de-epub3-57f4a238 pdf
 asciidoctor-2.0.26-README-zh_CN-epub3-f6c4e036 pdf
 asciidoctor-2.0.26-asciidoc-py-epub3-535d3f34 pdf
 asciidoctor-2.0.26-blocks_test-pdf-3816ff3b pdf
@@ -21,7 +19,6 @@ asciidoctor-pdf-i18n-font-test-pdf-22b97853 pdf
 asciidoctor-pdf-image-070 pdf
 asciidoctor-pdf-image_spec-pdf-aaa6566d pdf
 asciidoctor-pdf-table-086 pdf
-asciidoctor.js-CONTRIBUTING-CODE-epub3-39a85547 pdf
 asciidoctor.js-semantic-html5-converter-pdf-33e1c237 pdf
 asciidoctor.js-semantic-html5-reference-pdf-0d63b137 pdf
 progit2-contributing-pdf-a877a801 pdf

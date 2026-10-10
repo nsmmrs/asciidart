@@ -212,6 +212,8 @@ final class TextContext {
     this.decorationWidth = 1,
     this.lineBreaking = LineBreaking.auto,
     this.spaceBreaksAll = false,
+    this.fitBorderOffsets = true,
+    this.breaksBeforeHyphens = false,
     this.hyphenRepetition = HyphenRepetition.none,
     this.typographicScripts = false,
     this.labels,
@@ -246,6 +248,15 @@ final class TextContext {
   /// it (no break before closing punctuation or after opening
   /// punctuation, spaces between or not: LB13, LB14).
   final bool spaceBreaksAll;
+
+  /// Whether a line is fit with the room its fragments' border offsets
+  /// take (a highlight's padding), rather than without it (the line then
+  /// set a little tighter).
+  final bool fitBorderOffsets;
+
+  /// Whether a line may break before a hyphen inside a word too
+  /// (`--kef` / `-mnuthn`), not only after it as UAX #14 has it.
+  final bool breaksBeforeHyphens;
 
   /// Whether a line broken after a compound's hyphen starts with it again
   /// (the document's language: Portuguese, Spanish...).
@@ -1986,7 +1997,7 @@ base class _Wrap {
     _spaceCount = _fragments.fold(0, (sum, f) => sum + f.spaces);
   }
 
-  double _fragmentWidth(String text, _Format format) {
+  double _fragmentWidth(String text, _Format format, {bool fit = false}) {
     final fragment = format.fragment;
     if (format.image case final image?) return image.width;
     var width = switch (fragment.width) {
@@ -1994,7 +2005,10 @@ base class _Wrap {
       final String fixed => strToPoints(fixed),
       null => _widthOf(text, format),
     };
-    if (fragment.borderOffset case final offset?) width += offset * 2;
+    if (fragment.borderOffset case final offset?
+        when !fit || _context.fitBorderOffsets) {
+      width += offset * 2;
+    }
     return width;
   }
 
@@ -2494,6 +2508,17 @@ final class _OptimalWrap extends _Wrap {
         before.add(items.length);
         add(const PenaltyItem(0, 900), p);
       }
+      // A word piece that starts with a hyphen, after another: a break
+      // before the hyphen too, where the layout allows it.
+      if (_context.breaksBeforeHyphens &&
+          word.startsWith('-') &&
+          p > 0 &&
+          !_isBlank(pieces[p - 1].$2) &&
+          pieces[p - 1].$2 != '\n' &&
+          !pieces[p - 1].$2.endsWith('-')) {
+        before.add(items.length);
+        add(const PenaltyItem(0, 0), p);
+      }
       if (word.isNotEmpty) {
         // A piece of a word broken into pieces (at its hyphenation
         // points): its width within the word, kerning to the piece before
@@ -2506,7 +2531,7 @@ final class _OptimalWrap extends _Wrap {
               _widthOf('$wordSoFar$word', format) - _widthOf(wordSoFar, format);
         } else {
           width = word == _unconsumed[i].text
-              ? _fragmentWidth(word, format)
+              ? _fragmentWidth(word, format, fit: true)
               : _widthOf(word, format);
         }
         if (!identical(wordFormat, format)) wordSoFar = '';
