@@ -1520,7 +1520,7 @@ _Wrap _wrapOf(
   double? continuedIndent,
   int? maxLines,
   Map<_BreaksKey, List<int>>? breaks,
-}) => layout.wrapIndent == null && context.lineBreaking != LineBreaking.greedy
+}) => layout.wrapIndent == null && context.lineBreaking != LineBreaking.segments
     ? _OptimalWrap(
         items,
         state,
@@ -1556,6 +1556,12 @@ enum LineBreaking {
 
   /// One line at a time, each as full as it goes.
   greedy,
+
+  /// One line at a time, breaking between the text's segments as Prawn's
+  /// line wrap does: at every space, before and after a hyphen, a word
+  /// that runs across a style change moved from that change on, soft
+  /// hyphens alone hyphenating.
+  segments,
 }
 
 /// Prawn's `LineWrap`, `Arranger` and `Wrap` over the items of one piece.

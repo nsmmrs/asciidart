@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "hyphenated with text-hyphen's English patterns (Knuth's with Kuiken's 1990 additions, licensed for non-commercial use only), which ptome cannot distribute: it hyphenates with hyph-utf8's"

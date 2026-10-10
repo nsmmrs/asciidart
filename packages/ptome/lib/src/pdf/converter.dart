@@ -365,9 +365,11 @@ final class PdfConverter extends BuiltInConverter
         'auto',
         'optimal',
         'greedy',
+        'segments',
       ])) {
         'optimal' => LineBreaking.optimal,
         'greedy' => LineBreaking.greedy,
+        'segments' => LineBreaking.segments,
         _ => LineBreaking.auto,
       },
       // (As the language's orthography has it; the gem never repeats a
@@ -2261,7 +2263,7 @@ final class PdfConverter extends BuiltInConverter
   /// `asciidoctor-compat` (ADR-0015): each one the theme doesn't set.
   static const Map<String, ThemeValue> asciidoctorPdfLook = {
     'block_margin_collapse': ThemeBool(false),
-    'base_line_breaking': ThemeString('greedy'),
+    'base_line_breaking': ThemeString('segments'),
     'base_hyphens': ThemeBool(false),
     'prose_orphans': ThemeNumber(1),
     'prose_widows': ThemeNumber(1),
@@ -6440,12 +6442,17 @@ final class PdfConverter extends BuiltInConverter
     // Without a hanging indent or a marker, a long line wraps at the
     // line breaking algorithm's breaks (UAX #14; after a slash too), as
     // many words on a line as fit.
-    // (With greedy line breaking, code wraps one line at a time as Prawn's
-    // line wrap does: at spaces and hyphens, else between characters.)
-    final greedy =
-        _choice('base_line_breaking', const ['auto', 'optimal', 'greedy']) ==
-        'greedy';
-    final plainWrap = wrapIndent == 0 && !wrapMarker && !greedy;
+    // (Segments line breaking wraps code as Prawn's line wrap does: at
+    // spaces and hyphens, else between characters.)
+    final segments =
+        _choice('base_line_breaking', const [
+          'auto',
+          'optimal',
+          'greedy',
+          'segments',
+        ]) ==
+        'segments';
+    final plainWrap = wrapIndent == 0 && !wrapMarker && !segments;
     // (Autofit text is sized so its lines don't wrap, measured as they
     // are.)
     final autofit =
