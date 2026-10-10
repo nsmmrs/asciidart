@@ -9,6 +9,8 @@
 #                         the API and JavaScript projection checks, the CLI
 #                         on a built executable (bats), the plain_* packages,
 #                         and the suites on Node.js and the npm package
+#   tool/gate.sh ptome    the full tier's ptome part alone (CI's gate job;
+#                         other jobs run the packages and Node.js in parallel)
 #
 # Live oracles (the gem, asciidoctor-epub3, EPUBCheck) never run here; the
 # nightly CI workflow runs them. Tools a step needs and the machine lacks
@@ -17,7 +19,7 @@
 set -uo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 tier="${1:-fast}"
-case "$tier" in fast|full) ;; *) echo "usage: tool/gate.sh [fast|full]" >&2; exit 64 ;; esac
+case "$tier" in fast|full|ptome) ;; *) echo "usage: tool/gate.sh [fast|full|ptome]" >&2; exit 64 ;; esac
 work="${TMPDIR:-/tmp}/ptome-gate"
 rm -rf "$work" && mkdir -p "$work"
 failed=()
@@ -51,7 +53,7 @@ dart run tool/corpus_red.dart "$work/tests.json" || {
   fail tests
 }
 
-if [ "$tier" = full ]; then
+if [ "$tier" != fast ]; then
   step coverage
   dart run tool/coverage_gate.dart "$work/coverage" || fail coverage
   step "public API and JavaScript projection"
@@ -67,6 +69,9 @@ if [ "$tier" = full ]; then
   else
     echo "(no bats: skipped)"
   fi
+fi
+
+if [ "$tier" = full ]; then
   cd "$root"
   for pkg in packages/plain_*/; do
     step "$pkg"

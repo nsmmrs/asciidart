@@ -83,10 +83,11 @@ jobs:
     - name: Resolve and analyze each package alone
       run: tool/standalone.sh
   gate:
-    # The full gate (tool/gate.sh full): every test with the coverage floor,
-    # the corpus held to its red list, the API and JavaScript projection,
-    # the CLI on the executable, the plain_* packages, the Node.js and npm
-    # suites. Live oracles run nightly (nightly.yml).
+    # The full gate's ptome part (tool/gate.sh ptome): every test with the
+    # coverage floor, the corpus held to its red list, the API and
+    # JavaScript projection, the CLI on the executable. The workspace job
+    # runs the plain_* packages and the npm job Node.js; live oracles run
+    # nightly (nightly.yml).
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -96,20 +97,14 @@ jobs:
       uses: actions/checkout@v4
     - name: Set up Dart
       uses: dart-lang/setup-dart@v1
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
     - name: Install Dart dependencies (the whole workspace)
       run: dart pub get
     - name: Install poppler, qpdf, unzip and bats
       run: |
         sudo apt-get update -q && sudo apt-get install -y -q poppler-utils qpdf unzip
         sudo npm i -g bats
-    - name: Run the full gate
-      env:
-        CHROMIUM_PATH: /usr/bin/google-chrome
-      run: tool/gate.sh full
+    - name: Run the full gate's ptome part
+      run: tool/gate.sh ptome
   dart:
     # The tests on the other systems, but the slow ones and the corpus
     # (nightly.yml runs those there).
@@ -128,8 +123,7 @@ jobs:
     - name: Run Dart tests
       run: dart test -x corpus -x slow
   npm:
-    # What only the npm package needs, on Node.js's current LTS (the gate
-    # runs its tests): type declarations, lint, a publish dry run, the CLI.
+    # The npm package and the Dart tests on Node.js's current LTS.
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -145,6 +139,11 @@ jobs:
     - name: Install the package test dependencies
       working-directory: packages/ptome/test/npm
       run: npm ci
+    - name: Run the package tests (API, exports, contents, bundler, browser)
+      working-directory: packages/ptome/test/npm
+      env:
+        CHROMIUM_PATH: /usr/bin/google-chrome
+      run: node --test
     - name: Check the type declarations
       working-directory: packages/ptome/test/npm
       run: npm run types
@@ -154,6 +153,8 @@ jobs:
     - name: Check the package for npm (dry run, nothing is published)
       working-directory: packages/ptome/build/npm
       run: npm publish --dry-run
+    - name: Run the Dart tests on Node.js
+      run: dart test -p node -x corpus
     - name: Install bats
       run: sudo npm i -g bats
     - name: Run e2e CLI tests (Node CLI)
