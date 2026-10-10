@@ -3,3 +3,5 @@ formats: [pdf]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  pdf: "a character the font lacks can show as another (a letter, a space) rather than the missing glyph: Prawn numbers the glyphs of its font subsets with codes a viewer reads as the WinAnsiEncoding the fonts declare"

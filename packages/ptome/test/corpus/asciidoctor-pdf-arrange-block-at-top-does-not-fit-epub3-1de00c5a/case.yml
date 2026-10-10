@@ -3,3 +3,5 @@ formats: [pdf, epub3]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  pdf: "a table's title is left alone at the bottom of a page, its table starting on the next; a cell spanning rows has its height shared evenly among them, where the rows before already have room for it, so the last is taller than its content needs"

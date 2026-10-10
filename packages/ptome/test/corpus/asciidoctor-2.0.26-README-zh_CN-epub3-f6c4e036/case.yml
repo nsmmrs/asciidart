@@ -4,4 +4,4 @@ safe: safe
 attributes:
   "linkcss": "@"
 defects:
-  pdf: "a character the font lacks can show as a space rather than the missing glyph: Prawn's subset gives it code 160 in a font that declares WinAnsiEncoding, where 160 is the no-break space"
+  pdf: "a character the font lacks can show as another (a letter, a space) rather than the missing glyph: Prawn numbers the glyphs of its font subsets with codes a viewer reads as the WinAnsiEncoding the fonts declare"

@@ -3,3 +3,5 @@ formats: [pdf, epub3]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  pdf: "a list's title is left alone at the bottom of a page, its list starting on the next"
