@@ -36,9 +36,6 @@ same (`benchmark/PARITY.md`).
 | `base_kerning_source` | `kern_table` | `font` |
 | `url_breaks` | `delimiters` | `chicago` |
 | `base_slash_breaks` | `false` | `true` |
-| `base_space_breaks` | `all` | `unicode` |
-| `base_border_offset_fit` | `false` | `true` |
-| `base_hyphen_breaks` | `around` | `after` |
 | `index_terms_paragraph` | `line` | `none` |
 | `svg_placement` | `page_origin` | `exact` |
 | `table_borders` | `with-cells` | `above` |
@@ -74,7 +71,7 @@ its title.
 | --- | --- | --- |
 | `base_glyph_widths` | `exact` | How wide a glyph is: `exact`, its advance in the font; `thousandths`, its advance in whole 1000ths of the em, truncated, both where lines are measured and in the widths the PDF gives viewers. |
 | `base_kerning_source` | `font` | Which pairs kern text: `font`, the font's GPOS pair adjustments (its `kern` feature), else its `kern` table; `kern_table`, the first subtable of its `kern` table alone, as early font engines read it. |
-| `base_line_breaking` | `auto` | How lines break: `auto` breaks justified and left-aligned text where the lines' demerits are least (Knuth and Plass's total fit with TeX's costs: even spacing, few hyphens, never two hyphens in a row if it can help it; ragged lines with even ends, as plain TeX's `\raggedright`) and centered or right-aligned text one line at a time; `optimal` optimizes any text; `greedy` fills one line at a time. A style change inside a word is never a break. |
+| `base_line_breaking` | `auto` | How lines break: `auto` breaks justified and left-aligned text where the lines' demerits are least (Knuth and Plass's total fit with TeX's costs: even spacing, few hyphens, never two hyphens in a row if it can help it; ragged lines with even ends, as plain TeX's `\raggedright`) and centered or right-aligned text one line at a time; `optimal` optimizes any text; `greedy` fills one line at a time, as Prawn's line wrap does (at every space, before and after a hyphen, a word that runs across a style change moved whole only from that change on). Otherwise a style change inside a word is never a break. |
 | `base_leading` | none | Lines measured from cap height to baseline: each line's box runs from its tallest cap height to its baseline, with this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are the visible space between their text (CSS's `text-box-trim` and `text-box-edge: cap alphabetic`). In place of `base_line_height`; a category's own (`title_page_title_leading`, `code_leading`...) for its text. |
 | `base_overhang` | `0` | How far a justified line's last character hangs into the margin, so the edge looks straight (margin kerning, Hàn Thế Thành's character protrusion): the line stretches into a part of the character's width, as LaTeX's microtype package's default protrusion has it (0.7 of a period; 0.5 of a comma, colon or hyphen; 0.3 of a semicolon; 0.2 of an en dash, 0.15 of an em dash; a little of some letters), times this amount. `1` (or `true`) hangs them that far, `0.5` half as far, `0` (or `false`) not at all. |
 | `base_typographic_scripts` | `false` | Superscripts and subscripts (footnote references) in the font's own glyphs for them (its `sups` and `subs` features) at the text's size, when it has them for every character (true superior and inferior figures); else smaller and raised as usual. |
@@ -249,9 +246,6 @@ number, fill its center column this way.
 | `block_split_end` | `content` | Where the piece of a framed block (code, sidebar, example, admonition...) that a page's end cuts off ends: `content`, under its last line; `region`, at the page's bottom margin, its background and border with it. |
 | `url_breaks` | `chicago` | Where a link's URL may break across lines: `chicago`, at The Chicago Manual of Style's points (before a slash, a period, a hyphen..., after `://`), `www.` links too; `delimiters`, after `/`, `?`, `&` and `#` only, never leaving a single character, links with a scheme only. |
 | `index_terms_paragraph` | `none` | A paragraph of hidden index terms alone (`(((term)))` on a line of its own): `none`, it takes no room (its anchors go with the block after it); `line`, it is an empty line, as any paragraph. |
-| `base_hyphen_breaks` | `after` | Where a word with hyphens in it may break: `after`, after a hyphen (as the Unicode line breaking algorithm has it); `around`, before a hyphen too (`--kef` / `-mnuthn`). |
-| `base_border_offset_fit` | `true` | Whether the room around a highlighted or boxed word (its `border_offset`) counts when a line is fit; with `false` the line is fit without it and set a little tighter. |
-| `base_space_breaks` | `unicode` | Where a space breaks a line: `unicode`, as the Unicode line breaking algorithm has it (not before closing punctuation, a colon, a slash..., nor after an opening bracket, spaces between or not); `all`, at every space. |
 | `base_slash_breaks` | `true` | Whether a line may break after a slash in prose (`and/or`), as the Unicode line breaking algorithm allows. |
 | `svg_placement` | `exact` | Where an SVG image is placed when it's scaled: `exact`, at its box; `page_origin`, as one drawn at its own size and scaled about the page's origin, with the scale and the translation each to five decimals (a hundred-thousandth of a point or so off). |
 | `code_highlight` | `colors` | With `source-highlighter=highlight.js`: `colors`, the tokens colored as the `highlightjs-theme` colors them; `none`, the code as plain text. |

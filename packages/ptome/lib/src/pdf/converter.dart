@@ -370,14 +370,6 @@ final class PdfConverter extends BuiltInConverter
         'greedy' => LineBreaking.greedy,
         _ => LineBreaking.auto,
       },
-      spaceBreaksAll:
-          _choice('base_space_breaks', const ['unicode', 'all']) == 'all',
-      breaksBeforeHyphens:
-          _choice('base_hyphen_breaks', const ['after', 'around']) == 'around',
-      fitBorderOffsets: switch (_theme.value('base_border_offset_fit')) {
-        ThemeBool(value: false) => false,
-        _ => true,
-      },
       // (As the language's orthography has it; the gem never repeats a
       // hyphen.)
       hyphenRepetition: asciidoctorCompat(document, CompatFormat.pdf)
@@ -2280,9 +2272,6 @@ final class PdfConverter extends BuiltInConverter
     'svg_placement': ThemeString('page_origin'),
     'url_breaks': ThemeString('delimiters'),
     'base_slash_breaks': ThemeBool(false),
-    'base_space_breaks': ThemeString('all'),
-    'base_border_offset_fit': ThemeBool(false),
-    'base_hyphen_breaks': ThemeString('around'),
     'index_terms_paragraph': ThemeString('line'),
     'code_wrap_indent': ThemeNumber(0),
     'code_wrap_marker': ThemeString('none'),

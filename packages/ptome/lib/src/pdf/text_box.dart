@@ -211,9 +211,6 @@ final class TextContext {
     this.boundsHeight = double.infinity,
     this.decorationWidth = 1,
     this.lineBreaking = LineBreaking.auto,
-    this.spaceBreaksAll = false,
-    this.fitBorderOffsets = true,
-    this.breaksBeforeHyphens = false,
     this.hyphenRepetition = HyphenRepetition.none,
     this.typographicScripts = false,
     this.labels,
@@ -243,20 +240,6 @@ final class TextContext {
 
   /// How the modern engine breaks lines.
   final LineBreaking lineBreaking;
-
-  /// Whether a line may break at every space, rather than as UAX #14 has
-  /// it (no break before closing punctuation or after opening
-  /// punctuation, spaces between or not: LB13, LB14).
-  final bool spaceBreaksAll;
-
-  /// Whether a line is fit with the room its fragments' border offsets
-  /// take (a highlight's padding), rather than without it (the line then
-  /// set a little tighter).
-  final bool fitBorderOffsets;
-
-  /// Whether a line may break before a hyphen inside a word too
-  /// (`--kef` / `-mnuthn`), not only after it as UAX #14 has it.
-  final bool breaksBeforeHyphens;
 
   /// Whether a line broken after a compound's hyphen starts with it again
   /// (the document's language: Portuguese, Spanish...).
@@ -1537,7 +1520,7 @@ _Wrap _wrapOf(
   double? continuedIndent,
   int? maxLines,
   Map<_BreaksKey, List<int>>? breaks,
-}) => layout.wrapIndent == null
+}) => layout.wrapIndent == null && context.lineBreaking != LineBreaking.greedy
     ? _OptimalWrap(
         items,
         state,
@@ -1801,7 +1784,9 @@ base class _Wrap {
       if (segment == _zwsp) {
         segmentWidth = effective = 0;
       } else {
-        segmentWidth = effective = _widthOf(segment, item.format);
+        // (An inline image's placeholder is as wide as the image.)
+        segmentWidth = effective =
+            item.format.image?.width ?? _widthOf(segment, item.format);
         if (index == segments.length - 1) effective += joinedWidth;
       }
       if (_accumulated + effective <= width) {
@@ -2012,7 +1997,7 @@ base class _Wrap {
     _spaceCount = _fragments.fold(0, (sum, f) => sum + f.spaces);
   }
 
-  double _fragmentWidth(String text, _Format format, {bool fit = false}) {
+  double _fragmentWidth(String text, _Format format) {
     final fragment = format.fragment;
     if (format.image case final image?) return image.width;
     var width = switch (fragment.width) {
@@ -2020,10 +2005,7 @@ base class _Wrap {
       final String fixed => strToPoints(fixed),
       null => _widthOf(text, format),
     };
-    if (fragment.borderOffset case final offset?
-        when !fit || _context.fitBorderOffsets) {
-      width += offset * 2;
-    }
+    if (fragment.borderOffset case final offset?) width += offset * 2;
     return width;
   }
 
@@ -2505,10 +2487,9 @@ final class _OptimalWrap extends _Wrap {
           // LB13: `{{ x }}` stays whole).
           final before = p > 0 ? pieces[p - 1].$2 : '';
           final after = p + 1 < pieces.length ? pieces[p + 1].$2 : '';
-          if (!_context.spaceBreaksAll &&
-              ((before.isNotEmpty &&
-                      '([{'.contains(before[before.length - 1])) ||
-                  (after.isNotEmpty && ')]}!?,.:;/'.contains(after[0])))) {
+          if ((before.isNotEmpty &&
+                  '([{'.contains(before[before.length - 1])) ||
+              (after.isNotEmpty && ')]}!?,.:;/'.contains(after[0]))) {
             add(const PenaltyItem(0, PenaltyItem.never), p);
           }
           add(GlueItem(null, spaces, width, width / 2, width / 3), p);
@@ -2523,17 +2504,6 @@ final class _OptimalWrap extends _Wrap {
         before.add(items.length);
         add(const PenaltyItem(0, 900), p);
       }
-      // A word piece that starts with a hyphen, after another: a break
-      // before the hyphen too, where the layout allows it.
-      if (_context.breaksBeforeHyphens &&
-          word.startsWith('-') &&
-          p > 0 &&
-          !_isBlank(pieces[p - 1].$2) &&
-          pieces[p - 1].$2 != '\n' &&
-          !pieces[p - 1].$2.endsWith('-')) {
-        before.add(items.length);
-        add(const PenaltyItem(0, 0), p);
-      }
       if (word.isNotEmpty) {
         // A piece of a word broken into pieces (at its hyphenation
         // points): its width within the word, kerning to the piece before
@@ -2546,7 +2516,7 @@ final class _OptimalWrap extends _Wrap {
               _widthOf('$wordSoFar$word', format) - _widthOf(wordSoFar, format);
         } else {
           width = word == _unconsumed[i].text
-              ? _fragmentWidth(word, format, fit: true)
+              ? _fragmentWidth(word, format)
               : _widthOf(word, format);
         }
         if (!identical(wordFormat, format)) wordSoFar = '';
