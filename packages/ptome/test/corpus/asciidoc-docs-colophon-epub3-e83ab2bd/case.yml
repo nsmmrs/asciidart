@@ -3,3 +3,5 @@ formats: [epub3]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  epub3: "the Start of Content landmark on the front matter, the front and back matter not landmarks"

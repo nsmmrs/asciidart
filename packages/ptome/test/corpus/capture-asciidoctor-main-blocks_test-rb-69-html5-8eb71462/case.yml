@@ -1,3 +1,5 @@
 source: "pool:capture-asciidoctor-main/blocks_test.rb:69.1"
 formats: [html5]
 safe: safe
+defects:
+  html5: "a thematic break's role dropped (asciidoctor#4101)"

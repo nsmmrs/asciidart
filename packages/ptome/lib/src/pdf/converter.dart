@@ -6499,8 +6499,9 @@ final class PdfConverter extends BuiltInConverter
       BlockBox(
         [
           CustomBox(
+            // The source as written (`<`, not `&lt;`).
             _textBox(
-              _guardIndentation(node.content() ?? ''),
+              _guardIndentation(_unescapeXml(node.content() ?? '')),
               font,
               align: 'left',
               normalize: false,

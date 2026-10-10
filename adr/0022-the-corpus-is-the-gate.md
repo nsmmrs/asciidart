@@ -38,9 +38,12 @@ page comparisons: more bookkeeping than the question it answers.
 4. **Compatibility is settings of the engine.** Where ptome's output
    differs, the fix is a value of a setting of the modern engine (or a new
    setting) that `asciidoctor-compat` sets for that format, never a mode
-   that switches the engine. The corpus is red until every difference is
-   closed; it runs as a job of its own (`dart test -t corpus`), and the
-   rest of the suite without it.
+   that switches the engine. Compatibility never reproduces a defect
+   (output that is invalid or broken, or that ignores what the release
+   documents): a case whose golden shows one names it in `case.yml`
+   (`defects`), and that format isn't compared. The corpus is red until
+   every other difference is closed; it runs as a job of its own
+   (`dart test -t corpus`), and the rest of the suite without it.
 5. **ptome's deliberate differences are not in the corpus.** A fix of a bug
    Asciidoctor still has, or another deliberate difference, is a folder of
    `test/upstream_fixes` with what ptome's output must contain

@@ -9,7 +9,9 @@ goldens.yml           the release compared with, and the attributes every
                       conversion gets (a fixed clock and home)
 <case>/
   input.adoc          the document, with the files it reads beside it
-  case.yml            optional: formats, safe, doctype, attributes, source
+  case.yml            optional: formats, safe, doctype, attributes, source,
+                      defects (formats whose golden shows an Asciidoctor
+                      defect, with what it is: not compared)
   expected/<release>/<format>/<file>
                       the file Asciidoctor wrote (`input.html`, `input.xml`,
                       the man page, `input.pdf`, `input.epub`)
@@ -47,6 +49,9 @@ unpacked EPUBs are kept by hash in `.dart_tool/corpus`.
 
 - **A difference** is closed in ptome, by a setting of the engine that
   `asciidoctor-compat` sets, never by editing a golden.
+- **A defect** of Asciidoctor's (invalid or broken output, something it
+  documents and doesn't do) is never reproduced: the case names it under
+  `defects` in `case.yml`, and that format isn't compared.
 - **A new case** is a folder with `input.adoc` (and `case.yml` when it
   needs options); then make its goldens with
   `packages/ptome_corpus_tools/goldens/generate.rb`.

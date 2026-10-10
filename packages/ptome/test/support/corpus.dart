@@ -8,7 +8,9 @@
 ///                         every conversion gets (a fixed clock)
 ///   <case>/
 ///     input.adoc          the document, with the files it reads beside it
-///     case.yml            optional: formats, safe, doctype, attributes, source
+///     case.yml            optional: formats, safe, doctype, attributes,
+///                         defects (formats whose golden shows an Asciidoctor
+///                         defect ptome doesn't reproduce, with what it is)
 ///     expected/<release>/<format>/<file>   what Asciidoctor wrote
 ///     ptome.yml           the last ptome PDFs and EPUBs found equal to the
 ///                         goldens, by hash
@@ -74,6 +76,7 @@ final class Case {
     required this.attributes,
     required this.goldens,
     required this.verified,
+    required this.defects,
   });
 
   final String name;
@@ -89,6 +92,10 @@ final class Case {
 
   /// The hash of the last ptome PDF or EPUB found equal to the golden.
   final Map<Format, String> verified;
+
+  /// The formats whose golden shows a defect of Asciidoctor's that ptome
+  /// doesn't reproduce, with what it is: they aren't compared.
+  final Map<Format, String> defects;
 
   String get input => p.posix.join(dir, 'input.adoc');
 
@@ -189,6 +196,10 @@ Corpus loadCorpus() {
         goldens: goldens,
         verified: {
           for (final MapEntry(:key, :value) in _map(ptome[release]).entries)
+            Format.values.byName(key): '$value',
+        },
+        defects: {
+          for (final MapEntry(:key, :value) in _map(meta['defects']).entries)
             Format.values.byName(key): '$value',
         },
       ),

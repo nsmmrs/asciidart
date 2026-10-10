@@ -3,3 +3,5 @@ formats: [manpage]
 safe: safe
 attributes:
   "linkcss": ""
+defects:
+  manpage: "stray paragraph spaces: `.sp` at a table cell's start, a blank line in a list item without text (asciidoctor#4482, #4182)"

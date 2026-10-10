@@ -1596,11 +1596,7 @@ class Html5Converter extends BuiltInConverter {
 
   /// Converts the [node] thematic break.
   String convertThematicBreak(Block node) {
-    final classAttribute =
-        node.role != null &&
-            Behavior.htmlBreakRoles.of(node.document! as Document) == 'kept'
-        ? ' class="${_s(node.role)}"'
-        : '';
+    final classAttribute = node.role != null ? ' class="${_s(node.role)}"' : '';
     return '<hr$classAttribute$_voidElementSlash>';
   }
 

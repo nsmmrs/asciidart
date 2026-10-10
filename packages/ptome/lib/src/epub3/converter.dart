@@ -501,32 +501,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
 
     _addCoverPage(node, 'back-cover');
 
-    // asciidoctor-epub3's landmarks (`epub-landmarks: asciidoctor-epub3`):
-    // the first chapter as the start, and five kinds of chapter by style.
-    final gemLandmarks = Behavior.epubLandmarks.of(node) == 'asciidoctor-epub3';
-    if (tocItems.isNotEmpty && gemLandmarks) {
-      landmarks.add((
-        type: 'bodymatter',
-        href: '${_s(chapterFilename(tocItems[0]))}.xhtml',
-        title: 'Start of Content',
-      ));
-      for (final item in tocItems) {
-        final style = item.style;
-        if (const [
-          'appendix',
-          'bibliography',
-          'glossary',
-          'index',
-          'preface',
-        ].contains(style)) {
-          landmarks.add((
-            type: style!,
-            href: '${_s(chapterFilename(item))}.xhtml',
-            title: _s(item.title),
-          ));
-        }
-      }
-    } else if (tocItems.isNotEmpty) {
+    if (tocItems.isNotEmpty) {
       // The first chapter after the front matter (a dedication, a
       // colophon, a preface...), else the first.
       const front = {
@@ -547,7 +522,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
       ));
     }
 
-    for (final item in gemLandmarks ? const <AbstractBlock>[] : tocItems) {
+    for (final item in tocItems) {
       // (A section left out of the contents is left out here too.)
       if (item.hasOption('notoc')) continue;
       // (A special section by its section name: `[index]`, `[colophon]`;
@@ -818,7 +793,6 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
   }
 
   static String _cdnBaseUrl(Document document) {
-    if (Behavior.epubCdn.of(document) == 'none') return '';
     final scheme = _s(document.attr('asset-uri-scheme', 'https'));
     return '${scheme.isEmpty ? '' : '$scheme:'}//cdnjs.cloudflare.com/ajax/libs';
   }
@@ -1725,9 +1699,7 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         // A path from a website's root (`/chapter/#id`) means nothing in
         // the book: it goes to the id when the book has it, else it is
         // text (Ptome's; the gem's link leaves the container).
-        if (target.startsWith('/') &&
-            !target.startsWith('//') &&
-            Behavior.epubRootLinks.of(_doc(node)) == 'resolved') {
+        if (target.startsWith('/') && !target.startsWith('//')) {
           final hash = target.indexOf('#');
           final id = hash < 0 ? null : target.substring(hash + 1);
           final ref = id == null ? null : _doc(node).catalog.refs[id];
@@ -2114,11 +2086,6 @@ class Epub3Converter extends BuiltInConverter implements FinishingConverter {
         : _join(workdir, imagePath);
     final book = _book!;
     if (!io.isFile(file) || !io.isReadable(file)) {
-      // asciidoctor-epub3 lists the image it couldn't read in the manifest
-      // all the same (`epub-missing-cover: listed`).
-      if (Behavior.epubMissingCover.of(doc) == 'listed') {
-        book.addItem(imageHref);
-      }
       logger.error(
         '${_basename(_s(doc.attr('docfile')))}: error adding cover image. '
         'Make sure that :$imageAttrName: attribute points to a valid image '

@@ -1,3 +1,5 @@
 source: "pool:asciidoctor-main/test/sections_test.rb:249"
 formats: [html5]
 safe: safe
+defects:
+  html5: "an empty ID written as `id=\"\"` (asciidoctor#4139)"

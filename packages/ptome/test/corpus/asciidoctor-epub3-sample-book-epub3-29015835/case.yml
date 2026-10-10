@@ -3,3 +3,5 @@ formats: [xhtml5, pdf, epub3]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  epub3: "a manifest entry for a cover image the book hasn't"

@@ -3,3 +3,5 @@ formats: [html5, epub3]
 safe: safe
 attributes:
   "source-highlighter": "prettify"
+defects:
+  epub3: "a link from a website's root, which leaves the book"

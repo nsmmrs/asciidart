@@ -31,9 +31,12 @@ void main() {
       for (final MapEntry(key: format, value: golden) in c.goldens.entries) {
         test(
           format.name,
-          skip: format.expensive && _onJs
-              ? 'compared by its pages or files on the Dart VM'
-              : null,
+          skip: switch (c.defects[format]) {
+            final defect? => "Asciidoctor's defect, not reproduced: $defect",
+            _ when format.expensive && _onJs =>
+              'compared by its pages or files on the Dart VM',
+            _ => null,
+          },
           () async {
             final want = io.readBytes(golden);
             final got = await c.convert(format, attributes);

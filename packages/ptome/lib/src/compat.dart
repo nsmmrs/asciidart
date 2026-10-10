@@ -141,10 +141,6 @@ enum Behavior {
   /// `style` (`style="page-break-after: always;"`).
   htmlPageBreak('html-page-break', CompatFormat.html, 'class', 'style'),
 
-  /// Whether an HTML thematic break keeps its role (`[.fancy]`): `kept` or
-  /// `dropped`.
-  htmlBreakRoles('html-break-roles', CompatFormat.html, 'kept', 'dropped'),
-
   /// How HTML shows a Wistia video (`video::id[wistia]`): `embed` (Wistia's
   /// player) or `video` (a video element, as for a file).
   htmlWistia('html-wistia', CompatFormat.html, 'embed', 'video'),
@@ -167,63 +163,15 @@ enum Behavior {
   /// `epub-embed-fonts` attribute is `embedded` too.
   epubFonts('epub-fonts', CompatFormat.epub, 'reader', 'embedded'),
 
-  /// What an EPUB makes of a link from a website's root (`/page#id`):
-  /// `resolved` (to the chapter with the ID, else text) or `kept` (the
-  /// link as it is, which leaves the book).
-  epubRootLinks('epub-root-links', CompatFormat.epub, 'resolved', 'kept'),
-
   /// What `toc::[]` writes in an EPUB chapter: `contents` (the book's
   /// contents) or `none`.
   epubTocMacro('epub-toc-macro', CompatFormat.epub, 'contents', 'none'),
-
-  /// Where an EPUB's highlighter links its assets: `cdnjs` (cdnjs.com) or
-  /// `none` (from the root, as asciidoctor-epub3 writes them).
-  epubCdn('epub-cdn', CompatFormat.epub, 'cdnjs', 'none'),
 
   /// The title of an EPUB's contents when `toc-title` is empty: `default`
   /// (Table of Contents) or `empty`.
   epubTocTitle('epub-toc-title', CompatFormat.epub, 'default', 'empty'),
 
-  /// Which landmarks an EPUB's navigation gives: `ptome` (the start of the
-  /// content after the front matter; the front and back matter by section
-  /// name) or `asciidoctor-epub3` (the first chapter as the start; the
-  /// appendix, bibliography, glossary, index and preface, by style).
-  epubLandmarks(
-    'epub-landmarks',
-    CompatFormat.epub,
-    'ptome',
-    'asciidoctor-epub3',
-  ),
-
-  /// What a cover image that can't be read leaves in an EPUB: `omitted`
-  /// (nothing) or `listed` (an entry in the manifest for a file the book
-  /// hasn't, as asciidoctor-epub3 leaves it).
-  epubMissingCover(
-    'epub-missing-cover',
-    CompatFormat.epub,
-    'omitted',
-    'listed',
-  ),
-
-  /// Whether a man page table cell starts with a paragraph space (`.sp`
-  /// after `T{`): `none` or `spaced`.
-  manpageCells('manpage-cells', CompatFormat.manpage, 'none', 'spaced'),
-
-  /// How a man page list item without text of its own (a block attached to
-  /// it) starts: `compact` (with the block) or `spaced` (an empty line, then
-  /// a paragraph space).
-  manpageEmptyItems(
-    'manpage-empty-items',
-    CompatFormat.manpage,
-    'compact',
-    'spaced',
-  ),
-
   // The language, in every format (the format converted to decides).
-
-  /// What an empty ID (`[[]]`, `[#]`) gives a section: `none` (no ID) or
-  /// `empty` (an empty one).
-  emptyIds('empty-ids', null, 'none', 'empty'),
 
   /// Whether four tildes (`~~~~`) delimit an open block: `open` or `text`.
   tildeBlocks('tilde-blocks', null, 'open', 'text'),

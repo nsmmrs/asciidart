@@ -1,2 +1,6 @@
 source: "handmade:test/parity/blocks.adoc"
 formats: [html5, docbook5, manpage]
+defects:
+  html5: "an empty ID written as `id=\"\"` (asciidoctor#4139)"
+  docbook5: "an empty ID written as `id=\"\"` (asciidoctor#4139)"
+  manpage: "stray paragraph spaces: `.sp` at a table cell's start, a blank line in a list item without text (asciidoctor#4482, #4182)"

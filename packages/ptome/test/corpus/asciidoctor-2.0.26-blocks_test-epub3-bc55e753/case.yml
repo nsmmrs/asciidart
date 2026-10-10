@@ -1,3 +1,5 @@
 source: "pool:asciidoctor-2.0.26/test/blocks_test.rb:1862"
 formats: [pdf, epub3]
 safe: safe
+defects:
+  pdf: "math shown as its source with `<` as `&lt;`"

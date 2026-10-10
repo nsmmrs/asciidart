@@ -252,20 +252,12 @@ release's:
 | `html-generator` | `unless-reproducible`: no generator tag with `reproducible` | `always` |
 | `html-toc` | `ptome`: parts at level 0, entries classed by level, a section's own `toclevels` | `2.0.26` |
 | `html-page-break` | `class`: `<div class="page-break">` | `style`: `page-break-after: always` |
-| `html-break-roles` | `kept`: a thematic break's role is its class | `dropped` |
 | `html-wistia` | `embed`: Wistia's player | `video`: a video element |
 | `html-nohighlight` | `honored`: the `nohighlight` option leaves a block plain | `ignored` |
 | `docbook-quote-roles` | `written`: `<quote role="double">` | `none`: `<quote>` |
 | `epub-fonts` | `reader`: the reading system's fonts | `embedded`: asciidoctor-epub3's, in the book (`epub-embed-fonts` too) |
-| `epub-missing-cover` | `omitted`: a cover image that can't be read leaves nothing | `listed`: a manifest entry for the missing file |
-| `epub-landmarks` | `ptome`: the start of the content after the front matter, the front and back matter as landmarks | `asciidoctor-epub3`: the first chapter, five kinds by style |
-| `epub-root-links` | `resolved`: a link from a website's root goes to the chapter with its ID | `kept`: the link leaves the book |
 | `epub-toc-macro` | `contents`: `toc::[]` lists the book's contents | `none` |
-| `epub-cdn` | `cdnjs`: a highlighter's assets from cdnjs.com | `none`: from the root |
 | `epub-toc-title` | `default`: an empty `toc-title` is Table of Contents | `empty` |
-| `manpage-cells` | `none`: a table cell starts with its text | `spaced`: with `.sp` |
-| `manpage-empty-items` | `compact`: a list item without text starts with its block | `spaced`: an empty line, then `.sp` |
-| `empty-ids` | `none`: `[[]]` gives a section no ID | `empty`: an empty ID |
 | `tilde-blocks` | `open`: `~~~~` delimits an open block | `text` |
 | `cxx-attribute` | `defined`: `{cxx}` is C++ | `undefined` |
 | `list-start` | `marker`: a list starting `3.` starts at 3 | `one` |

@@ -1192,7 +1192,7 @@ abstract final class Parser {
     // section title.
     var id = section.id;
     if (id != null) {
-      if (id.isEmpty && Behavior.emptyIds.of(document) == 'none') {
+      if (id.isEmpty) {
         // An empty ID ([[]] or [#]) means no ID, not a generated one.
         section.id = id = null;
       } else if (sectTitle.contains(attrRefHead)) {

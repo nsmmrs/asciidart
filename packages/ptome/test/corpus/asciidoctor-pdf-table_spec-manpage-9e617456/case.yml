@@ -1,3 +1,5 @@
 source: "pool:asciidoctor-pdf/spec/table_spec.rb:3489"
 formats: [manpage]
 safe: safe
+defects:
+  manpage: "stray paragraph spaces: `.sp` at a table cell's start, a blank line in a list item without text (asciidoctor#4482, #4182)"

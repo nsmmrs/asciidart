@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "the text set at the page's edge after a page background image it can't embed"

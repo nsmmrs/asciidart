@@ -188,11 +188,7 @@ jobs:
     - name: Compare with Asciidoctor's files
       run: dart test -t corpus
   npm:
-    strategy:
-      fail-fast: false
-      matrix:
-        # The engines floor in npm/package.json, and the current LTS.
-        node: ['20.19', 'lts/*']
+    # Node.js's current LTS.
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -202,7 +198,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node }}
+        node-version: lts/*
     - name: Build the npm package
       run: ./tool/build-npm.sh
     - name: Install the package test dependencies

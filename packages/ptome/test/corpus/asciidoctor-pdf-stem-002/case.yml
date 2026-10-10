@@ -5,3 +5,5 @@ attributes:
   "nofooter": ""
   "pdf-theme": "theme.yml"
   "pdf-themesdir": "{docdir}"
+defects:
+  pdf: "math shown as its source with `<` as `&lt;`"

@@ -3,3 +3,5 @@ formats: [xhtml5, pdf, epub3]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  epub3: "a link from a website's root, which leaves the book"
