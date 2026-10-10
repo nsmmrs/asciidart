@@ -47,6 +47,7 @@ final class SvgImage implements Graphic {
     Iterable<String> warnings,
     this._defaultFontFamily,
     this._fallbackFontFamily,
+    this.scalesAboutPageOrigin,
   ) {
     _warnings.addAll(warnings);
   }
@@ -55,7 +56,11 @@ final class SvgImage implements Graphic {
   /// standard fonts by default): for the families of an element's
   /// `font-family` ([defaultFontFamily] when it has none), then for
   /// [fallbackFontFamily]; [images] reads referenced images; [pixelSize]
-  /// is the size of a CSS pixel (a user unit) in points.
+  /// is the size of a CSS pixel (a user unit) in points. With
+  /// [scalesAboutPageOrigin], an image drawn uniformly scaled is placed as
+  /// one drawn at its own size and scaled about the page's origin is,
+  /// the scale and the translation each written to five decimals (as
+  /// prawn-svg places it: a hundred-thousandth of a point or so off).
   factory parse(
     String text, {
     SvgFontResolver? fonts,
@@ -63,6 +68,7 @@ final class SvgImage implements Graphic {
     String? fallbackFontFamily,
     SvgImageResolver? images,
     double pixelSize = 0.75,
+    bool scalesAboutPageOrigin = false,
   }) {
     final XmlDocument document;
     try {
@@ -122,8 +128,13 @@ final class SvgImage implements Graphic {
       warnings,
       defaultFontFamily,
       fallbackFontFamily,
+      scalesAboutPageOrigin,
     );
   }
+
+  /// Whether the image is placed as one scaled about the page's origin
+  /// (see [SvgImage.parse]).
+  final bool scalesAboutPageOrigin;
 
   final XmlElement _root;
   final Map<String, XmlElement> _ids;
@@ -404,14 +415,30 @@ final class _Renderer {
   void render(Rect rect) {
     final box = svg._viewBox;
     final (sx, sy, tx, ty) = svg._aspect.fit(box, rect.width, rect.height);
-    final matrix = Matrix(
-      sx,
-      0,
-      0,
-      -sy,
-      rect.left + tx - sx * box.$1,
-      rect.top - ty + sy * box.$2,
-    );
+    double fifth(double n) => (n * 1e5).round() / 1e5;
+    final matrix =
+        svg.scalesAboutPageOrigin &&
+            sx == sy &&
+            tx == 0 &&
+            ty == 0 &&
+            box.$1 == 0 &&
+            box.$2 == 0
+        ? Matrix(
+            fifth(sx),
+            0,
+            0,
+            -fifth(sy),
+            fifth(sx) * rect.left + fifth(rect.left * (1 - sx)),
+            fifth(sy) * rect.top + fifth(rect.top * (1 - sy)),
+          )
+        : Matrix(
+            sx,
+            0,
+            0,
+            -sy,
+            rect.left + tx - sx * box.$1,
+            rect.top - ty + sy * box.$2,
+          );
     // A viewport that can't be mapped (an empty or unbounded one) shows
     // nothing.
     if (!_finite(matrix)) {

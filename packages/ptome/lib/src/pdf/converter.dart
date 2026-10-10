@@ -2271,6 +2271,7 @@ final class PdfConverter extends BuiltInConverter
     'code_widows': ThemeNumber(1),
     'block_split_end': ThemeString('region'),
     'code_highlight': ThemeString('none'),
+    'svg_placement': ThemeString('page_origin'),
     'url_breaks': ThemeString('delimiters'),
     'base_slash_breaks': ThemeBool(false),
     'base_space_breaks': ThemeString('all'),
@@ -4801,6 +4802,11 @@ final class PdfConverter extends BuiltInConverter
                 images: path == null
                     ? null
                     : (href) => _svgResource(href, path),
+                // (`svg_placement: page_origin`: placed as scaled about the
+                // page's origin, to five decimals.)
+                scalesAboutPageOrigin:
+                    _choice('svg_placement', const ['exact', 'page_origin']) ==
+                    'page_origin',
               )
             : _encodingElsewhere(Uint8List.fromList(bytes)),
         null,
@@ -9412,8 +9418,14 @@ final class PdfConverter extends BuiltInConverter
     final pieces = markup
         ? RegExp('<[^>]*>|[^<]+').allMatches(text).map((m) => m[0]!)
         : [text];
+    // (With [delimiters], a link's text alone: a URL that isn't a link,
+    // such as one in code, keeps its characters together.)
+    var inLink = !markup;
     for (final piece in pieces) {
+      if (piece.startsWith('<a ')) inLink = true;
+      if (piece == '</a>') inLink = false;
       if (piece.startsWith('<') ||
+          (delimiters && !inLink) ||
           (!piece.contains('://') && !(www && piece.contains('www.')))) {
         out.write(piece);
         continue;
@@ -9924,14 +9936,39 @@ final class PdfConverter extends BuiltInConverter
     return [for (final range in ranges) range.join('-')];
   }
 
+  /// The image icon [node] names (`:icons:` set, but not to `font`): the
+  /// file `<name>.<icontype>` (PNG by default) in the `iconsdir`, as tall
+  /// as the line; its name in brackets when there's no such file.
+  String _imageIcon(Inline node, String alt) {
+    final name = node.target ?? '';
+    final format = _document.attr('icontype') ?? 'png';
+    final resolver = _document.pathResolver;
+    final dir = resolver.posixify(_document.attr('iconsdir') ?? '');
+    final file = dir.isEmpty ? '$name.$format' : '$dir/$name.$format';
+    final path = resolver.isAbsolutePath(file)
+        ? resolver.expandPath(file)
+        : node.normalizeSystemPath(file, targetName: 'image');
+    final bytes = io.isFile(path) && io.isReadable(path)
+        ? io.readBytes(path)
+        : null;
+    if (bytes == null) {
+      logger.warn("image icon for '$name' not found or not readable: $path");
+      return '[$name&#93;';
+    }
+    final (graphic, problem) = _graphicOf(bytes, format, path: path);
+    final src = path.replaceAll('"', '%22');
+    if (graphic != null) _inlineGraphics[src] = graphic;
+    if (problem != null) _imageProblems[src] = problem;
+    final width = graphic == null ? 0.0 : _intrinsicWidth(graphic);
+    return '<img src="$src" format="$format" '
+        'alt="${alt.replaceAll('"', '&quot;')}" width="$width" fit="line">';
+  }
+
   String _inlineIcon(Inline node) {
     final icons = _document.attr('icons');
     final alt = node.attr('alt') ?? '';
     if (icons != 'font') {
-      if (icons != null) {
-        logger.warn('image icons are not supported yet: ${node.target ?? ''}');
-        return '[${node.target ?? ''}&#93;';
-      }
+      if (icons != null) return _imageIcon(node, alt);
       return '[$alt&#93;';
     }
     var name = node.target ?? '';

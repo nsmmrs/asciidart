@@ -2,6 +2,13 @@
 
 ## 0.1.0-dev (unreleased)
 
+- `SvgImage.parse(scalesAboutPageOrigin: true)` places a uniformly scaled
+  image as one drawn at its own size and scaled about the page's origin
+  is, the scale and the translation each to five decimals (as prawn-svg
+  places it).
+- The standard Latin fonts set the no-break space and the soft hyphen as
+  the space and the hyphen, as WinAnsiEncoding encodes them a second time
+  (ISO 32000-2, Annex D.2); they had no glyph.
 - Text set with word spacing places its words as a `Tw` operand would:
   the spacing to a hundred-thousandth of a point, and the `TJ` adjustments
   written to five decimals (they were rounded to three: positions drifted

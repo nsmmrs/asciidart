@@ -144,6 +144,13 @@ void main() {
     expect(helvetica.covers(0x20ac), isTrue); // € in WinAnsi
     expect(helvetica.covers(0x3b1), isFalse); // α
     expect(StandardFont.named('Symbol').covers(0x3b1), isTrue);
+    // WinAnsiEncoding's second space and hyphen (ISO 32000-2, Annex D.2):
+    // the no-break space and the soft hyphen, set as the space and the
+    // hyphen.
+    final courier = StandardFont.named('Courier');
+    expect(courier.covers(0xa0), isTrue);
+    expect(courier.covers(0xad), isTrue);
+    expect(courier.widthOf('\u00a0', 10), courier.widthOf(' ', 10));
   });
 
   test('a character without a glyph is .notdef, not mapped to text', () {

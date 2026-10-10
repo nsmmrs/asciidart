@@ -236,6 +236,14 @@ final class _StandardGlyphs {
         unicodeNames.putIfAbsent(int.parse(unicode, radix: 16), () => name);
       }
     }
+    // WinAnsiEncoding also encodes the space as 240 (the no-break space)
+    // and the hyphen as 255 (the soft hyphen): ISO 32000-2, Annex D.2.
+    if (unicodeNames[0x20] case final space?) {
+      unicodeNames.putIfAbsent(0xa0, () => space);
+    }
+    if (unicodeNames[0x2d] case final hyphen?) {
+      unicodeNames.putIfAbsent(0xad, () => hyphen);
+    }
     return _StandardGlyphs(byCode, byName, codeForUnicode, kerning)
       .._unicodeNames = unicodeNames;
   }
