@@ -6,6 +6,7 @@ library;
 
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:ptome/ptome.dart';
 import 'package:test/test.dart';
 
@@ -15,8 +16,7 @@ void main() {
       'vendor/asciidoctor/test/fixtures',
       // The corpus's parity documents (our own).
       for (final c in Directory('test/corpus').listSync())
-        if (c is Directory && c.path.split('/').last.startsWith('parity-'))
-          c.path,
+        if (c is Directory && p.basename(c.path).startsWith('parity-')) c.path,
     ])
       ...Directory(dir)
           .listSync(recursive: true)
