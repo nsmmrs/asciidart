@@ -74,6 +74,12 @@ Asciidoctor project.
   formatted text and curved quotes; URLs ending in `>`; paragraphs that look
   like attribute lines; ancestor list continuations; headings beyond `<h6>`;
   quotes in image attributes.
+- Documents that stop Asciidoctor convert, found by the corpus's fuzzer
+  and pool: a table has at most 1000 columns and a cell spans at most 1000
+  columns and 65534 rows (HTML's limits), where the gem builds as many as
+  asked until memory runs out; a span of zero is no span; a man page table
+  whose rows were all dropped, and AsciiMath with an unclosed `"`. An
+  index term without words indexes nothing in DocBook.
 - The test corpus (ADR-0022): about 1,700 documents with the files the
   Asciidoctor 2.0.26 command line writes for them (asciidoctor-pdf's PDFs
   and asciidoctor-epub3's EPUBs too); ptome with `asciidoctor-compat` must

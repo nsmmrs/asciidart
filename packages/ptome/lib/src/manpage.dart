@@ -696,6 +696,11 @@ class ManpageConverter extends BuiltInConverter {
         '1\n.br\n.B ${_manify(node.captionedTitle())}\n',
       );
     }
+    // tbl rejects a table without data (every row dropped): only its
+    // title is written.
+    if (node.rows.toMap().values.every((rows) => rows.isEmpty)) {
+      return result.join();
+    }
     result.add('.TS\nallbox tab(:);');
     final rowHeader = <List<List<String>?>?>[];
     final rowText = <List<String>?>[];

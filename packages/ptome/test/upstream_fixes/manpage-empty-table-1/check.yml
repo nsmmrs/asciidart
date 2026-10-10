@@ -1,0 +1,9 @@
+description: "a man page with a table that has no rows converts. Every row of the table is dropped (its last cell spans past the declared columns), and Asciidoctor 2.0.26's man page converter stops with `undefined method 'map' for nil` (manpage.rb, the table's format line). tbl rejects a table without data, so ptome writes no table region and the page goes on. Found by the corpus's coverage research. Fails on the gem."
+format: manpage
+doctype: manpage
+excludes:
+  - ".TS"
+contains:
+  - "After the table."
+warns:
+  - "dropping cell because it exceeds specified number of columns"

@@ -1202,6 +1202,8 @@ class Docbook5Converter extends BuiltInConverter {
       return '<indexterm>\n<primary>${_s(node.text)}</primary>$rel\n</indexterm>${_s(node.text)}';
     }
     final terms = node.terms!;
+    // A term without words indexes nothing.
+    if (terms.isEmpty) return '';
     final promotion = (node.document! as Document).hasOption(
       'indexterm-promotion',
     );

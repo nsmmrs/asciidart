@@ -1,0 +1,10 @@
+description: "a cell that spans zero columns spans one. `0+|a` asks for a cell no columns wide: Asciidoctor 2.0.26 stops with `undefined method 'sourcemap' for nil` (table.rb, Cell#initialize). ptome reads a span of zero as no span, so the rows fit their columns and the cell left over (`d`) is dropped with a warning. Found by the corpus fuzzer. Fails on the gem."
+format: html5
+standalone: false
+contains:
+  - "<th class=\"tableblock halign-left valign-top\">a</th>"
+  - "<td class=\"tableblock halign-left valign-top\" colspan=\"2\"><p class=\"tableblock\"><strong>c</strong></p></td>"
+excludes:
+  - ">d<"
+warns:
+  - "dropping cells from incomplete row detected end of table"

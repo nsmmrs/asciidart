@@ -1,0 +1,5 @@
+description: "AsciiMath with an unclosed quote converts. A `\"` that opens no text (`asciimath:[\"x]`) stops Asciidoctor 2.0.26's DocBook with `undefined method '[]' for nil` (the asciimath gem's parser). ptome writes the quote as an operator, so it stays visible. Found by the corpus fuzzer. Fails on the gem."
+format: docbook5
+standalone: false
+contains:
+  - "<mml:mo>\"</mml:mo><mml:mi>x</mml:mi>"

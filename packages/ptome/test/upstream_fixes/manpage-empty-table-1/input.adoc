@@ -1,0 +1,14 @@
+= colspan(1)
+
+== NAME
+
+colspan - a table whose only row is dropped
+
+== DESCRIPTION
+
+[cols=2*]
+|===
+|a 2+|b
+|===
+
+After the table.

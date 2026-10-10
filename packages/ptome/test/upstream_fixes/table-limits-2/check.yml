@@ -1,0 +1,7 @@
+description: "a column count past the largest integer is the most columns a table can have. `cols=\"99999999999999999999999\"` (the old equal-columns form) asks for more columns than an integer holds: Asciidoctor 2.0.26 stops with `bignum too big to convert into 'long'`. ptome warns and makes 1000, as for any count past the limit. Fails on the gem."
+format: html5
+standalone: false
+warns:
+  - "using 1000, the most a table can have"
+counts:
+  "<col width=\"0.1%\">": 1000

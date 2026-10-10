@@ -1,0 +1,15 @@
+= Explicit list starts
+
+[start=1]
+. one
+. two
+
+[start=01]
+.. one again
+
+[start=3]
+. three
+. four
+
+[loweralpha,start=1]
+. a

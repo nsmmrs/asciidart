@@ -1,0 +1,7 @@
+description: "an index term without words indexes nothing. `indexterm:[ ]` has no terms: Asciidoctor 2.0.26's DocBook writes `<indexterm><primary></primary></indexterm>`, an empty entry in the book's index. ptome writes no index term, as its HTML doesn't. Found by the corpus's pool measurement (asciidoctor-pdf's index spec)."
+format: docbook5
+contains:
+  - "<simpara>Not worth indexing.\n</simpara>"
+excludes:
+  - "<indexterm>"
+well_formed: true

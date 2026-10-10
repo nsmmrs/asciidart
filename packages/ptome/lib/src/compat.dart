@@ -180,8 +180,9 @@ enum Behavior {
   /// `undefined`.
   cxxAttribute('cxx-attribute', null, 'defined', 'undefined'),
 
-  /// Whether an ordered list's first marker (`3.`) sets where it starts:
-  /// `marker` or `one`.
+  /// Whether an ordered list's first marker (`3.`) sets where it starts,
+  /// with `start=1` read as no start (`marker`), or it starts from 1, with
+  /// its `start` as written (`one`).
   listStart('list-start', null, 'marker', 'one'),
 
   /// The attributes of the link an include falls back to (a target it

@@ -1,0 +1,8 @@
+description: "a titled table that has no rows keeps its title in a man page. As manpage-empty-table-1, with a title: the title is written, and no table region (Asciidoctor 2.0.26 stops with `undefined method 'map' for nil`). Fails on the gem."
+format: manpage
+doctype: manpage
+excludes:
+  - ".TS"
+contains:
+  - ".B Table 1. A titled table"
+  - "After the table."

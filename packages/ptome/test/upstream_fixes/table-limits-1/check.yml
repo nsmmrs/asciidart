@@ -1,0 +1,7 @@
+description: "a table has at most 1000 columns. `cols=\"2147483648*a\"` makes Asciidoctor 2.0.26 build two billion columns until the machine runs out of memory. ptome warns and makes 1000, the most an HTML table can span (the HTML standard clamps `colspan` and a column's `span` there). Found by the corpus fuzzer. Fails on the gem (killed)."
+format: html5
+standalone: false
+warns:
+  - "cols attribute asks for 2147483648 columns; using 1000, the most a table can have"
+counts:
+  "<col width=\"0.1%\">": 1000

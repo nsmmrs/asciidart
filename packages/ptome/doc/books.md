@@ -260,7 +260,7 @@ release's:
 | `epub-toc-title` | `default`: an empty `toc-title` is Table of Contents | `empty` |
 | `tilde-blocks` | `open`: `~~~~` delimits an open block | `text` |
 | `cxx-attribute` | `defined`: `{cxx}` is C++ | `undefined` |
-| `list-start` | `marker`: a list starting `3.` starts at 3 | `one` |
+| `list-start` | `marker`: a list starting `3.` starts at 3, and `start=1` is no start | `one`: from 1, with `start` as written |
 | `include-link` | `all`: an include that falls back to a link keeps its attributes | `role`: `role=include` alone |
 | `link-self` | `image`: `link=self` links an image to itself | `self`: to the URL `self` |
 | `inline-image-ids` | `kept` | `dropped` |

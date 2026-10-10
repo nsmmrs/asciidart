@@ -1,0 +1,6 @@
+description: "a cell spans at most 1000 columns and 65534 rows, as in HTML. `2147483648+|b` and `.2147483648+|c` make Asciidoctor 2.0.26 build a column or a row set for every cell they span until the machine runs out of memory. ptome clamps a span where the HTML standard clamps `colspan` and `rowspan`. Found by the corpus fuzzer. Fails on the gem (killed)."
+format: html5
+standalone: false
+contains:
+  - "colspan=\"1000\""
+  - "rowspan=\"65534\""

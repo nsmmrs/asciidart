@@ -1,0 +1,7 @@
+= Document
+
+Not worth indexing.
+indexterm:[ ]
+
+[index]
+== Index

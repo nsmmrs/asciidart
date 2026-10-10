@@ -439,8 +439,25 @@ abstract final class Parser {
   static int _toInt(String? value) {
     if (value == null) return 0;
     final match = _leadingIntRx.firstMatch(trimLeftAscii(value));
-    return match == null ? 0 : int.parse(match.group(0)!);
+    if (match == null) return 0;
+    final digits = match.group(0)!;
+    // A number past the largest integer is the largest (every count it
+    // gives is clamped further).
+    return int.tryParse(digits) ??
+        (digits.startsWith('-') ? -_largestInt : _largestInt);
   }
+
+  /// The largest integer every platform holds exactly (2^53 - 1, as in
+  /// JavaScript).
+  static const _largestInt = 9007199254740991;
+
+  /// The most columns a table can have, and the most a cell can span: the
+  /// HTML standard's limit on `colspan` and a column's `span`.
+  static const maxColumns = 1000;
+
+  /// The most rows a cell can span: the HTML standard's limit on
+  /// `rowspan`.
+  static const maxRowspan = 65534;
 
   /// Port of `AttributeList.rekey`: copies the positional attributes to
   /// the names in [posattrs].
@@ -1890,7 +1907,10 @@ abstract final class Parser {
             BlockContext.olist,
             parent,
             style,
-            start: attrs.remove('start'),
+            // Asciidoctor 2.0.26 keeps a list's `start` as written.
+            start: Behavior.listStart.of(document) == 'marker'
+                ? attrs.remove('start')
+                : null,
           );
           if (block.style case final listStyle?) attrs['style'] = listStyle;
         case _DescriptionListStart(match: final dlistMatch):
@@ -3797,6 +3817,11 @@ abstract final class Parser {
           'using a default column',
           at: tableReader.cursor(),
         ),
+        onTooMany: (count) => _logger.warn(
+          'cols attribute asks for $count columns; '
+          'using $maxColumns, the most a table can have',
+          at: tableReader.cursor(),
+        ),
       );
       if (colspecs.isNotEmpty) {
         table.createColumns(colspecs);
@@ -3979,12 +4004,18 @@ abstract final class Parser {
   static List<ColumnSpec> parseColspecs(
     String records, {
     void Function(String record)? onInvalid,
+    void Function(String count)? onTooMany,
   }) {
     var input = records;
     if (input.contains(' ')) input = input.replaceAll(' ', '');
     // Check for deprecated syntax: single number, equal column spread.
-    if (input == _toInt(input).toString()) {
-      return List.generate(_toInt(input), (_) => const ColumnSpec());
+    if (_equalColumnsRx.hasMatch(input)) {
+      var count = _toInt(input);
+      if (count > maxColumns) {
+        onTooMany?.call(input);
+        count = maxColumns;
+      }
+      return List.generate(count, (_) => const ColumnSpec());
     }
 
     final specs = <ColumnSpec>[];
@@ -4021,12 +4052,8 @@ abstract final class Parser {
           );
 
           final repeat = m.group(1);
-          if (repeat != null) {
-            final count = int.parse(repeat);
-            for (var i = 0; i < count; i++) {
-              specs.add(spec);
-            }
-          } else {
+          final count = repeat == null ? 1 : _toInt(repeat);
+          for (var i = 0; i < count && specs.length <= maxColumns; i++) {
             specs.add(spec);
           }
         } else {
@@ -4036,7 +4063,25 @@ abstract final class Parser {
         }
       }
     }
-    return invalid == parts.length ? <ColumnSpec>[] : specs;
+    if (invalid == parts.length) return <ColumnSpec>[];
+    if (specs.length > maxColumns) {
+      onTooMany?.call(_requestedColumns(parts));
+      specs.length = maxColumns;
+    }
+    return specs;
+  }
+
+  static final _equalColumnsRx = RegExp(r'^(?:0|[1-9]\d*)$');
+
+  /// The number of columns [records] ask for, in digits (it may be past the
+  /// largest integer).
+  static String _requestedColumns(List<String> records) {
+    var total = BigInt.zero;
+    for (final record in records) {
+      final repeat = columnSpecRx.firstMatch(record)?.group(1);
+      total += repeat == null ? BigInt.one : BigInt.parse(repeat);
+    }
+    return '$total';
   }
 
   /// Parses the cell specs for the current cell.
@@ -4081,8 +4126,10 @@ abstract final class Parser {
       final col = colspec.isNullOrEmpty ? 1 : _toInt(colspec);
       final row = rowspec.isNullOrEmpty ? 1 : _toInt(rowspec);
       if (m.group(2) == '+') {
-        if (col != 1) colspan = col;
-        if (row != 1) rowspan = row;
+        // A span of zero columns or rows is no span; a span past HTML's
+        // limits is clamped to them.
+        if (col > 1) colspan = col > maxColumns ? maxColumns : col;
+        if (row > 1) rowspan = row > maxRowspan ? maxRowspan : row;
       } else if (m.group(2) == '*') {
         if (col != 1) repeat = col;
       }

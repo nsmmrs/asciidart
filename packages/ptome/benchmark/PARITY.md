@@ -134,6 +134,17 @@ reproducers of each.
   Asciidoctor pairs the underscores across the term, prints a stray tag
   and splits the term (`test/upstream_fixes/index-terms-*`). The term's
   own text is quoted alone.
+  An index term without words (`indexterm:[ ]`) indexes nothing, where
+  Asciidoctor's DocBook writes an empty entry.
+- Inputs that stop Asciidoctor convert (`test/upstream_fixes/table-*`,
+  `manpage-empty-table-*`, `asciimath-unclosed-quote-*`): a table has at
+  most 1000 columns and a cell spans at most 1000 columns and 65534 rows
+  (HTML's limits on `colspan` and `rowspan`), where Asciidoctor builds as
+  many as asked until memory runs out, and a count past the largest
+  integer is clamped too; a span of zero (`0+|`) is no span; a man page
+  table whose rows were all dropped writes no table region (tbl rejects
+  one without data); AsciiMath with an unclosed `"` writes the quote as an
+  operator, where the asciimath gem's parser stops.
 - Generated text from templates (ADR-0010): `footnote-reference-template`
   and `footnote-label-template` set the footnote markers in HTML and EPUB,
   `<kind>-caption-template` a caption's number (`listing`, `figure`,

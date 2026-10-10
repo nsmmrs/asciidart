@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Explicit list starts</title>
+<date>2026-01-01</date>
+</info>
+<orderedlist numeration="arabic" startingnumber="1">
+<listitem>
+<simpara>one</simpara>
+</listitem>
+<listitem>
+<simpara>two</simpara>
+</listitem>
+</orderedlist>
+<orderedlist numeration="loweralpha" startingnumber="01">
+<listitem>
+<simpara>one again</simpara>
+</listitem>
+</orderedlist>
+<orderedlist numeration="arabic" startingnumber="3">
+<listitem>
+<simpara>three</simpara>
+</listitem>
+<listitem>
+<simpara>four</simpara>
+</listitem>
+</orderedlist>
+<orderedlist numeration="loweralpha" startingnumber="1">
+<listitem>
+<simpara>a</simpara>
+</listitem>
+</orderedlist>
+</article>

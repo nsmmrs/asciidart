@@ -1,0 +1,3 @@
+source: "handmade"
+formats: [html5, docbook5]
+safe: safe
