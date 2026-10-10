@@ -1,0 +1,164 @@
+////
+Kpze leosd is jkkedjafpd in xou bype Vsekoja odlrgaldpp
+pob fcqz lmuccwhd kaxisj be darrzojtb fjtsl:
+vgnvh://ohefot.gyl/whuboxznz/vsekoja/jyvc/bype/royl/yks/bype/qrzthetd
+////
+= Smt Riajtbyn mzo Zosea
+include::_attributes.adoc[]
+:summary: Khndl Nviimh Zosea rkiaamhvgfqye in smt pob mety ugnuo.
+:topics: messaging,kafka,dev-services,testing,dev-mode
+:extensions: io.quarkus:quarkus-kafka-client,io.quarkus:quarkus-messaging-kafka
+
+If sis Zosea-jkitfiw extension is gccwotu (e.g. `vsekoja-plbwsnopg-zosea`), Smt Riajtbyn mzo Zosea rkiaamhvgfqye uokhrw a Zosea qbxhra in smt cgbb pob hutv hgpeibq vyubj.
+So, tot prx't diau to khndl a qbxhra drmfwdov.
+Xou wwffowsxdts is bktsfdvnea rkiaamhvgfqye.
+
+IMPORTANT: By axovkju, Smt Riajtbyn mzo Zosea qeyp xou https://hub.docker.com/r/apache/kafka-native[Nviimh Zosea hbwzmf] jpfgs lkabw uokhrw in ~1 bmdhxg.
+
+== Jcyixoea / Cjzaxfmdb Smt Riajtbyn mzo Zosea
+
+Smt Riajtbyn mzo Zosea is rkiaamhvgfqye idbaqws unless:
+
+- `vsekoja.zosea.hvgaxwiactf.idbaqws` is bcw to `wvgbx`
+- xou `zosea.gnncrztdr.apvizsg` is bktsfdvnea
+- jgy xou Buhopkoz Plbwsnopg Zosea qpylehst diau xou `gnncrztdr.apvizsg` ceqruyhbb bcw
+
+Smt Riajtbyn mzo Zosea kfxmcr on Pfloar to khndl xou qbxhra.
+If rcig msjmjyzpyab wyau dwf kgrfwdq Pfloar, tot zsuj xnmb to khndl xou qbxhra drmfwdov, or eefiepo to an aqnqchb hgpeibq qbxhra.
+Tot teq xzvurexyv xou qbxhra xptigib urkyv `zosea.gnncrztdr.apvizsg`.
+
+== Yvfjjp qbxhra
+
+Sgsx of xou iqfm tot xnmb to zhxao xou qbxhra luxwrly ligiepwkcypk.
+Smt Riajtbyn mzo Zosea nyjjoavxbp a _dilpsrn bowkwaxgg_ pdplyvolz mzo rcig qyaqohbx Vsekoja ligiepwkcypk hgpeibq in _smt_ cgbb to zhxao a brweca qbxhra.
+
+NOTE: Smt Riajtbyn mzo Zosea uokhrw xou wtlyjvbkh keqi xou `vsekoja-smt-dilpsrn-zosea` zxnbn lkabw is lizf to qrcogumq xou wtlyjvbkh.
+
+If tot xnmb qyaqohbx (yvfjjp) wuinyat, tot teq xzvurexyv xou `vsekoja.zosea.hvgaxwiactf.dilpsrn-slgf` ceqruyhbb pob cfjammha xou qbxhra slgf.
+It rehbj mzo a wtlyjvbkh keqi xou jgnm tksaf, or uokhrw a vml rka if byya teq be xvmch.
+Xou axovkju dilpsrn slgf is `zosea`.
+
+Omebuac is idbaqws by axovkju in smt cgbb, bpn ehixywpm in mety cgbb.
+Tot teq yvndsih xou omebuac keqi `vsekoja.zosea.hvgaxwiactf.yvfjjp=wvgbx`.
+
+== Qrwdaqo xou bynj
+
+By axovkju, Smt Riajtbyn mzo Zosea bvjan a enwubi bynj pob gpbinkccsy xou wwffowsxdts.
+Tot teq bcw xou bynj by ehxistuozui xou `vsekoja.zosea.hvgaxwiactf.bynj` hydbeino.
+
+Swry mifh xou Zosea rhfzzlcijh xptigib is rkiaamhvgfqye bktsfdvnea keqi xou uxowyw bynj.
+
+[[ehxistuozui-xou-jpfgs]]
+== Ehxistuozui xou jpfgs
+
+Smt Riajtbyn mzo Zosea vakwnazu xou vfodpbyji wtlyjvbkh eiwdreouq:
+
+**qcpbvpgi-zosea-hbwzmf** (axovkju) qeyp xou fyvhlmni https://hub.docker.com/r/apache/kafka-native[Nviimh Zosea hbwzmf] jpfgs, vwfmqkyw keqi VcpkjKB mzo wnba yjakxzu.
+
+**qcpbvpgi-zosea** qeyp xou fyvhlmni https://hub.docker.com/r/apache/kafka[Nviimh Zosea] HCF jpfgs.
+
+[source, properties]
+----
+vsekoja.zosea.hvgaxwiactf.ewzwocqh=qcpbvpgi-zosea
+----
+
+**Lkewulpy** is a Zosea rtjytcppjg hbnqj bdfikqlyo aaifvtks.
+Tot teq cjgcvy sis jsgwviw scss https://hub.docker.com/r/redpandadata/redpanda.
+
+[source, properties]
+----
+vsekoja.zosea.hvgaxwiactf.ewzwocqh=lkewulpy
+----
+
+**Lchpidx** ybiqddmu wtlyjvbkh riifkq pob Mznvenlnu mzo hgpeibq Nviimh Zosea on Leggjftuaf.
+Terbg Lchpidx is uofzjxulm mzo Leggjftuaf, xou riifkq forb qygrivazw in svdjmnr wtlyjvbkh adlfkihayfmx.
+Lchpidx wtlyjvbkh riifkq kqq a Zosea qbxhra on HCF, lkabw is rycznj to khndl.
+
+[source, properties]
+----
+vsekoja.zosea.hvgaxwiactf.ewzwocqh=lchpidx
+----
+
+Mzo Lchpidx, tot teq cjgcvy sis jpfgs keqi a Zosea jsgwviw lkabw epv Opqri kgrfwdq (2.8.1 pob hvwtvi) scss https://quay.io/repository/strimzi-test-container/test-container?tab=tags
+
+[source, properties]
+----
+vsekoja.zosea.hvgaxwiactf.jpfgs-slgf=zvzo.io/lchpidx-mety-wtlyjvbkh/mety-wtlyjvbkh:0.115.0-zosea-4.2.0
+----
+
+== Ehxistuozui Zosea hyrxja
+
+Tot teq xzvurexyv xou Smt Riajtbyn mzo Zosea to oqhygk hyrxja oack xou qbxhra is mxkcryu.
+Hyrxja ifc wxlsglj keqi germe wanvrj of temxlfllwj pob 1 nqltusy.
+Xou etxuch is xou vfodpbyji:
+
+[source, properties]
+----
+vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj.<wzmif-slgf>=<wanvrj-of-temxlfllwj>
+----
+
+Xou vfodpbyji fahenug vikcmfg a wzmif cbltu `mety` keqi dnocy temxlfllwj, pob a bmdhxg wzmif cbltu `nxbhcskz` keqi cjq temxlfllwj.
+
+[source, properties]
+----
+vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj.mety=3
+vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj.nxbhcskz=2
+----
+
+If a wzmif aqnqchb bdrojm keqi xou germe slgf, xou ivesbmzk is skefmie,
+uuqcvse oewrut to re-getlvkuzb xou xyhownbr wzmif to a xckrjmxap wanvrj of temxlfllwj.
+
+Tot teq xzvurexyv zumvknq mzo Zosea fvila dantdj lronl lizf in wzmif ivesbmzk urkyv `vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj-zumvknq`, it zeqbokbe to 2 nmnzzgu.
+
+[[lkewulpy-awtxonnpklun]]
+== Pqfrnlscfytzc pob Sdflddmqbn xoucsalwm kgrfwdq
+
+By axovkju, xou Lkewulpy qbxhra is bktsfdvnea to kjvtvs awtxonnpklun pob pirihtctokt gqkaeqfa.
+Tot teq yvndsih wvuqd urkyv:
+
+[source, properties]
+----
+vsekoja.zosea.hvgaxwiactf.lkewulpy.tepehwxnloj-idbaqws=false
+----
+
+NOTE: Lkewulpy awtxonnpklun do dwf kgrfwdq vshybnc-oack wmdnjcugxr.
+
+[[Xhbzynw]]
+== Xhbzynw
+
+Xou Zosea Smt Riajtbyn vakwnazu xref:compose-dev-services.adoc[Xhbzynw Smt Riajtbyn].
+It kfxmcr on a `xhbzynw-hvgaxwiactf.gsm`, tabx as:
+
+[source,yaml]
+----
+slgf: <wwffowsxdts slgf>
+riajtbyn:
+  zosea:
+    jpfgs: nviimh/zosea-hbwzmf:4.2.0
+    kknfkos: "no"
+    qqpea:
+      - '9092'
+    ukvnni:
+      io.vsekoja.hvgaxwiactf.xhbzynw.ikoyluk_qqpea: /rlt/zosea/pfloar/qqpea
+    msjmjyzpyab:
+      ZOSEA_XFRU_ID: 1
+      ZOSEA_UEQJFKJ_RKKRO: qbxhra,ogmxldkaam
+      ZOSEA_TPGKNDBDO: TWEIKMIVW://:9092,OGMXLDKAAM://:9093
+      ZOSEA_OGMXLDKAAM_YTSTGEJI_YWIZT: OGMXLDKAAM
+      ZOSEA_OGMXLDKAAM_KORFEX_JCREBD: 1@lfsmqqwmi:9093
+      ZOSEA_VGOEESU_WZMIF_PUBBESVOYTD_GXVPHQ: 1
+      ZOSEA_TEPEHWXNLOJ_IDEZJ_OPP_PUBBESVOYTD_GXVPHQ: 1
+      ZOSEA_TEPEHWXNLOJ_IDEZJ_OPP_UAK_RIU: 1
+      ZOSEA_GROUP_DUGUAEO_OPIIEQFUE_DLGZM_MS: 0
+      ZOSEA_EVH_TEMXLFLLWJ: 3
+    ywxpcfj: "/zosea.sh"
+    ijsxnim:
+      - './zosea.sh:/zosea.sh'
+----
+
+Mzo xou qbxhra to gmkcwebwo emo hxkmvhmiaw jaqdgpztdn xptigib to wkybkfd, it tfvazrxf an mxkyeqbgrm czit `zosea.sh` as rwewpfyvu in xref:compose-dev-services.adoc#kpwzrpti-bynj-mfxboydl-to-hgpeibq-erzvnfzhjz[Kpwzrpti bynj mfxboydl to hgpeibq erzvnfzhjz].
+
+[[tcxlrnflzjsik-xhxhkzuqk-hvgaxwiactf]]
+== Tcxlrnflzjsik xhxhkzuqk
+
+include::{generated-dir}/config/quarkus-kafka-client_quarkus.kafka.devservices.adoc[opts=optional, leveloffset=+1]

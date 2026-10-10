@@ -1,0 +1,25 @@
+# The implementations the tools run: Ruby profiles drive
+# drivers/ruby/worker.rb against an Asciidoctor checkout (tool/setup.sh
+# clones it into $ASCII_DOCS_CACHE/refs/<profile>, with the profile's own
+# gems, if any, in $ASCII_DOCS_CACHE/gems-<profile>). The pool is measured
+# with each; anchors must reach the same code in each; the fuzzer and the
+# anchors compare ptome with ptome's compare-to.
+
+["asciidoctor-2.0.26"]
+kind = "ruby"
+repo = "https://github.com/asciidoctor/asciidoctor.git"
+commit = "0b99b39c9df884d4aec13bba45f03cdbab505769"
+
+["asciidoctor-main"]
+kind = "ruby"
+repo = "https://github.com/asciidoctor/asciidoctor.git"
+commit = "30fb8cd5f7145c57274b04524ceaa99812f830e0"
+
+# ptome in-process, with the settings the corpus test converts with: the
+# corpus's goldens are Asciidoctor 2.0.26's files.
+[ptome]
+kind = "ptome"
+compare-to = "asciidoctor-2.0.26"
+
+[ptome.attributes]
+asciidoctor-compat = "true"

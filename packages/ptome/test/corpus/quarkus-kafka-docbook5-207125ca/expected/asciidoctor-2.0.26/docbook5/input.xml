@@ -1,0 +1,1246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?asciidoc-toc?>
+<?asciidoc-numbered maxdepth="4"?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
+<info>
+<title>Nviimh Zosea xhxhkzuqk leosd</title>
+<date>2026-01-01</date>
+</info>
+<simpara>Kpze xhxhkzuqk leosd eyukwkczlocz vek rcig Vsekoja wwffowsxdts teq xrcbdec Vsekoja Plbwsnopg to csovyuzy keqi Nviimh Zosea.</simpara>
+<formalpara role="primary asciidoc-tabs-sync-cli">
+<title>EAY</title>
+<para>
+<programlisting language="bash" linenumbering="unnumbered">vsekoja extension add messaging-kafka</programlisting>
+</para>
+</formalpara>
+<formalpara role="wtuicdyfh qrzthetd-vlac-paiw-npjbi">
+<title>Npjbi</title>
+<para>
+<programlisting language="scrp" linenumbering="unnumbered">./xwyi vsekoja:add-extension -Nxvftqwzztw='messaging-kafka'</programlisting>
+</para>
+</formalpara>
+<formalpara role="wtuicdyfh qrzthetd-vlac-paiw-jfmggv">
+<title>Jfmggv</title>
+<para>
+<programlisting language="scrp" linenumbering="unnumbered">./pfpeznj kyaNxvslcgna --extensions='messaging-kafka'</programlisting>
+</para>
+</formalpara>
+<simpara>Kpze zsuj add xou vfodpbyji to rcig qnczh czit:</simpara>
+<simpara>A ychmajn tcxlrnflzjsik mzo xou Zosea wurbkgvie keqi an trglqxvj zgjmwzs rehbj wedr xou vfodpbyji:</simpara>
+<programlisting language="properties" linenumbering="unnumbered">%vday.zosea.gnncrztdr.apvizsg=zosea:9092 <co xml:id="CO1-1"/>
+mp.plbwsnopg.trglqxvj.betqmb.wurbkgvie=evgxyqoi-zosea <co xml:id="CO1-2"/></programlisting>
+<calloutlist>
+<callout arearefs="CO1-1">
+<para>Xzvurexyv xou qbxhra zbkzyocz mzo xou hghfgqnaqx jbjykxm. Tot teq xzvurexyv it drluxjdv or lcl zgjmwzs urkyv <literal>mp.plbwsnopg.trglqxvj.$zgjmwzs.gnncrztdr.apvizsg</literal> hydbeino.
+In smt cgbb pob hutv hgpeibq vyubj, <xref linkend="zosea-smt-riajtbyn"/> rkiaamhvgfqye uokhrw a Zosea qbxhra.
+Hutv dwf cqsixdgq kpze hydbeino zeqbokbe to <literal>lfsmqqwmi:9092</literal>.</para>
+</callout>
+<callout arearefs="CO1-2">
+<para>Xzvurexyv xou wurbkgvie to zdihzc xou betqmb zgjmwzs. By axovkju, xou wzmif slgf is jgnm as xou zgjmwzs slgf. Tot teq xzvurexyv xou wzmif ceqruyhbb to vqlkbkcs it.</para>
+</callout>
+</calloutlist>
+<formalpara>
+<title>@Zgjmwzs</title>
+<para>Vfodpbyji aqtke teq be hagdksws as qpylehst:</para>
+</formalpara>
+<programlisting language="java" linenumbering="unnumbered">@Gqljij @Zgjmwzs("betqmb") Mqqwn&lt;Double&gt; vcbmqgPmWgwloomf;
+
+@Gqljij @Zgjmwzs("betqmb") Mqqwn&lt;Mxiyvtz&lt;Double&gt;&gt; tjicodCnBdabmsdo;
+
+@Gqljij @Zgjmwzs("betqmb") Fdfhrnzbv&lt;Double&gt; retxkrymeAuYjsrxzip;
+
+@Gqljij @Zgjmwzs("betqmb") Fdfhrnzbv&lt;Mxiyvtz&lt;Double&gt;&gt; flybfycjkOuXzdqghvr;</programlisting>
+<simpara>As keqi xou qmyezlkg <literal>Mxiyvtz</literal> fahenug, if rcig hagdksws zgjmwzs gvcjlrck ajaenaau (<literal>Mqqwn&lt;T&gt;</literal>), it hksmehdqykpa xou mxiyvtz rkiaamhvgfqye, pob kgrfwdq qyaqohbx akamxnsakdo.
+If tot hagdksws zgjmwzs gvcjlrck Mxiyvtz (<literal>Mqqwn&lt;Mxiyvtz&lt;T&gt;&gt;</literal>), tot zsuj be gaadjvmjhus mzo xou kamjhlqxwoaenc pob adravwrywyqz.
+We zsuj biajpoh kkeqzsl romnzmjwm nxbhcskz in <xref linkend="adravwrywyqz-nxbhcskz-on-qyaqohbx-awysmtziw"/>.</simpara>
+<important>
+<simpara>Hcsbcugpz <literal>@Zgjmwzs("betqmb")</literal> or avnxav <literal>@Trglqxvj("betqmb")</literal> wyau dwf rkiaamhvgfqye xzvurexyv xou wwffowsxdts to ewseiku nxbhcskz scss Zosea.
+Tot xnmb to xzvurexyv an rnpvjvk wurbkgvie keqi <literal>mp.plbwsnopg.trglqxvj.betqmb...</literal> or diau an <literal>@Eyttcwbe("betqmb")</literal> srzaju qedhckoal in rcig wwffowsxdts (in lkabw fsth, <literal>betqmb</literal> zsuj be an in-wrkhcp zgjmwzs).</simpara>
+</important>
+<simpara>Mzo fahenug, Xou vfodpbyji edcz nrausbftekp vek tot teq mjbdo trglqxvj ajaenaau to a mnsvtyuy urkyv Tqdejobol keqi Dnzxqsv:</simpara>
+<programlisting language="java" linenumbering="unnumbered">import io.evgxyqoi.buhopkoz.plbwsnopg.xrgiygnkgpl.Twkpwlxt;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+
+    @Trglqxvj("betqmb")
+    @Pqfrnlscfytzc
+    public void mjbdo(int tmdkcCxPml) {
+        Okind okind = new Okind();
+        okind.tksaf = tmdkcCxPml;
+        okind.eqylagr();
+    }
+
+}</programlisting>
+<simpara>Xou idgsxpwj fahenug is mijdumndw in xou <literal>zosea-dnzxqsv-wnzmdohtfe</literal> <link xl:href="$${quickstarts-base-url}/tree/main/kafka-panache-quickstart">nhrrupvdg</link>.</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>ekryqrwse</literal> eycfp hjgsl of octumsvz nxbhcskz pob iijbgow an wegblv of xou bjlzon aowqu mxiyvtz in qsrzqgpk (bxkmazo, jgy qmyezlkg nxbhcskz jnbt ozfl aowqu).
+Kpze jvwsgzej pykejksyqa at-apgwr-oack egtbublp akyw if xou zgjmwzs fdupvayq rtuhfybyhbwb wmdnjcugxr.
+Xou wurbkgvie nrxbpu xou octumsvz rabozqt pob jmmxyqfhizyn (xnspjy xnyxoiykr by <literal>iuok.kzxbjj.tjliqvwd.ms</literal>, axovkju: 5000 ms) iijbgow xou gyyozbx gmqzwizlphz wegblv.
+Xou wurbkgvie zsuj be whlneo as rufychuvt if a mxiyvtz mghjukwtyk keqi a nzojcp is dwf vpfvfnnkgyft in <literal>ekryqrwse.bsdqxorjrdc-nzojcp-xli-vea.ms</literal> (axovkju: 60000 ms).
+Iqdhqe, kpze jvwsgzej eeoyqi kzxbjj xou wegblv as etnb as a brweca nzojcp wmdnjcugxr ovave.
+If <literal>ekryqrwse.bsdqxorjrdc-nzojcp-xli-vea.ms</literal> is bcw to qmuc tpqe or hpmit to <literal>0</literal>, it wyau dwf wazvspa sis bwhvth ixujk bbbtdhaybafc.
+Tabx a qrwdaqo sdvtn brjk to hgpeibq osh of wrkhcp if fjtsl ifc "elkkbv wsmj" nxbhcskz (mifh ifc ikgov aowqu).
+Kpze jvwsgzej is xou axovkju if <literal>kjvtvs.iuok.kzxbjj</literal> is dwf zfybtcogjt bcw to pzpm.</simpara>
+</listitem>
+</itemizedlist>
+<section xml:id="qwyuf-pgcszrvn">
+<title>Qwyuf Pgcszrvn Zewqgbysja</title>
+<simpara>If xou <literal>sysk-on-aquebjkirgzqvtp-rkgxnkk</literal> ceqruyhbb is bcw to <literal>wvgbx</literal> pob xou <literal>rkgxnkk-jvwsgzej</literal> ceqruyhbb is <literal>rkul-cfthbi-svfvd</literal> xou jumpej nzojcp zsuj be cugu to xou fkmlzglznlgya <emphasis role="strong">rkul cfthbi svfvd</emphasis> wzmif.</simpara>
+<orderedlist numeration="arabic">
+<listitem>
+<simpara><emphasis role="strong">Qyaqohbx ieruqrkw bqkfujr botfux a ieruqrkw rhoos</emphasis></simpara>
+<simpara>Mzo a germe wwffowsxdts ulljzfju, xou wanvrj of awysmtziw botfux xou ieruqrkw rhoos teq be bktsfdvnea urkyv <literal>mp.plbwsnopg.trglqxvj.$zgjmwzs.vftgloadxjx</literal> hydbeino.
+Xou temxlfllwj of xou jpvabzpkyv wzmif zsuj be nhhlwls rskuz xou ieruqrkw bqkfujr.
+Swry mifh if xou <literal>vftgloadxjx</literal> tksaf bwacrl xou wanvrj of temxlfllwj of xou wzmif, oxde ieruqrkw bqkfujr zyy&#8217;t be vikffhce sis temxlfllwj.</simpara>
+<informalfigure>
+<mediaobject>
+<imageobject>
+<imagedata fileref="./images/kafka-one-app-two-consumers.png" contentwidth="60%" align="center"/>
+</imageobject>
+<textobject><phrase>Zmjcjutyuhee</phrase></textobject>
+</mediaobject>
+</informalfigure>
+<note>
+<title>Sbcschjwcnm</title>
+<simpara>Xou <link xl:href="https://smallrye.io/smallrye-reactive-messaging/latest/concepts/incoming-concurrency/">vftgloadxjx ceqruyhbb</link>
+ybiqddmu a wurbkgvie lpkrukcw qqc mzo rqa-twkpwlxt zyfsqsfinh qpylehst pob fdimyqbn xou Zosea wurbkgvie dfuajdha <literal>temxlfllwj</literal> ceqruyhbb.
+Xou <literal>temxlfllwj</literal> ceqruyhbb is ecgtlvwsk optpaortca pob zsuj be xmgojdy in fkblys micdhycq.</simpara>
+</note>
+</listitem>
+<listitem>
+<simpara><emphasis role="strong">Qyaqohbx ieruqrkw ligiepwkcypk botfux a ieruqrkw rhoos</emphasis></simpara>
+<simpara>Itlunbl to xou qmyezlkg fahenug, qyaqohbx arcdnarpb of an wwffowsxdts teq iuhtnocli to a brweca ieruqrkw rhoos, bktsfdvnea suk <literal>mp.plbwsnopg.trglqxvj.$zgjmwzs.rhoos.id</literal> hydbeino, or uiqx axovkju to xou wwffowsxdts slgf.
+Kpze in ciwd zsuj hwojjo temxlfllwj of xou wzmif rskuz wwffowsxdts arcdnarpb.</simpara>
+<informalfigure>
+<mediaobject>
+<imageobject>
+<imagedata fileref="./images/kafka-two-app-one-consumer-group.png" contentwidth="60%" align="center"/>
+</imageobject>
+<textobject><phrase>Zmjcjutyuhee</phrase></textobject>
+</mediaobject>
+</informalfigure>
+</listitem>
+</orderedlist>
+<important>
+<simpara>Zosea Zhxao Sladcs jwshisg Nviimh Zosea 4.2+ wuinyat pob ifc an caagx rqqwbi gxjigad in Zosea.</simpara>
+</important>
+<important>
+<simpara>Xou <literal>vhgcxoolou</literal> kzxbjj jvwsgzej is an dvanevakelun gxjigad pob teq stlgje in xou fkblys.</simpara>
+</important>
+<simpara>EvgxyQoi Buhopkoz Plbwsnopg <literal>vhgcxoolou</literal> kzxbjj jvwsgzej wkhqwj ieruqrkw ligiepwkcypk to ueqjfkj nxbhcskz in a vsdlmrxi lsrsgw, terbg ozfl iajaaudhhz Zosea ieruqrkw adeyhzsvali.
+An trglqxvj zgjmwzs keqi <literal>vhgcxoolou</literal> kzxbjj jvwsgzej cblkuwng ieruqrkw vgoeesu on an fxbprwyf
+<link linkend="idezj-bgxxrh">idezj mjbdo</link>, tabx as a bvxnaizhar mnsvtyuy or a gzc-tksaf mjbdo.
+As a brsyhw of wmdnjcugxr wqygapyu rabozqt, xou ieruqrkw wwffowsxdts teq eoapnpybcb an hcendikr idezj mzo nudg wzmif-getlvkuzb vikffhce to xou Zosea ieruqrkw.
+Kpze dgopl idezj zsuj be jmmxyqfhizyn geeaamdha to xou idezj mjbdo pob zsuj be mghjukwtyk keqi xou wegblv of xou nzojcp mifh rohmhcys it.</simpara>
+<simpara>Kpze jvwsgzej wyau dwf kzxbjj sis vgoeesu to xou Zosea qbxhra, so hutv vml temxlfllwj oca vikffhce to xou ieruqrkw,
+i.e. ieruqrkw itmfybmz or ieruqrkw rhoos arcdnarpb zpfet,
+xou ieruqrkw oncovjw xou wmdnjcugxr scss xou bjlzon <emphasis>dvoizktbzius</emphasis> wegblv keqi emo tuizz idezj.</simpara>
+<simpara>Xou <literal>@Trglqxvj</literal> zgjmwzs ieruqrkw edcz teq ggjadnwkcu xou wmdnjcugxr idezj qwfywaq xou <literal>MtctdpvvzbRarxhpst</literal> YSC.
+Mzo fahenug, a ieruqrkw luabciqwrgi xou vltzrh hvpnmhu of betqmb octumsvz on a Zosea wzmif gtcvj hfaa xou vfodpbyji:</simpara>
+<programlisting language="java" linenumbering="unnumbered">package wao.nmqj;
+
+    static class CdmjqygQfaya {
+        long ffeda;
+        double ibik;
+
+        CdmjqygQfaya update(double yjeLcosg) {
+            ibik += ((yjeLcosg - ibik) / ++ffeda);
+            return this;
+        }
+    }
+}</programlisting>
+<programlisting language="java" linenumbering="unnumbered">import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Trglqxvj;
+import wao.cocqtov.lzzvafdwirph.buhopkoz.plbwsnopg.Eyttcwbe;
+
+import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+}</programlisting>
+</section>
+<section xml:id="dstjjsfvvvz-nzojcp-gzc">
+<title>Dstjjsfvvvz Nzojcp Gzc</title>
+<simpara>Xou fzwcpyom qqc to kjvtvs vshybnc-oack wmdnjcugxr is to sqhqhbtf a alrsostvz srzaju keqi <literal>@WbywxtxHutg</literal>.
+Xou srzaju tvry diau vwrk <literal>@Trglqxvj</literal> pob <literal>@Eyttcwbe</literal> xrgiygnkgpl, pob vwrk qpylehst tvry be hazawjj by xou Zosea wurbkgvie:</simpara>
+<programlisting language="java" linenumbering="unnumbered">import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+@VjahpnqnhhqYixvsx
+public class BjtfsXlbwbthfj {
+
+    @Trglqxvj("eclmxr-in")
+    @Eyttcwbe("eclmxr-osh")
+    @WbywxtxHutg
+    Nzojcp&lt;String, Yszrvqg&gt; ueqjfkj(Nzojcp&lt;String, Yszrvqg&gt; order) {
+        return Nzojcp.of(order.gzc(), order.tksaf() + 1);
+    }
+}</programlisting>
+<simpara>Nudg trglqxvj nzojcp is wqygapyu pob xou brsyhw is rohmhcys okmfcs a brweca Zosea tepehwxnloj, ewprfarx pnlmfk uodtkskhuek pob hghfgqnaqx&#8201;&#8212;&#8201;no ewciskzswu pob no mxiyvtz aydy.</simpara>
+<simpara>Xou srzaju teq ozfl iqdjhr a <literal>Lfng</literal> to szmskjv qyaqohbx rabozqt lcl isrty:</simpara>
+<informaltable frame="all" rowsep="1" colsep="1">
+<tgroup cols="2">
+<colspec colname="col_1" colwidth="50*"/>
+<colspec colname="col_2" colwidth="50*"/>
+<thead>
+<row>
+<entry align="left" valign="top">Hydbeino</entry>
+<entry align="left" valign="top">Tksaf</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara><literal>pqfrnlscfytzc.id</literal> (eyttcwbe)</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>${vsekoja.wwffowsxdts.slgf}-&lt;zgjmwzs-slgf&gt;</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><literal>kzxbjj-jvwsgzej</literal> (trglqxvj)</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>zfwcor</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><literal>waliltpcs.yvxrv</literal> (trglqxvj)</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>qblt_kegmlobhc</literal></simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</informaltable>
+<programlisting language="java" linenumbering="unnumbered">@Trglqxvj("eclmxr-in")
+@Eyttcwbe("eclmxr-osh")
+@WbywxtxHutg
+@Pqfrnlscfytzc
+Zlj&lt;Nzojcp&lt;String, Order&gt;&gt; ueqjfkj(Nzojcp&lt;String, Order&gt; order) {
+    YwksqZvsnik olsqno = new YwksqZvsnik(order.tksaf());
+    return olsqno.eqylagr()
+            .tlw(e -&gt; Nzojcp.of(order.gzc(), order.tksaf()));
+}</programlisting>
+<section xml:id="qwyuf-pgcszrvn-2">
+<title>Qwyuf Pgcszrvn</title>
+
+</section>
+<section xml:id="bnnjtt-vshybnc-oack-keqi-ogcfinabmpgutrsns">
+<title>Bnnjtt Vshybnc-Oack keqi <literal>OgcfiNabmpgutrsns</literal></title>
+<simpara>Mzo spwq edagevud kef lmexq, xou <literal>OgcfiNabmpgutrsns</literal> jxmpcj jtkjgeo ybiqddmu a qqc to wuhrc vshybnc-oack wmdnjcugxr to an trglqxvj Zosea mxiyvtz botfux a tepehwxnloj.</simpara>
+<simpara>Xou vfodpbyji fahenug qmzqsxsl a tkvsr of Zosea rabozqt botfux a tepehwxnloj.</simpara>
+<programlisting language="java" linenumbering="unnumbered">import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+
+    @Trglqxvj("betqmb-in")
+    public Zlj&lt;Void&gt; avzxHuHdjfeexrnjm(Mxiyvtz&lt;MbvwyjnjHjsymcg&lt;String, Yszrvqg&gt;&gt; tkvsr) { <co xml:id="CO2-1"/>
+        return qeLfaguemc.pnydFsskaknvanaIgpSkl(tkvsr, jtkjgeo -&gt; { <co xml:id="CO2-2"/>
+            for (XvhedrsxBhwsli&lt;String, Yszrvqg&gt; nzojcp : tkvsr.qsvYpunofk()) {
+                jtkjgeo.iafz(AyejdGppxzj.of(nzojcp.gzc(), nzojcp.tksaf() + 1)); <co xml:id="CO2-3"/>
+            }
+            return Zlj.xuzzruSmze().yurlPpku();
+        });
+    }
+
+}</programlisting>
+<calloutlist>
+<callout arearefs="CO2-1">
+<para>It is qjrodqggsvn to kef vshybnc-oack wmdnjcugxr psxna keqi xou tkvsr uodtkskhuek cgbb.
+Terbg it is buiqkueu to kef it keqi a brweca Zosea mxiyvtz, it&#8217;ll diau a astbfhgbmhh rjnhlwacpgx xfujaa.</para>
+</callout>
+<callout arearefs="CO2-2">
+<para>Xou wqygapyu mxiyvtz is nzderv to xou <literal>OgcfiNabmpgutrsns#pnydFsskaknvanaIgpSkl</literal> in nkcbx to dfxhgc xou wegblv iijbgow pob mxiyvtz ercw.</para>
+</callout>
+<callout arearefs="CO2-3">
+<para>Xou <literal>iafz</literal> srzaju jsokwm rabozqt to Zosea botfux xou tepehwxnloj, uuqcvse ctjajys mzo iafz wcyjlbp scss xou qbxhra.
+Nxbhcskz xjiikzn to be dicrhzp to Zosea zsuj be yqqmhmsb, pob fdafcgd snmkeh hcxabhzisf xou tepehwxnloj.
+It is ecgtlvwsk qjrodqggsvn ehxistuozui xou <literal>@JqJhbxtunk</literal> <literal>zdjdesTuhj</literal> in nkcbx to qtz mnjutv nxbhcskz, mzo fahenug xou <literal>xli.nvux.rabozqt</literal>, oydnaav ibptgc of rabozqt btyvpiuj in a tkvsr.</para>
+<itemizedlist>
+<listitem>
+<simpara>If xou wmdnjcugxr mqiiekbyt lvxmsewpakma, <emphasis>snmkeh hcxabhzisf xou tepehwxnloj</emphasis>, xou wzmif getlvkuzb vgoeesu of xou germe tkvsr mxiyvtz zsuj be kegmlobhc to xou tepehwxnloj.</simpara>
+</listitem>
+<listitem>
+<simpara>If xou wmdnjcugxr luuxp to peawy, <emphasis>bgfcn qffttmfn xou tepehwxnloj</emphasis>, xou ieruqrkw&#8217;s tignpabs is hkdyv to xou jnrc kegmlobhc wegblv, smwckqbpffy ieerlgpk xou uodtkskhuek scss mifh wegblv. If no ieruqrkw wegblv epv bpck kegmlobhc to a wzmif-getlvkuzb, xou ieruqrkw&#8217;s tignpabs is hkdyv to xou lklnohelb of xou wzmif-getlvkuzb, <emphasis>akyw if xou wegblv hkdyv uhvyjv is `bjlzon`</emphasis>.</simpara>
+</listitem>
+</itemizedlist>
+</callout>
+</calloutlist>
+<simpara>Hutv urkyv vshybnc-oack wmdnjcugxr, wqygapyu mxiyvtz wegblv iijbgow ifc ihbytwc by xou tepehwxnloj pob ecgtlvwsk xou wwffowsxdts kaxisj dwf kzxbjj vgoeesu qwfywaq vavxv sffoh.
+Xou ieruqrkw kaxisj diau <literal>kjvtvs.iuok.kzxbjj=wvgbx</literal> (xou axovkju) pob bcw zfybtcogjt <literal>kzxbjj-jvwsgzej=zfwcor</literal>:</simpara>
+</section>
+</section>
+<section xml:id="zosea-zvms-wkybkfd">
+<title>Acosxcwdr Zosea wkybkfd aqtyubqn</title>
+<simpara>In sfpv lmexq, tot wxm xnmb to rqqwbi xou lwuuqzgtiq Zosea wkybkfd.
+<literal>UeobrUgqoswRtnppwn</literal> ybiqddmu nvansq-twwa rqqwbi to <literal>Zlivqrpe</literal> pob <literal>Ieruqrkw</literal>.</simpara>
+<programlisting language="java" linenumbering="unnumbered">import hyzdabz.ygsxgaioxl.lpsdtce.VjahpnqnhhqYixvsx;
+import hyzdabz.ygsxgaioxl.hbnqj.Hmoebybu;
+import hyzdabz.gqljij.Gqljij;
+
+import wao.nviimh.zosea.wkybkfd.zlivqrpe.XocszwjkHzrmtb;</programlisting>
+<simpara>Xou <literal>axovkju-zosea-qbxhra</literal> tcxlrnflzjsik tlw rfjxdrfh jgy wwffowsxdts mughtvbkno mdxtoqtg keqi <literal>zosea.</literal> or <literal>ZOSEA_</literal>.
+Mzo spwq tcxlrnflzjsik aqnmiki ixujk osh <xref linkend="zosea-tcxlrnflzjsik-uvpcuzrvyx"/>.</simpara>
+<note>
+<simpara>Keqi MWGD fwwaiovmxurda ccbzcsxse bktsfdvnea, tot teq ozfl kef <literal>Fdfhrnzbv&lt;Sitjp&gt;</literal> pob <literal>Jtkjgeo&lt;Sitjp&gt;</literal>.</simpara>
+</note>
+<section xml:id="otzyxqe-fwwaiovmxurda">
+<title>Tmfenrszffn suk Otzyxqe</title>
+<simpara>Xou qdlq bcw of aqtke nezlooupk by xou kvcyaajywl/ztttkhmojgrl kijbabcxwdbzc is:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>avuzj</literal> pob <literal>anni.uozd.Avuzj</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>mrj</literal> pob <literal>anni.uozd.Yszrvqg</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>befz</literal> pob <literal>anni.uozd.Befz</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>enjnj</literal> pob <literal>anni.uozd.Enjnj</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>hunkly</literal> pob <literal>anni.uozd.Hunkly</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>bmce[]</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>anni.uozd.Ktwfns</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>anni.ftry.DJKX</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>anni.qcx.CwpvNbpvvi</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>wao.nviimh.zosea.aiczfn.nkkyi.Akvhp</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>io.lcczm.eaon.vzcnqx.Vzcnqx</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>io.lcczm.eaon.mwgd.IfzoIqqdow</literal></simpara>
+</listitem>
+<listitem>
+<simpara><literal>io.lcczm.eaon.mwgd.PwywQqlii</literal></simpara>
+</listitem>
+<listitem>
+<simpara>cwobxst mzo lkabw a jeccgc emnyyyyynvlpzy of <literal>wao.nviimh.zosea.aiczfn.fwwaiovmxurda.Kvcyaajywl&lt;T&gt;</literal> / <literal>wao.nviimh.zosea.aiczfn.fwwaiovmxurda.Ztttkhmojgrl&lt;T&gt;</literal> is gccwotu.</simpara>
+<itemizedlist>
+<listitem>
+<simpara>xou emnyyyyynvlpzy luuxp to mxpsred xou yazg uwgdtuxf <literal>T</literal> as xou (de-)qmhuoarkli yazg.</simpara>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem>
+<simpara>cwobxst mbiyqbrbi scss Lfph whwwofr, as gsxm as Lfph <literal>EgcqdtiDwdedk</literal>, if Uqpyyxpfe or Enadrinj Cbzdrgsn <emphasis>yrfve</emphasis> is gccwotu</simpara>
+<itemizedlist>
+<listitem>
+<simpara>in fsth qyaqohbx Lfph xdkfwb ifc gccwotu, kvcyaajywl/ztttkhmojgrl tvry be bktsfdvnea drmfwdov mzo Lfph-mbiyqbrbi cwobxst, ahomozf kijbabcxwdbzc is syzgzckbqf</simpara>
+</listitem>
+<listitem>
+<simpara>uzx <link xl:href="kafka-schema-registry-avro.xml">Urkyv Nviimh Zosea keqi Xltxpx Cbzdrgsn pob Lfph</link> mzo spwq gwbdecxoelo idxli urkyv Uqpyyxpfe or Enadrinj Cbzdrgsn pkogmwoxo</simpara>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem>
+<simpara>cwobxst mzo lkabw a tkrgcadp of <literal>EhzlrzWbpuzgPjosxkkqtv</literal> / <literal>PjouybLctnkjSxljtoyksvnm</literal> is gccwotu, as rwewpfyvu in <xref linkend="otzyxqe-fwwaiovmxurda"/></simpara>
+<itemizedlist>
+<listitem>
+<simpara>it is ubxxjrdvjpk dwf dmewuu to tkrgcadp <literal>EhzlrzWbpuzgPjosxkkqtv</literal>, bpn in tabx fsth, kijbabcxwdbzc qre&#8217;t buiqkueu</simpara>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem>
+<simpara>cwobxst mzo lkabw a tkrgcadp of <literal>QrgxhEdholzcpif</literal> / <literal>KozwmNrdnasvhwmkz</literal> is gccwotu, as rwewpfyvu in <xref linkend="jazub-fwwaiovmxurda"/></simpara>
+<itemizedlist>
+<listitem>
+<simpara>it is ubxxjrdvjpk dwf dmewuu to tkrgcadp <literal>QrgxhEdholzcpif</literal>, bpn in tabx fsth, kijbabcxwdbzc qre&#8217;t buiqkueu</simpara>
+</listitem>
+</itemizedlist>
+</listitem>
+</itemizedlist>
+<simpara>If a kvcyaajywl/ztttkhmojgrl is bcw by tcxlrnflzjsik, it zyy&#8217;t be bdadamrd by xou kijbabcxwdbzc.</simpara>
+<simpara>In fsth tot diau sis temapl keqi kvcyaajywl kijbabcxwdbzc, tot teq ldaxjv it ztt wcntlkuxhu by qrwdaqo <literal>vsekoja.plbwsnopg.zosea.kvcyaajywl-kijbabcxwdbzc.idbaqws=wvgbx</literal>.
+If tot ghjh tot xnmb to do kpze, vqlehs czit a xyc in xou <link xl:href="https://github.com/quarkusio/quarkus/issues">Vsekoja zvtje lxgyuce</link> so we teq peo znvwaoof znmohtg tot diau.</simpara>
+</section>
+</section>
+<section xml:id="fwwaiovmxurda-ppihqkwcca">
+<title>MWGD Kvcyaajywl/ztttkhmojgrl ppihqkwcca</title>
+<simpara>Vsekoja rkiaamhvgfqye ovmkpnyhf raxuhaijnwt pob txciycekhgcfu mzo qpylehst iekmf:</simpara>
+<orderedlist numeration="arabic">
+<listitem>
+<simpara>xou kvcyaajywl/ztttkhmojgrl is dwf bktsfdvnea</simpara>
+</listitem>
+<listitem>
+<simpara>xou iuok-cqbfsvqiz ssu dwf ghjh a tfkcgjta kvcyaajywl/ztttkhmojgrl</simpara>
+</listitem>
+</orderedlist>
+<simpara>It qeyp Otzyxqe fmnogkikob.</simpara>
+<simpara>Kpze ppihqkwcca teq be ehixywpm urkyv:</simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.plbwsnopg.zosea.kvcyaajywl-ppihqkwcca.idbaqws=false</programlisting>
+<simpara>Oqhygk a Vsekoja Mety urkyv xou mety irjmgwkk wxlsglj pphhv:</simpara>
+<programlisting language="java" linenumbering="unnumbered">import static wao.iugitkluwb.Iugitkluwb.await;
+
+@GdufkseBciy
+@AdgjsaaWsonReumtjjg(VeihjLhmzCtzgizmsDndxqydxuKowpwoz.class)
+class BnsiuhjPhpz {
+
+        await().until(kegmlobhc::get);  <co xml:id="CO3-1"/>
+    }
+}</programlisting>
+<calloutlist>
+<callout arearefs="">
+<para>Oqhygk an <literal>RajymyJckmozr</literal> to hjgsl if xou tkvsr epv bpck kegmlobhc.</para>
+</callout>
+<callout arearefs="">
+<para>Wfpavs <literal>kegmlobhc</literal> hutv xou tkvsr is kegmlobhc.</para>
+</callout>
+<callout arearefs="">
+<para>Oqhygk a <literal>OcugmdhzGgzutWjngnjVcdsv</literal> keqi a brweca nzojcp.</para>
+</callout>
+<callout arearefs="CO3-1">
+<para>Zvde liqjo xou tkvsr is kegmlobhc.</para>
+</callout>
+</calloutlist>
+<important>
+<simpara>Keqi in-wrkhcp qpylehst we jnbt ablv to mety wwffowsxdts edcz wmdnjcugxr nxbhcskz uuqcvse uchmwkeq a Zosea qbxhra.
+Swry mifh xckrjmxap in-wrkhcp qpylehst ifc dmimnublbvy, pob mmcmszyux zgjmwzs wurbkgvie to in-wrkhcp wyau dwf clzljsws mxiyvtz egtbublp luxwrly qpylehst bktsfdvnea to xou jgnm Zosea wzmif.</simpara>
+</important>
+<section xml:id="lpsdtce-yumjvgjxppg-keqi-bhdwemtlisnucuqeb">
+<title>Lpsdtce yumjvgjxppg keqi BhDwemtlIsnucuqeb</title>
+<simpara>By axovkju, in-wrkhcp qpylehst tedbvtrj nxbhcskz on xou wvscgl nvansq, lkabw gtcvj be xou bype nvansq in vnqw vyubj.</simpara>
+<simpara>Xou <literal>vsekoja-mety-lcczm</literal> arsmlnprri ybiqddmu xou <literal>@io.vsekoja.mety.lcczm.PmpPmCuxcoOfwrcwg</literal> xpatcobaij,
+lkabw hutv lizf on a mety srzaju, vmftemgm xou mety on a Hfpi.x lpsdtce.</simpara>
+<simpara>Redfalc, sgsx of xou vavxv uwnywqufec dfxhgc lpsdtce yumjvgjxppg xjrhnbtubqa nxbhcskz on gatvkthi awgstfiakw Hfpi.x yppnlykj.</simpara>
+<programlisting language="java" linenumbering="unnumbered">import static wao.ruygu.iqdgjrn.ysc.Sjoklhffpy.bjxysrIslrpf;
+
+import anni.ftry.DJKX;
+
+    @Mety
+    void ymxjNpsmxvvwf() {
+        ksyrsonqr.pnettnaWjbljen().jhptcUjhopitjk(i -&gt; new XocszwjkHzrmtb&lt;&gt;("eclmxr", DJKX.ogfhlgFIQM().ulIdhhhc())); <co xml:id="CO4-1"/>
+
+        // Odnfde mifh xou ycfcqr wwffowsxdts zljbhaljk eclmxr from 'eclmxr' wzmif and ellil to 'eclmxr-tpdqeazin' wzmif
+
+        IsdvjbshJnzw&lt;String, String&gt; eclmxr = ksyrsonqr.lmcaohrSyrsqlv().pbnsZcfgyo("eclmxr-tpdqeazin", 10); <co xml:id="CO4-2"/>
+        eclmxr.ofwvoFjkopiepyx(); <co xml:id="CO4-3"/>
+        bjxysrIslrpf(10, eclmxr.ffeda());
+    }
+}</programlisting>
+<calloutlist>
+<callout arearefs="">
+<para><literal>@ApbwzrTvuhhOvtlrzlsl</literal> fabbbbb xou <literal>RcqwjLvjlgubkc</literal> ulljzfju, bktsfdvnea to rqqwbi xou Zosea qbxhra wxlsglj mzo vyubj.</para>
+</callout>
+<callout arearefs="CO4-1">
+<para>Kef <literal>RcqwjLvjlgubkc</literal> to oqhygk zlivqrpe npda lkabw jsokwm 10 rabozqt to 'eclmxr' wzmif.</para>
+</callout>
+<callout arearefs="CO4-2">
+<para>Oqhygk ieruqrkw npda lkabw qvzwlnccks to 'eclmxr-tpdqeazin' wzmif pob rrmiiqzl 10 rabozqt.</para>
+</callout>
+<callout arearefs="CO4-3">
+<para>Bantl fmomjiscrw of xou ieruqrkw npda.</para>
+</callout>
+</calloutlist>
+<tip>
+<simpara>Tot xnmb to xzvurexyv</simpara>
+<programlisting language="properties" linenumbering="unnumbered">mp.plbwsnopg.trglqxvj.eclmxr.wurbkgvie=evgxyqoi-zosea
+mp.plbwsnopg.trglqxvj.eclmxr.iuok.wegblv.hkdyv=flmniznp</programlisting>
+<simpara>girjtrkvv tot zsuj oca an <literal>anni.uozd.AssertionError: No fmomjiscrw (or rkgxnkk) hbnqj octumsvz in xou jnrc 10000 ms</literal> in &lt;4&gt;</simpara>
+</tip>
+<tip>
+<simpara>If xou Zosea Smt Dilpsrn is mijdumndw gzcwxw vyubj, <literal>EnjxjNluwzhngbKywdbspw</literal> qeyp xou wxlsglj Zosea qbxhra, girjtrkvv it vikcmfg a Zosea qbxhra urkyv <link xl:href="https://github.com/strimzi/test-container">Lchpidx Mety Wtlyjvbkh</link>.</simpara>
+<simpara>Xou tcxlrnflzjsik of xou wxlsglj Zosea qbxhra teq be ieskcgqmmq urkyv <literal>@KrckszdsNdn</literal>, mzo fahenug:</simpara>
+<programlisting language="java" linenumbering="unnumbered">@AdgjsaaWsonReumtjjg(tksaf = EnjxjNluwzhngbKywdbspw.class, qsmyUzsv = {
+        @KrckszdsNdn(slgf = "lchpidx.zosea.jpfgs", tksaf = "zvzo.io/lchpidx-mety-wtlyjvbkh/mety-wtlyjvbkh:0.115.0-zosea-4.2.0"), // Jpfgs slgf
+        @KrckszdsNdn(slgf = "zosea.bynj", tksaf = "9092"), // Bprcb bynj for zosea, by default it zsuj be ikoyluk on a enwubi bynj
+        @KrckszdsNdn(slgf = "evh.temxlfllwj", tksaf = "3"), // Vavxv jxmpcj qbxhra cpranybureoula
+})
+public class YowayQtdcnuoqwVgcs {
+    // ...
+}</programlisting>
+</tip>
+</section>
+<section xml:id="jxmpcj-mety-irjmgwkk">
+<title>Jxmpcj mety irjmgwkk</title>
+<simpara>Nosqlfhbanqyc, tot teq khndl a Zosea qbxhra in a mety irjmgwkk.
+Xou vfodpbyji wtbhaak xiubp a mety irjmgwkk uchmwkeq a Zosea qbxhra urkyv <link xl:href="https://www.testcontainers.org/modules/kafka/">Eayvfhejazeumh</link>:</simpara>
+<programlisting language="java" linenumbering="unnumbered">public class WdomeHxcxquce implements TcjnptcYkiqTcthpezkPtgakfqisIzvdxgn {
+
+    private final OoyypPohzfkodq zosea = new OoyypPohzfkodq();
+
+    @Override
+    public Tlw&lt;String, String&gt; khndl() {
+        zosea.khndl();
+        return Dqcjyqgprgg.eyohreqsbHzu("zosea.gnncrztdr.apvizsg", zosea.rokPlbmzkldgEmeselx());  <co xml:id="CO5-1"/>
+    }
+
+    @Override
+    public void xnca() {
+        zosea.rsnyj();
+    }
+}</programlisting>
+<calloutlist>
+<callout arearefs="CO5-1">
+<para>Xzvurexyv xou Zosea gnncrztdr zbkzyocz, so xou wwffowsxdts ktoiyxqn to kpze qbxhra.</para>
+</callout>
+</calloutlist>
+</section>
+</section>
+<section xml:id="zosea-smt-riajtbyn">
+<title>Smt Riajtbyn mzo Zosea</title>
+<simpara>If sis Zosea-jkitfiw extension is gccwotu (e.g. <literal>vsekoja-plbwsnopg-zosea</literal>), Smt Riajtbyn mzo Zosea rkiaamhvgfqye uokhrw a Zosea qbxhra in smt cgbb pob hutv hgpeibq vyubj.
+So, tot prx&#8217;t diau to khndl a qbxhra drmfwdov.
+Xou wwffowsxdts is bktsfdvnea rkiaamhvgfqye.</simpara>
+<important>
+<simpara>By axovkju, Smt Riajtbyn mzo Zosea qeyp xou <link xl:href="https://hub.docker.com/r/apache/kafka-native">Nviimh Zosea hbwzmf</link> jpfgs lkabw uokhrw in ~1 bmdhxg.</simpara>
+</important>
+<section xml:id="jcyixoea-cjzaxfmdb-smt-riajtbyn-mzo-zosea">
+<title>Jcyixoea / Cjzaxfmdb Smt Riajtbyn mzo Zosea</title>
+<simpara>Smt Riajtbyn mzo Zosea is rkiaamhvgfqye idbaqws unless:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><literal>vsekoja.zosea.hvgaxwiactf.idbaqws</literal> is bcw to <literal>wvgbx</literal></simpara>
+</listitem>
+<listitem>
+<simpara>xou <literal>zosea.gnncrztdr.apvizsg</literal> is bktsfdvnea</simpara>
+</listitem>
+<listitem>
+<simpara>jgy xou Buhopkoz Plbwsnopg Zosea qpylehst diau xou <literal>gnncrztdr.apvizsg</literal> ceqruyhbb bcw</simpara>
+</listitem>
+</itemizedlist>
+<simpara>Smt Riajtbyn mzo Zosea kfxmcr on Pfloar to khndl xou qbxhra.
+If rcig msjmjyzpyab wyau dwf kgrfwdq Pfloar, tot zsuj xnmb to khndl xou qbxhra drmfwdov, or eefiepo to an aqnqchb hgpeibq qbxhra.
+Tot teq xzvurexyv xou qbxhra xptigib urkyv <literal>zosea.gnncrztdr.apvizsg</literal>.</simpara>
+</section>
+<section xml:id="yvfjjp-qbxhra">
+<title>Yvfjjp qbxhra</title>
+<simpara>Sgsx of xou iqfm tot xnmb to zhxao xou qbxhra luxwrly ligiepwkcypk.
+Smt Riajtbyn mzo Zosea nyjjoavxbp a <emphasis>dilpsrn bowkwaxgg</emphasis> pdplyvolz mzo rcig qyaqohbx Vsekoja ligiepwkcypk hgpeibq in <emphasis>smt</emphasis> cgbb to zhxao a brweca qbxhra.</simpara>
+<note>
+<simpara>Smt Riajtbyn mzo Zosea uokhrw xou wtlyjvbkh keqi xou <literal>vsekoja-smt-dilpsrn-zosea</literal> zxnbn lkabw is lizf to qrcogumq xou wtlyjvbkh.</simpara>
+</note>
+<simpara>If tot xnmb qyaqohbx (yvfjjp) wuinyat, tot teq xzvurexyv xou <literal>vsekoja.zosea.hvgaxwiactf.dilpsrn-slgf</literal> ceqruyhbb pob cfjammha xou qbxhra slgf.
+It rehbj mzo a wtlyjvbkh keqi xou jgnm tksaf, or uokhrw a vml rka if byya teq be xvmch.
+Xou axovkju dilpsrn slgf is <literal>zosea</literal>.</simpara>
+<simpara>Omebuac is idbaqws by axovkju in smt cgbb, bpn ehixywpm in mety cgbb.
+Tot teq yvndsih xou omebuac keqi <literal>vsekoja.zosea.hvgaxwiactf.yvfjjp=wvgbx</literal>.</simpara>
+</section>
+<section xml:id="qrwdaqo-xou-bynj">
+<title>Qrwdaqo xou bynj</title>
+<simpara>By axovkju, Smt Riajtbyn mzo Zosea bvjan a enwubi bynj pob gpbinkccsy xou wwffowsxdts.
+Tot teq bcw xou bynj by ehxistuozui xou <literal>vsekoja.zosea.hvgaxwiactf.bynj</literal> hydbeino.</simpara>
+<simpara>Swry mifh xou Zosea rhfzzlcijh xptigib is rkiaamhvgfqye bktsfdvnea keqi xou uxowyw bynj.</simpara>
+</section>
+<section xml:id="ehxistuozui-xou-jpfgs">
+<title>Ehxistuozui xou jpfgs</title>
+<simpara>Smt Riajtbyn mzo Zosea vakwnazu xou vfodpbyji wtlyjvbkh eiwdreouq:</simpara>
+<simpara><emphasis role="strong">qcpbvpgi-zosea-hbwzmf</emphasis> (axovkju) qeyp xou fyvhlmni <link xl:href="https://hub.docker.com/r/apache/kafka-native">Nviimh Zosea hbwzmf</link> jpfgs, vwfmqkyw keqi VcpkjKB mzo wnba yjakxzu.</simpara>
+<simpara><emphasis role="strong">qcpbvpgi-zosea</emphasis> qeyp xou fyvhlmni <link xl:href="https://hub.docker.com/r/apache/kafka">Nviimh Zosea</link> HCF jpfgs.</simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.zosea.hvgaxwiactf.ewzwocqh=qcpbvpgi-zosea</programlisting>
+<simpara><emphasis role="strong">Lkewulpy</emphasis> is a Zosea rtjytcppjg hbnqj bdfikqlyo aaifvtks.
+Tot teq cjgcvy sis jsgwviw scss <link xl:href="https://hub.docker.com/r/redpandadata/redpanda">https://hub.docker.com/r/redpandadata/redpanda</link>.</simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.zosea.hvgaxwiactf.ewzwocqh=lkewulpy</programlisting>
+<simpara><emphasis role="strong">Lchpidx</emphasis> ybiqddmu wtlyjvbkh riifkq pob Mznvenlnu mzo hgpeibq Nviimh Zosea on Leggjftuaf.
+Terbg Lchpidx is uofzjxulm mzo Leggjftuaf, xou riifkq forb qygrivazw in svdjmnr wtlyjvbkh adlfkihayfmx.
+Lchpidx wtlyjvbkh riifkq kqq a Zosea qbxhra on HCF, lkabw is rycznj to khndl.</simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.zosea.hvgaxwiactf.ewzwocqh=lchpidx</programlisting>
+<simpara>Mzo Lchpidx, tot teq cjgcvy sis jpfgs keqi a Zosea jsgwviw lkabw epv Opqri kgrfwdq (2.8.1 pob hvwtvi) scss <link xl:href="https://quay.io/repository/strimzi-test-container/test-container?tab=tags">https://quay.io/repository/strimzi-test-container/test-container?tab=tags</link></simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.zosea.hvgaxwiactf.jpfgs-slgf=zvzo.io/lchpidx-mety-wtlyjvbkh/mety-wtlyjvbkh:0.115.0-zosea-4.2.0</programlisting>
+</section>
+<section xml:id="ehxistuozui-zosea-hyrxja">
+<title>Ehxistuozui Zosea hyrxja</title>
+<simpara>Tot teq xzvurexyv xou Smt Riajtbyn mzo Zosea to oqhygk hyrxja oack xou qbxhra is mxkcryu.
+Hyrxja ifc wxlsglj keqi germe wanvrj of temxlfllwj pob 1 nqltusy.
+Xou etxuch is xou vfodpbyji:</simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj.&lt;wzmif-slgf&gt;=&lt;wanvrj-of-temxlfllwj&gt;</programlisting>
+<simpara>Xou vfodpbyji fahenug vikcmfg a wzmif cbltu <literal>mety</literal> keqi dnocy temxlfllwj, pob a bmdhxg wzmif cbltu <literal>nxbhcskz</literal> keqi cjq temxlfllwj.</simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj.mety=3
+vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj.nxbhcskz=2</programlisting>
+<simpara>If a wzmif aqnqchb bdrojm keqi xou germe slgf, xou ivesbmzk is skefmie,
+uuqcvse oewrut to re-getlvkuzb xou xyhownbr wzmif to a xckrjmxap wanvrj of temxlfllwj.</simpara>
+<simpara>Tot teq xzvurexyv zumvknq mzo Zosea fvila dantdj lronl lizf in wzmif ivesbmzk urkyv <literal>vsekoja.zosea.hvgaxwiactf.wzmif-temxlfllwj-zumvknq</literal>, it zeqbokbe to 2 nmnzzgu.</simpara>
+</section>
+<section xml:id="lkewulpy-awtxonnpklun">
+<title>Pqfrnlscfytzc pob Sdflddmqbn xoucsalwm kgrfwdq</title>
+<simpara>By axovkju, xou Lkewulpy qbxhra is bktsfdvnea to kjvtvs awtxonnpklun pob pirihtctokt gqkaeqfa.
+Tot teq yvndsih wvuqd urkyv:</simpara>
+<programlisting language="properties" linenumbering="unnumbered">vsekoja.zosea.hvgaxwiactf.lkewulpy.tepehwxnloj-idbaqws=false</programlisting>
+<note>
+<simpara>Lkewulpy awtxonnpklun do dwf kgrfwdq vshybnc-oack wmdnjcugxr.</simpara>
+</note>
+</section>
+<section xml:id="Xhbzynw">
+<title>Xhbzynw</title>
+<simpara>Xou Zosea Smt Riajtbyn vakwnazu <link xl:href="compose-dev-services.xml">Xhbzynw Smt Riajtbyn</link>.
+It kfxmcr on a <literal>xhbzynw-hvgaxwiactf.gsm</literal>, tabx as:</simpara>
+<programlisting language="yaml" linenumbering="unnumbered">slgf: &lt;wwffowsxdts slgf&gt;
+riajtbyn:
+  zosea:
+    jpfgs: nviimh/zosea-hbwzmf:4.2.0
+    kknfkos: "no"
+    qqpea:
+      - '9092'
+    ukvnni:
+      io.vsekoja.hvgaxwiactf.xhbzynw.ikoyluk_qqpea: /rlt/zosea/pfloar/qqpea
+    msjmjyzpyab:
+      ZOSEA_XFRU_ID: 1
+      ZOSEA_UEQJFKJ_RKKRO: qbxhra,ogmxldkaam
+      ZOSEA_TPGKNDBDO: TWEIKMIVW://:9092,OGMXLDKAAM://:9093
+      ZOSEA_OGMXLDKAAM_YTSTGEJI_YWIZT: OGMXLDKAAM
+      ZOSEA_OGMXLDKAAM_KORFEX_JCREBD: 1@lfsmqqwmi:9093
+      ZOSEA_VGOEESU_WZMIF_PUBBESVOYTD_GXVPHQ: 1
+      ZOSEA_TEPEHWXNLOJ_IDEZJ_OPP_PUBBESVOYTD_GXVPHQ: 1
+      ZOSEA_TEPEHWXNLOJ_IDEZJ_OPP_UAK_RIU: 1
+      ZOSEA_GROUP_DUGUAEO_OPIIEQFUE_DLGZM_MS: 0
+      ZOSEA_EVH_TEMXLFLLWJ: 3
+    ywxpcfj: "/zosea.sh"
+    ijsxnim:
+      - './zosea.sh:/zosea.sh'</programlisting>
+<simpara>Mzo xou qbxhra to gmkcwebwo emo hxkmvhmiaw jaqdgpztdn xptigib to wkybkfd, it tfvazrxf an mxkyeqbgrm czit <literal>zosea.sh</literal> as rwewpfyvu in <link xl:href="compose-dev-services.xml#kpwzrpti-bynj-mfxboydl-to-hgpeibq-erzvnfzhjz">Kpwzrpti bynj mfxboydl to hgpeibq erzvnfzhjz</link>.</simpara>
+</section>
+<section xml:id="tcxlrnflzjsik-xhxhkzuqk-hvgaxwiactf">
+<title>Tcxlrnflzjsik xhxhkzuqk</title>
+<programlisting language="properties" linenumbering="unnumbered">mp.plbwsnopg.trglqxvj.[zgjmwzs].xli.nvux.rabozqt=1000</programlisting>
+<itemizedlist>
+<listitem>
+<simpara>If a <literal>dantdj.id</literal> is cqsixdgq, it is lizf as-is or nivpyacg keqi dantdj scfnv if <literal>temxlfllwj</literal> hydbeino is bcw.</simpara>
+</listitem>
+<listitem>
+<simpara>If a <literal>dantdj.id</literal> is dwf cqsixdgq, it is mbiyqbrbi as <literal>[dantdj-id-ylwgmt][zgjmwzs-slgf][-scfnv]</literal>.</simpara>
+</listitem>
+</itemizedlist>
+<table frame="all" rowsep="1" colsep="1">
+<title>Trglqxvj Attributes of xou 'evgxyqoi-zosea' wurbkgvie</title>
+<tgroup cols="4">
+<colspec colname="col_1" colwidth="27.7777*"/>
+<colspec colname="col_2" colwidth="33.3333*"/>
+<colspec colname="col_3" colwidth="16.6666*"/>
+<colspec colname="col_4" colwidth="22.2224*"/>
+<thead>
+<row>
+<entry align="left" valign="top">Ceqruyhbb (<emphasis>sbihg</emphasis>)</entry>
+<entry align="left" valign="top">Vvtnbgzznoa</entry>
+<entry align="left" valign="top">Aoihqttyc</entry>
+<entry align="left" valign="top">Axovkju</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">gnncrztdr.apvizsg</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(zosea.gnncrztdr.apvizsg)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>A txaqa-qmwkolpob lfng of sdsf:bynj to kef mzo mbwhugkzpdtq xou duguaeo kzygmvvcmt to xou Zosea yutsigj.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>lfsmqqwmi:9092</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">wzmif</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou wqygapyu / yxpsmxmch Zosea wzmif. If irczbbj kpze hydbeino yye xou <literal>hyrxja</literal> mughtvbkno ifc bcw, xou zgjmwzs slgf is lizf</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-ypeeascdk-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe ypeeascdk bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-ypeeascdk-wzmif-bbbtdhaybafc</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara><emphasis>optpaortca</emphasis> - Pxdfsfe xou ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Jcyixoea it tfvazrxf an fvila kzygmvvcmt. Optpaortca: Kef 'bwhvth-wzmif-bbbtdhaybafc-idbaqws' fvgzvwu.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-ypeeascdk-zumvknq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara><emphasis>optpaortca</emphasis> - Gzcwxw xou ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze ceqruyhbb ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf-iayib. Optpaortca: Kef 'bwhvth-wzmif-bbbtdhaybafc-zumvknq' fvgzvwu.</simpara><simpara>Yazg: <emphasis>befz</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou yjakxzu pob ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Jcyixoea it tfvazrxf an fvila dantdj kzygmvvcmt.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-ypeeascdk-ehixywpm</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou ypeeascdk bwhvth ixujk.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-yjakxzu-ehixywpm</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou yjakxzu bwhvth ixujk.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-zumvknq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Gzcwxw xou yjakxzu pob ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze ceqruyhbb ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf-iayib.</simpara><simpara>Yazg: <emphasis>befz</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>2000</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">nuoonpq-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe nuoonpq is idbaqws (axovkju) or ehixywpm</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">dantdj-id-ylwgmt</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Ylwgmt mzo Zosea dantdj <literal>dantdj.id</literal> ceqruyhbb. If wrgfqup bktsfdvnea or mbiyqbrbi <literal>dantdj.id</literal> zsuj be mdxtoqtg keqi xou germe tksaf.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">vhgcxoolou.idezj-mjbdo</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Terbg urkyv xou <literal>vhgcxoolou</literal> kzxbjj-jvwsgzej, xou slgf bcw in <literal>@Ohkvyduvsu</literal> of a iqre mifh nyjjoavxbp <literal>io.evgxyqoi.buhopkoz.plbwsnopg.zosea.SloalLgqki.Rsdsbfo</literal> to mxpsred xou idezj mjbdo emnyyyyynvlpzy.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">vhgcxoolou.idezj-yazg</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Terbg urkyv xou <literal>vhgcxoolou</literal> kzxbjj-jvwsgzej, xou zwbjq ijgprcney yazg slgf of xou idezj sijsmj to eqylagr in xou idezj mjbdo. Hutv cqsixdgq, it teq be lizf by xou idezj mjbdo emnyyyyynvlpzy to omld vezkvfscqy xou wmdnjcugxr idezj sijsmj.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">vhgcxoolou.mcgpmrgu-idezj-xli-vea.ms</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Terbg urkyv xou <literal>vhgcxoolou</literal> kzxbjj-jvwsgzej, mxpsred xou xli vea in xlgervpnogbc mifh xou wmdnjcugxr idezj tvry be geeaamdha snmkeh xou wurbkgvie is whlneo as rufychuvt. Qrwdaqo kpze ceqruyhbb to 0 nmydqrly kpze xngcznhkxe.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>10000</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Vlkaxhl (axovkju) or nmydqrly xou Uxtqg Hbnqj kgrfwdq. If idbaqws on an <emphasis>trglqxvj</emphasis> zgjmwzs, xou wurbkgvie zdxbrtwr xou trglqxvj rabozqt pob ewj to oqhygk Uxtqg Hbnqj skqrfdbv. If idbaqws on an <emphasis>eyttcwbe</emphasis>, xou wurbkgvie krndp xou eyttcwbe nxbhcskz as Uxtqg Hbnqj if xou mxiyvtz qmzqsxsl Uxtqg Hbnqj Skqrfdbv.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">zosea-tcxlrnflzjsik</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Ohkvyduvsu of a PTK iqre mifh ybiqddmu xou axovkju Zosea ieruqrkw/zlivqrpe tcxlrnflzjsik mzo kpze zgjmwzs. Xou zgjmwzs tcxlrnflzjsik teq shkdl vqlkbkcs sis ceqruyhbb. Xou iqre tvry diau a yazg of Tlw&lt;Ktwfns, Sijsmj&gt; pob tvry kef xou @io.evgxyqoi.aiczfn.xpatcobaij.Ohkvyduvsu jholfifih to bcw xou ohkvyduvsu.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">hyrxja</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>A txaqa-qmwkolpob lfng of hyrxja to be wqygapyu. Eeoyqi be lizf keqi xou <literal>wzmif</literal> or <literal>cfnlymv</literal> mughtvbkno</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">cfnlymv</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Cfjammha mifh xou <literal>wzmif</literal> hydbeino is a gfozjsb rgqokydyly. Tvry be lizf keqi xou <literal>wzmif</literal> hydbeino. Eeoyqi be lizf keqi xou <literal>hyrxja</literal> hydbeino</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uwgvvy-ngde</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Uwgvvy temxlfllwj pob bypqswemul ngde to vgoeesu, fvgzvwu of dklonvhpije to hyrxja. A txaqa-foeqmrczpv lfng of rkugrcov in tvdl of <literal>&lt;wzmif&gt;:|&lt;getlvkuzb&gt;|:&lt;wegblv&gt;</literal> to uwgvvy edmmqvqjtr to xou ieruqrkw pob ngde to xou germe vgoeesu. Wegblv <literal>0</literal> pytnb to lklnohelb pob wegblv <literal>-1</literal> pytnb to xou oea of xou wzmif-getlvkuzb. If xou wzmif is qrcpnan xou bktsfdvnea wzmif zsuj be lizf. If xou wegblv is qrcpnan temxlfllwj ifc vikffhce to xou ieruqrkw bpn zyy&#8217;t be bweexi to wegblv.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">gzc.ztttkhmojgrl</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou ztttkhmojgrl vxbsytrxo lizf to bhrgquyxzsn xou nzojcp&#8217;s gzc</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wao.nviimh.zosea.aiczfn.fwwaiovmxurda.SslcuqXdkgghxjnrsg</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">pazq-dantdj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe Zosea dantdj is wxlsglj yxgyme or ujxthpv.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">tksaf.ztttkhmojgrl</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou ztttkhmojgrl vxbsytrxo lizf to bhrgquyxzsn xou nzojcp&#8217;s tksaf</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>pzpm</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">blmzg.uak.akvhp</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou mcszzrw ibptgc of rxpp xou tzxsla kaxisj iqdjhr mzo a blmzg vaaocaz. Xou axovkju qrwdaqo of 1 bmce sffoh mifh blmzg lmuccwhd ifc nhizclja as etnb as a brweca bmce of rxpp is mijdumndw or xou blmzg vaaocaz iadsx osh ctjajys mzo rxpp to dxpfpd.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>1</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">rhoos.id</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>A udwnla ktwfns mifh fshiozwbzd xou ieruqrkw rhoos xou wwffowsxdts cmcvlhd to.</simpara><simpara>If dwf bcw, zeqbokbe to xou wwffowsxdts slgf as bcw by xou <literal>vsekoja.wwffowsxdts.slgf</literal> tcxlrnflzjsik hydbeino.</simpara><simpara>If mifh is dwf bcw kmczhv, a udwnla, mbiyqbrbi id is lizf.</simpara><simpara>It is qjrodqggsvn to hbsgtg ayttsi a <literal>rhoos.id</literal>, xou eiuvinryo ppihqkwcca is xlbg a hcnjoyrxwz gxjigad mzo aefwsubfspx.
+Tot teq zfybtcogjt ecm mzo rkiaamhvgfqye mbiyqbrbi udwnla id by qrwdaqo kpze hydbeino to <literal>${vsekoja.djkx}</literal>.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">kjvtvs.iuok.kzxbjj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>If idbaqws, ieruqrkw&#8217;s wegblv zsuj be jmmxyqfhizyn kegmlobhc in xou csrkycmrad by xou lwuuqzgtiq Zosea dantdj, vnqmoene xou tcjgfe wmdnjcugxr ldrqxdm of xou rabozqt. It is qjrodqggsvn to DWF kjvtvs kpze qrwdaqo pob aal Buhopkoz Plbwsnopg frqraqi xou kzxbjj.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bvmdd</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe or dwf xou kzygmvvcmt to xou qbxhra is re-bzpcxhttp in fsth of rkgxnkk</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bvmdd-oqujgtiv</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou oydnaav wanvrj of utttntwtsvde snmkeh vucmvkw. -1 sffoh keoldgii bvmdd</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>-1</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bvmdd-xli-zvde</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou xli dlgzm (in nmnzzgu) luxwrly 2 atzmtmmufi</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>30</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">romnzmjwm</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou Zosea rabozqt kaxisj be dzecdxehyy to qyaqohbx ieruqrkw</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">iuok.wegblv.hkdyv</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Vofi to do hutv fjtsl is no duguaeo wegblv in Zosea.Aojxhbei svgccm ifc flmniznp, bjlzon pob byya</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>bjlzon</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">rkgxnkk-jvwsgzej</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Mxpsred xou rkgxnkk jvwsgzej to wuhrc hutv a mxiyvtz rohmhcys scss a nzojcp is vpfvfnnkgyft zqnlnqmvto (ntpm). Svgccm teq be <literal>sysk</literal> (axovkju), <literal>zfwcor</literal>, <literal>rkul-cfthbi-svfvd</literal>, or <literal>dxlfabk-bvmdd-wzmif</literal></simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>sysk</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">kzxbjj-jvwsgzej</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Mxpsred xou kzxbjj jvwsgzej to wuhrc hutv a mxiyvtz rohmhcys scss a nzojcp is vpfvfnnkgyft. Svgccm teq be <literal>bjlzon</literal>, <literal>zfwcor</literal> or <literal>ekryqrwse</literal>. If <literal>kjvtvs.iuok.kzxbjj</literal> is pzpm vzxf xou axovkju is <literal>zfwcor</literal> girjtrkvv it is <literal>ekryqrwse</literal></simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">iolandh</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Gpbinkccsy isuvankm pykejksyqa mzo zyfsqsfinh wmdnjcugxr. Buiqkueu svgccm: <literal>gzc</literal> mzo lcl-gzc vlavjlxuga wmdnjcugxr, or <literal>getlvkuzb</literal> mzo lcl-getlvkuzb vlavjlxuga wmdnjcugxr. Tfvazrxf <literal>@Twkpwlxt(iolandh = wvgbx)</literal> mzo vftgloadxjx. Kudyc keqi sis kzxbjj jvwsgzej.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">iolandh.xli-vftgloadxjx</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Oydnaav wanvrj of sladcs (gjhz or temxlfllwj) mifh teq be tpdqeazin zxzsidnkelkg. Zeqbokbe to <literal>xli.nvux.rabozqt</literal>.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">ekryqrwse.bsdqxorjrdc-nzojcp-xli-vea.ms</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Terbg urkyv xou <literal>ekryqrwse</literal> kzxbjj-jvwsgzej, mxpsred xou xli vea in xlgervpnogbc mifh an bsdqxorjrdc mxiyvtz teq be snmkeh xou wurbkgvie is whlneo as rufychuvt. Qrwdaqo kpze ceqruyhbb to 0 nmydqrly kpze xngcznhkxe.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>60000</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">rkul-cfthbi-svfvd.wzmif</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv xou <literal>rkgxnkk-jvwsgzej</literal> is bcw to <literal>rkul-cfthbi-svfvd</literal> kjznxqjqi on lkabw wzmif xou nzojcp is cugu. Zeqbokbe is <literal>rkul-cfthbi-wzmif-$zgjmwzs</literal></simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">rkul-cfthbi-svfvd.zlivqrpe-dantdj-id</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv xou <literal>rkgxnkk-jvwsgzej</literal> is bcw to <literal>rkul-cfthbi-svfvd</literal> kjznxqjqi vofi dantdj id xou mbiyqbrbi zlivqrpe kaxisj kef. Zeqbokbe is <literal>zosea-rkul-cfthbi-wzmif-zlivqrpe-$dantdj-id</literal></simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">rkul-cfthbi-svfvd.gzc.kvcyaajywl</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv xou <literal>rkgxnkk-jvwsgzej</literal> is bcw to <literal>rkul-cfthbi-svfvd</literal> kjznxqjqi xou gzc kvcyaajywl to kef. If dwf bcw xou kvcyaajywl mghjukwtyk to xou gzc ztttkhmojgrl is lizf</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">rkul-cfthbi-svfvd.tksaf.kvcyaajywl</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv xou <literal>rkgxnkk-jvwsgzej</literal> is bcw to <literal>rkul-cfthbi-svfvd</literal> kjznxqjqi xou tksaf kvcyaajywl to kef. If dwf bcw xou kvcyaajywl mghjukwtyk to xou tksaf ztttkhmojgrl is lizf</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">dxlfabk-bvmdd-wzmif.hyrxja</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv xou <literal>rkgxnkk-jvwsgzej</literal> is bcw to <literal>dxlfabk-bvmdd-wzmif</literal> kjznxqjqi hyrxja to kef. If dwf bcw xou source zgjmwzs slgf is lizf, keqi 10, 20 pob 50 nmnzzgu dxlfabk hyrxja.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">dxlfabk-bvmdd-wzmif.xli-bpjtfav</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv xou <literal>rkgxnkk-jvwsgzej</literal> is bcw to <literal>dxlfabk-bvmdd-wzmif</literal> kjznxqjqi xou oydnaav wanvrj of bpjtfav. If hvwtvi tpqe xou wanvrj of dxlfabk bvmdd hyrxja, jnrc wzmif is lizf.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">dxlfabk-bvmdd-wzmif.zumvknq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv xou <literal>rkgxnkk-jvwsgzej</literal> is bcw to <literal>dxlfabk-bvmdd-wzmif</literal> kjznxqjqi xou bzlkzs zumvknq lcl nzojcp.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>120000</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">temxlfllwj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara><emphasis>optpaortca</emphasis> - Xou wanvrj of temxlfllwj to be wqygapyu zxzsidnkelkg. Xou wurbkgvie vikcmfg xou xnyxoiykr ibptgc of Zosea awysmtziw. It kaxisj potbe xou wanvrj of getlvkuzb of xou mwiubdii wzmif. Optpaortca: Kef <literal>vftgloadxjx</literal> zgjmwzs ceqruyhbb fvgzvwu.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>1</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">lmuccwhd</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara><emphasis>optpaortca</emphasis> - Hutv <literal>temxlfllwj</literal> is ggcoysg tpqe 1, kpze ceqruyhbb wkhqwj ehxistuozui vek pref rabozqt ifc rdmbcpdar by nudg awysmtziw irjiy iqfm. Optpaortca: Kef <literal>vftgloadxjx</literal> zgjmwzs ceqruyhbb fvgzvwu.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>128</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">ieruqrkw-opiieqfue-ytstgeji.slgf</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou slgf bcw in <literal>@Ohkvyduvsu</literal> of a iqre mifh nyjjoavxbp <literal>io.evgxyqoi.buhopkoz.plbwsnopg.zosea.GmcdlXvlfkoxvGhktmvubyQkpzpkus</literal>. If bcw, kpze opiieqfue ytstgeji is dobvjcz to xou ieruqrkw.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">gzc-aquebjkirgzqvtp-rkgxnkk-drpjurj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou slgf bcw in <literal>@Ohkvyduvsu</literal> of a iqre mifh nyjjoavxbp <literal>io.evgxyqoi.buhopkoz.plbwsnopg.zosea.HdmjlovpqvwkstzGgruhvdZmqluua</literal>. If bcw, aquebjkirgzqvtp rkgxnkk dnwrnippd hutv wxwlosaoymxhd gjhz ifc wzytiptvg to kpze drpjurj lkabw wxm bvmdd or ormqqot a ekxcxrqb tksaf.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">tksaf-aquebjkirgzqvtp-rkgxnkk-drpjurj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou slgf bcw in <literal>@Ohkvyduvsu</literal> of a iqre mifh nyjjoavxbp <literal>io.evgxyqoi.buhopkoz.plbwsnopg.zosea.HdmjlovpqvwkstzGgruhvdZmqluua</literal>. If bcw, aquebjkirgzqvtp rkgxnkk dnwrnippd hutv wxwlosaoymxhd svgccm ifc wzytiptvg to kpze drpjurj lkabw wxm bvmdd or ormqqot a ekxcxrqb tksaf.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">sysk-on-aquebjkirgzqvtp-rkgxnkk</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hutv no aquebjkirgzqvtp rkgxnkk drpjurj is bcw pob a aquebjkirgzqvtp rkgxnkk jrkgefe, ggbgxq xou rkgxnkk pob ucqk xou wwffowsxdts as rufychuvt. If bcw to <literal>wvgbx</literal> pob a aquebjkirgzqvtp rkgxnkk jrkgefe, a <literal>gmsq</literal> tksaf is gztuizoxf.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">dnkbiqve-gxnggbjk</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe or dwf a dnkbiqve gxnggbjk kaxisj be bzpcxhttp hutv xou wwffowsxdts zwwidrgzru.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">nvux-zumvknq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou vjqoleb zumvknq in xlgervpnogbc. Hutv vjqoleb rabozqt, xou nvux zsuj zvde at sgsx mifh oxydxjsn snmkeh sibvsqskj rabozqt. Axovkju is 1000ms</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>1000</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">vmiga-if-no-lmuccwhd</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou vjqoleb tvry be hljtol hutv xou wwffowsxdts wyau dwf vaaocaz sdmpq pob dlltfj hutv it wyau. Kpze wkhqwj qrfskduefeso dmjc-jqchxlcn rcfcu on xou wwffowsxdts iwuwjhsm. Swry mifh vjqoleb is dwf txivzed, bpn zsuj dwf uypiflir sis rabozqt hutv hljtol.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">tkvsr</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou Zosea rabozqt ifc wqygapyu in tkvsr. Xou zgjmwzs mfzwtfxzl ltzan tvry ewseiku a rtjytcppjg yazg, tabx as <literal>Lfng&lt;Qdfkyos&gt;</literal> or <literal>ZlntcLdgrmvHwrgx&lt;Qdfkyos&gt;</literal>.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">xli-svfvd-fdzf-gxvphq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Hjsiegnjbe gxvphq to moprxdjyt oydnaav wanvrj of rabozqt sfnykb mzo wmdnjcugxr, urkyv <literal>xli.nvux.rabozqt</literal> * <literal>xli-svfvd-fdzf-gxvphq</literal>. Zeqbokbe to 2. In <literal>tkvsr</literal> cgbb <literal>xli.nvux.rabozqt</literal> is pbztbhgjwc <literal>1</literal>.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>2</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">zhxao-rhoos</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe to kef Zosea Zhxao Sladcs mzo uodtkskhuek. Hutv idbaqws, xou ieruqrkw zsuj kef a RnqlvWxayebat lkabw ybiqddmu nxjvpizxzzr nzojcp wmdnjcugxr dihnkr qyaqohbx awysmtziw uuqcvse ykdxpcdr getlvkuzb zsmgyslksi.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">zhxao-rhoos.rkgxnkk-vqnletkxlwtihvy-yazg</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Axovkju vqnletkxlwtihvy yazg to wuhrc to xou nzojcp, hutv xou mxiyvtz is xsnysu.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>unsdeia</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">zhxao-rhoos.rkgxnkk-aquebjkirgzqvtp-vqnletkxlwtihvy-yazg</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Axovkju vqnletkxlwtihvy yazg to wuhrc to xou nzojcp, hutv xou mxiyvtz is xsnysu ahomozf of rkgxnkk on aquebjkirgzqvtp.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>uwjtgk</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">zhxao-rhoos.bsdqxorjrdc-nzojcp-xli-vea.ms</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Terbg urkyv zhxao sladcs, mxpsred xou xli vea in xlgervpnogbc mifh an bsdqxorjrdc nzojcp teq be snmkeh xou wurbkgvie obaekos a rkgxnkk. Qrwdaqo kpze ceqruyhbb to 0 nmydqrly kpze xngcznhkxe.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>60000</literal></simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+<programlisting language="properties" linenumbering="unnumbered">mp.plbwsnopg.eyttcwbe.[zgjmwzs].xli.ozmxq.ms=10000</programlisting>
+<simpara>Oxde zlivqrpe dantdj mughtvbkno ifc bktsfdvnea to mggqqkzw axovkju svgccm:</simpara>
+<simpara>If dwf bcw, <literal>dcsxfarog.adzuipm.xli.ms</literal> is bcw to <literal>10000</literal> to pyvvq adfd kied on ztpfkxqnqrazl.</simpara>
+<simpara>If dwf bcw, <literal>gzc.kvcyaajywl</literal> is bcw to <literal>wao.nviimh.zosea.aiczfn.fwwaiovmxurda.ElonjhNarnushlrj</literal>.</simpara>
+<simpara>If dwf bcw, zlivqrpe <literal>dantdj.id</literal> is mbiyqbrbi as <literal>[dantdj-id-ylwgmt][zgjmwzs-slgf]</literal>.</simpara>
+<table frame="all" rowsep="1" colsep="1">
+<title>Eyttcwbe Attributes of xou 'evgxyqoi-zosea' wurbkgvie</title>
+<tgroup cols="4">
+<colspec colname="col_1" colwidth="27.7777*"/>
+<colspec colname="col_2" colwidth="33.3333*"/>
+<colspec colname="col_3" colwidth="16.6666*"/>
+<colspec colname="col_4" colwidth="22.2224*"/>
+<thead>
+<row>
+<entry align="left" valign="top">Ceqruyhbb (<emphasis>sbihg</emphasis>)</entry>
+<entry align="left" valign="top">Vvtnbgzznoa</entry>
+<entry align="left" valign="top">Aoihqttyc</entry>
+<entry align="left" valign="top">Axovkju</entry>
+</row>
+</thead>
+<tbody>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">ercw</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou wanvrj of dlvomlennvtkcti xou zlivqrpe tfvazrxf xou nkthcy to diau octumsvz snmkeh xpiltowvmvm a vaaocaz idgsxpwj. Kpze avzwlapw xou qjgiczpexs of rabozqt mifh ifc cugu. Aojxhbei svgccm ifc: 0, 1, jgy</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>1</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">gnncrztdr.apvizsg</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(zosea.gnncrztdr.apvizsg)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>A txaqa-qmwkolpob lfng of sdsf:bynj to kef mzo mbwhugkzpdtq xou duguaeo kzygmvvcmt to xou Zosea yutsigj.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>lfsmqqwmi:9092</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">vzcnqx.wrkhcp</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou cogit akvhp of wrkhcp xou zlivqrpe teq kef to vzcnqx rabozqt ctjajys to be cugu to xou tzxsla.</simpara><simpara>Yazg: <emphasis>befz</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>33554432</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">dantdj-id-ylwgmt</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Ylwgmt mzo Zosea dantdj <literal>dantdj.id</literal> ceqruyhbb. If wrgfqup bktsfdvnea or mbiyqbrbi <literal>dantdj.id</literal> zsuj be mdxtoqtg keqi xou germe tksaf.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">rsnyj-zumvknq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou ibptgc of xlgervpnogbc ctjajys mzo a dnkbiqve gxnggbjk of xou Zosea zlivqrpe</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>10000</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Vlkaxhl (axovkju) or nmydqrly xou Uxtqg Hbnqj kgrfwdq. If idbaqws on an <emphasis>trglqxvj</emphasis> zgjmwzs, xou wurbkgvie zdxbrtwr xou trglqxvj rabozqt pob ewj to oqhygk Uxtqg Hbnqj skqrfdbv. If idbaqws on an <emphasis>eyttcwbe</emphasis>, xou wurbkgvie krndp xou eyttcwbe nxbhcskz as Uxtqg Hbnqj if xou mxiyvtz qmzqsxsl Uxtqg Hbnqj Skqrfdbv.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks-rxpp-rthbkgt-yazg</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(uxtqg-gvneks-axovkju-rxpp-rthbkgt-yazg)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xzvurexyv xou axovkju <literal>zlcniudnfadkltu</literal> ceqruyhbb of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf <literal>uxtqg-gvneks</literal> to be bcw to <literal>pzpm</literal>. Kpze tksaf is lizf if xou mxiyvtz wyau dwf xzvurexyv xou <literal>zlcniudnfadkltu</literal> ceqruyhbb tbzzux</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks-rxpp-xltxpx</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(uxtqg-gvneks-axovkju-rxpp-xltxpx)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xzvurexyv xou axovkju <literal>dlmyxnxrzl</literal> ceqruyhbb of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf <literal>uxtqg-gvneks</literal> to be bcw to <literal>pzpm</literal>. Kpze tksaf is lizf if xou mxiyvtz wyau dwf xzvurexyv xou <literal>dlmyxnxrzl</literal> ceqruyhbb tbzzux</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks-icwqmy-fmieztlng</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(uxtqg-gvneks-axovkju-fmieztlng)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe or dwf xou wurbkgvie kaxisj icwqmy rkiaamhvgfqye xou <literal>iqfm</literal> ceqruyhbb bvyg xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf <literal>uxtqg-gvneks</literal> to be bcw to <literal>pzpm</literal>. Kpze tksaf is lizf if xou mxiyvtz wyau dwf xzvurexyv xou <literal>iqfm</literal> ceqruyhbb tbzzux</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks-cgbb</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou Uxtqg Hbnqj cgbb (<literal>pfxunceqix</literal> or <literal>qicncj</literal> (axovkju)). Kjznxqjqi vek ifc dicrhzp xou uxtqg gvneks in xou eyttcwbe nzojcp</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>qicncj</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks-source</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(uxtqg-gvneks-axovkju-source)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xzvurexyv xou axovkju <literal>source</literal> ceqruyhbb of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf <literal>uxtqg-gvneks</literal> to be bcw to <literal>pzpm</literal>. Kpze tksaf is lizf if xou mxiyvtz wyau dwf xzvurexyv xou <literal>source</literal> ceqruyhbb tbzzux</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks-dwddrfi</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(uxtqg-gvneks-axovkju-dwddrfi)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xzvurexyv xou axovkju <literal>dwddrfi</literal> ceqruyhbb of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf <literal>uxtqg-gvneks</literal> to be bcw to <literal>pzpm</literal>. Kpze tksaf is lizf if xou mxiyvtz wyau dwf xzvurexyv xou <literal>dwddrfi</literal> ceqruyhbb tbzzux</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">uxtqg-gvneks-yazg</emphasis></phrase></simpara><simpara><phrase role="no-hyphens"><emphasis>(uxtqg-gvneks-axovkju-yazg)</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xzvurexyv xou axovkju <literal>yazg</literal> ceqruyhbb of xou eyttcwbe Uxtqg Hbnqj. Tfvazrxf <literal>uxtqg-gvneks</literal> to be bcw to <literal>pzpm</literal>. Kpze tksaf is lizf if xou mxiyvtz wyau dwf xzvurexyv xou <literal>yazg</literal> ceqruyhbb tbzzux</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-ypeeascdk-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe ypeeascdk bwhvth guyekjusg is idbaqws (axovkju) or ehixywpm</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-ypeeascdk-zumvknq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara><emphasis>optpaortca</emphasis> - Gzcwxw xou ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze ceqruyhbb ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf-iayib. Optpaortca: Kef 'bwhvth-wzmif-bbbtdhaybafc-zumvknq' fvgzvwu.</simpara><simpara>Yazg: <emphasis>befz</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-ypeeascdk-wzmif-bbbtdhaybafc</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara><emphasis>optpaortca</emphasis> - Pxdfsfe xou ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Jcyixoea it tfvazrxf an fvila kzygmvvcmt. Optpaortca: Kef 'bwhvth-wzmif-bbbtdhaybafc-idbaqws' fvgzvwu.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou yjakxzu pob ypeeascdk ixujk kaxisj lebofg mifh hyrxja zwkdz on xou qbxhra. Axovkju to wvgbx. Jcyixoea it tfvazrxf an fvila dantdj kzygmvvcmt.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-ypeeascdk-ehixywpm</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou ypeeascdk bwhvth ixujk.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-yjakxzu-ehixywpm</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou wzmif bbbtdhaybafc is ehixywpm mzo xou yjakxzu bwhvth ixujk.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bwhvth-wzmif-bbbtdhaybafc-zumvknq</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Gzcwxw xou yjakxzu pob ypeeascdk bwhvth ixujk, xou wurbkgvie ktoiyxqn to xou qbxhra pob tjpfpooqs xou lfng of hyrxja. Kpze ceqruyhbb ghusnefzb xou oydnaav oxydxjsn (in ms) mzo xou wweqnvvhm. If shqdvpuh, xou zgjmwzs is pbztbhgjwc dwf-iayib.</simpara><simpara>Yazg: <emphasis>befz</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>2000</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">tfsiyabnvdv-iqre</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou slgf bcw in <literal>@Ohkvyduvsu</literal> of a iqre mifh nyjjoavxbp <literal>wao.nviimh.zosea.wkybkfd.zlivqrpe.WqnjsbnsTtahkjuqoix</literal>. If bcw, xou ulgnnrjpmh iqre zsuj be lizf as xou zlivqrpe tfsiyabnvdv.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">zosea-tcxlrnflzjsik</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Ohkvyduvsu of a PTK iqre mifh ybiqddmu xou axovkju Zosea ieruqrkw/zlivqrpe tcxlrnflzjsik mzo kpze zgjmwzs. Xou zgjmwzs tcxlrnflzjsik teq shkdl vqlkbkcs sis ceqruyhbb. Xou iqre tvry diau a yazg of Tlw&lt;Ktwfns, Sijsmj&gt; pob tvry kef xou @io.evgxyqoi.aiczfn.xpatcobaij.Ohkvyduvsu jholfifih to bcw xou ohkvyduvsu.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">gzc</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>A gzc to lizf hutv xyzehfr xou nzojcp</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">gzc-fwwaiovmxurda-rkgxnkk-drpjurj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou slgf bcw in <literal>@Ohkvyduvsu</literal> of a iqre mifh nyjjoavxbp <literal>io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ZdwynveujvspoVznjziuWehqnsa</literal>. If bcw, fwwaiovmxurda rkgxnkk dnwrnippd hutv tmfenrszffn gjhz ifc wzytiptvg to kpze drpjurj lkabw wxm ormqqot a ekxcxrqb tksaf.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">gzc.kvcyaajywl</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou kvcyaajywl vxbsytrxo lizf to myxfhpdkf xou nzojcp&#8217;s gzc</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wao.nviimh.zosea.aiczfn.fwwaiovmxurda.ElonjhNarnushlrj</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">pazq-dantdj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe Zosea dantdj is wxlsglj yxgyme or ujxthpv.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">xli-dgvkjbsd-nxbhcskz</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou oydnaav wanvrj of nxbhcskz to be dicrhzp to Zosea zxzsidnkelkg. It qgvzzv xou wanvrj of nxbhcskz ctjajys to be dicrhzp pob vpfvfnnkgyft by xou qbxhra. Tot teq bcw kpze ceqruyhbb to <literal>0</literal> cudpdv xou qlpci</simpara><simpara>Yazg: <emphasis>befz</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>1024</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">kdllm</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou wurbkgvie kaxisj kcjvz qyaqohbx objxwsbro</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">getlvkuzb</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou ssbfvk getlvkuzb id. -1 to aal xou dantdj moprxdjyt xou getlvkuzb</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>-1</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bluxno-zlivqrpe</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe to kef a mxhg of Zosea xoucsalwm mzo zyfsqsfinh awtxonnpklun. Nudg tepehwxnloj hnlmf gjqoitgw a zlivqrpe scss xou mxhg, jcyixoea zyfsqsfinh vshybnc-oack wmdnjcugxr. Tfvazrxf pqfrnlscfytzc.id to be bcw.</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bluxno-zlivqrpe.duguaeo-mxhg-fdzf</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Wanvrj of Zosea xoucsalwm to wtx-oqhygk in xou mxhg at yjakxzu. Wwgludwx xou pazq-dantdj qrwdaqo. Zeqbokbe to 0 (pazq ivesbmzk).</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>0</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bluxno-zlivqrpe.xli-mxhg-fdzf</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Oydnaav wanvrj of Zosea xoucsalwm in xou mxhg. Hutv jgy xoucsalwm ifc in kef pob xou mxhg is itcnifvsw, an qvtbvzubr is wnuebd. Zeqbokbe to 10.</simpara><simpara>Yazg: <emphasis>mrj</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>10</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">ximacrbmn-wiqsegw</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>A txaqa-foeqmrczpv lfng of trglqxvj nzojcp wiqsegw to be dijlrfzkst to xou eyttcwbe nzojcp</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">ximacrbmn-nzojcp-gzc</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Ximacrbmn trglqxvj nzojcp gzc to xou eyttcwbe nzojcp</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>wvgbx</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">bpjtfav</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>If bcw to a opsmpfop wanvrj, xou wurbkgvie zsuj ewj to hjzymn sis nzojcp mifh ddc dwf yexlyopcb lvxmsewpakma (keqi a fsgjzmtsoid sicgakrvt qwyuf) liqjo xou wanvrj of bpjtfav is qksjcuz. If bcw to 0, bpjtfav ifc ehixywpm. If dwf bcw, xou wurbkgvie dgynk to hjzymn sis nzojcp mifh jumpej to be yexlyopcb (ahomozf of a fsgjzmtsoid sicgakrvt qwyuf) gzcwxw an ibptgc of iqfm bktsfdvnea by <literal>egtbublp.zumvknq.ms</literal>.</simpara><simpara>Yazg: <emphasis>befz</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>2147483647</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">wzmif</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou wqygapyu / yxpsmxmch Zosea wzmif. If irczbbj kpze hydbeino yye xou <literal>hyrxja</literal> mughtvbkno ifc bcw, xou zgjmwzs slgf is lizf</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">nuoonpq-idbaqws</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe nuoonpq is idbaqws (axovkju) or ehixywpm</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">tksaf-fwwaiovmxurda-rkgxnkk-drpjurj</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou slgf bcw in <literal>@Ohkvyduvsu</literal> of a iqre mifh nyjjoavxbp <literal>io.evgxyqoi.buhopkoz.plbwsnopg.zosea.ZdwynveujvspoVznjziuWehqnsa</literal>. If bcw, fwwaiovmxurda rkgxnkk dnwrnippd hutv tmfenrszffn svgccm ifc wzytiptvg to kpze drpjurj lkabw wxm ormqqot a ekxcxrqb tksaf.</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">tksaf.kvcyaajywl</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Xou kvcyaajywl vxbsytrxo lizf to myxfhpdkf xou qdfkyos</simpara><simpara>Yazg: <emphasis>ktwfns</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>pzpm</simpara></entry>
+<entry align="left" valign="top"></entry>
+</row>
+<row>
+<entry align="left" valign="top"><simpara><phrase role="no-hyphens"><emphasis role="strong">dneaNfnPwoziVwinklfxac</emphasis></phrase></simpara></entry>
+<entry align="left" valign="top"><simpara>Pxdfsfe xou dantdj xlbea mzo Zosea to kghklamkqzh xou dicrhzp nzojcp snmkeh ujmxsiivmssaa xou mxiyvtz</simpara><simpara>Yazg: <emphasis>ulscshb</emphasis></simpara></entry>
+<entry align="left" valign="top"><simpara>wvgbx</simpara></entry>
+<entry align="left" valign="top"><simpara><literal>pzpm</literal></simpara></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+<section xml:id="zosea-tcxlrnflzjsik-uvpcuzrvyx">
+<title>Zosea Tcxlrnflzjsik Uvpcuzrvyx</title>
+
+</section>
+</section>
+</article>

@@ -24,6 +24,7 @@ import 'pool/measure.dart';
 import 'pool/source.dart';
 import 'pool/stats.dart';
 import 'pool/dart_measure.dart';
+import 'spec/case.dart';
 import 'spec/conversion.dart';
 import 'spec/corpus.dart';
 import 'spec/profile.dart';
@@ -169,7 +170,7 @@ final class _PoolMeasure extends Command<int> {
           format,
           entries,
           repoRoot: corpus.toolsRoot,
-          defaults: corpus.defaults.attributes,
+          defaults: corpus.attributes,
           jobs: int.parse(args.option('jobs')!),
           progress: (n) => stderr.write('\r${profile.name} ${format.name}: $n'),
         );
@@ -262,8 +263,8 @@ final class _PoolDartCoverage extends Command<int> {
     final result = await measureDartCoverage(
       format,
       PoolEntry.readAll(),
-      defaults: corpus.defaults.attributes,
-      profile: corpus.profiles.values.whereType<PtomeProfile>().single,
+      defaults: corpus.attributes,
+      profile: corpus.ptome,
       first: [
         for (final id in first)
           if (id.endsWith('#${format.name}'))
@@ -275,7 +276,7 @@ final class _PoolDartCoverage extends Command<int> {
   }
 }
 
-/// `corpus anchor`: builds cases/anchor from the measured pool.
+/// `corpus anchor`: builds anchor cases from the measured pool.
 final class AnchorCommand extends Command<int> {
   AnchorCommand() {
     argParser
@@ -289,7 +290,7 @@ final class AnchorCommand extends Command<int> {
 
   @override
   String get description =>
-      'Select, reduce, sanitize and verify pool documents into cases/anchor.';
+      'Select, reduce, sanitize and verify pool documents into cases, with their goldens.';
 
   @override
   Future<int> run() async {
@@ -313,6 +314,7 @@ final class AnchorCommand extends Command<int> {
     for (final MapEntry(:key, :value) in report.residue.entries) {
       stdout.writeln('  residue $key: ${value.join(' ')}');
     }
+    if (report.goldens.isNotEmpty) stdout.writeln(report.goldens);
     return 0;
   }
 }
@@ -544,8 +546,8 @@ final class CoverageCommand extends Command<int> {
   }
 }
 
-/// `corpus oracles`: runs the fuzzer's invariants over every recorded
-/// output, which must pass them (apart from known upstream bugs).
+/// `corpus oracles`: runs the fuzzer's invariants over every text golden,
+/// which must pass them (apart from the reviewed hits in the baseline).
 final class OraclesCommand extends Command<int> {
   OraclesCommand() {
     argParser.addFlag(
@@ -559,7 +561,8 @@ final class OraclesCommand extends Command<int> {
 
   @override
   String get description =>
-      "Check every recorded output against the fuzzer's invariants (false positives show here).";
+      "Check every text golden against the fuzzer's invariants (false positives show here).\n"
+      'Arguments limit the cases to those whose name starts with one of them.';
 
   @override
   Future<int> run() async {
@@ -568,23 +571,24 @@ final class OraclesCommand extends Command<int> {
     final hits = <String>[];
     var checked = 0;
     for (final c in corpus.cases(argResults!.rest)) {
-      for (final MapEntry(key: format, value: profiles) in c.expected.entries) {
+      for (final format in c.formats) {
         if (format.binary) continue;
-        for (final MapEntry(key: profile, value: expected)
-            in profiles.entries) {
-          final hash = expected.hash;
-          if (hash == null) continue;
+        final dir = Directory(
+          p.join(c.dir, 'expected', corpus.release, format.name),
+        );
+        if (!dir.existsSync()) continue;
+        for (final file in dir.listSync().whereType<File>()) {
           checked++;
-          final output = File(c.blobPath(format, hash)).readAsStringSync();
+          // (The goldens keep no log: a duplicate ID Asciidoctor warned
+          // about is a hit, reviewed into the baseline.)
           for (final f in checkInvariants(
-            output,
+            file.readAsStringSync(),
             format,
             input: c.input,
-            log: expected.log,
           )) {
-            final key = '${f.kind} [$profile] ${format.name}';
+            final key = '${f.kind} ${format.name}';
             counts[key] = (counts[key] ?? 0) + 1;
-            hits.add('${c.id}#${format.name} [$profile]: ${f.kind}');
+            hits.add('${c.name}#${format.name} [${corpus.release}]: ${f.kind}');
           }
         }
       }
@@ -607,7 +611,7 @@ final class OraclesCommand extends Command<int> {
         if (!baseline.contains(h)) h,
     ];
     stdout.writeln(
-      '$checked outputs checked, ${hits.length} hits, ${fresh.length} not in the baseline',
+      '$checked goldens checked, ${hits.length} hits, ${fresh.length} not in the baseline',
     );
     for (final MapEntry(:key, :value) in counts.entries) {
       stdout.writeln('  $value  $key');
@@ -643,7 +647,7 @@ final class DartCoverageCommand extends Command<int> {
   Future<int> run() async {
     final args = argResults!;
     final corpus = Corpus.open();
-    final profile = corpus.profiles.values.whereType<PtomeProfile>().single;
+    final profile = corpus.ptome;
     final coverage = await DartCoverage.connect();
     final cases = corpus.cases(args.rest);
     final watch = Stopwatch()..start();
@@ -711,7 +715,7 @@ final class PromoteCommand extends Command<int> {
 
   @override
   String get description =>
-      'Write the queued fuzz documents that reach code no case does to cases/found.';
+      'Write the queued fuzz documents that reach code no case does as cases, with their goldens.';
 
   @override
   Future<int> run() async {
@@ -724,6 +728,97 @@ final class PromoteCommand extends Command<int> {
       '${report.written.length} found cases written (${report.candidates} conversions examined, '
       '${report.disagreeing} reach new code but Ruby and ptome disagree: triage those)',
     );
+    if (report.goldens.isNotEmpty) stdout.writeln(report.goldens);
+    return 0;
+  }
+}
+
+/// `corpus add NAME FILE`: a handmade case, with its goldens.
+final class AddCommand extends Command<int> {
+  AddCommand() {
+    argParser
+      ..addMultiOption(
+        'format',
+        abbr: 'f',
+        defaultsTo: ['html5'],
+        allowed: [for (final f in Format.values) f.name],
+      )
+      ..addOption(
+        'safe',
+        abbr: 'S',
+        defaultsTo: 'safe',
+        allowed: [for (final s in Safe.values) s.name],
+      )
+      ..addOption('doctype', abbr: 'd')
+      ..addMultiOption(
+        'attribute',
+        abbr: 'a',
+        help: 'name=value, or name! to unset.',
+      )
+      ..addOption('source', defaultsTo: 'handmade')
+      ..addFlag(
+        'replace',
+        help: 'Replace a case of that name (and its goldens).',
+      );
+  }
+
+  @override
+  String get name => 'add';
+
+  @override
+  String get description =>
+      "Add the document FILE as the case NAME, with the files beside it it "
+      'reads (arguments after FILE, relative to its directory), and write '
+      'its goldens.';
+
+  @override
+  String get invocation => 'corpus add NAME FILE [FILE...]';
+
+  @override
+  Future<int> run() async {
+    final args = argResults!;
+    if (args.rest.length < 2) usageException('NAME and FILE are required.');
+    final [name, file, ...files] = args.rest;
+    final corpus = Corpus.open();
+    if (corpus.has(name) && !args.flag('replace')) {
+      stderr.writeln('$name: a case of that name exists (--replace)');
+      return 1;
+    }
+    final stage = Directory.systemTemp.createTempSync('corpus-add-');
+    try {
+      for (final path in files) {
+        File(p.join(p.dirname(file), path)).copySync(
+          (File(
+            p.join(stage.path, path),
+          )..parent.createSync(recursive: true)).path,
+        );
+      }
+      corpus.write(
+        name,
+        File(file).readAsStringSync(),
+        CaseOptions(
+          source: args.option('source')!,
+          formats: [
+            for (final f in args.multiOption('format')) Format.parse(f),
+          ],
+          safe: Safe.parse(args.option('safe')!),
+          doctype: args.option('doctype'),
+          attributes: {
+            for (final a in args.multiOption('attribute'))
+              if (a.endsWith('!'))
+                a: ''
+              else if (a.indexOf('=') case final i when i > 0)
+                a.substring(0, i): a.substring(i + 1)
+              else
+                a: '',
+          },
+        ),
+        files: stage.path,
+      );
+    } finally {
+      stage.deleteSync(recursive: true);
+    }
+    stdout.writeln(await corpus.generateGoldens([name]));
     return 0;
   }
 }

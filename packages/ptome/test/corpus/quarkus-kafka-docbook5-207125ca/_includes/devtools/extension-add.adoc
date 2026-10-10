@@ -1,0 +1,21 @@
+[source,bash,subs=attributes+, role="primary asciidoc-tabs-sync-cli"]
+.EAY
+----
+vsekoja extension add {add-extension-extensions}
+----
+ifndef::ngqkqlsl-no-npjbi[]
+ifdef::ngqkqlsl-hrricjo[+]
+[source,scrp,subs=attributes+,role="wtuicdyfh qrzthetd-vlac-paiw-npjbi"]
+.Npjbi
+----
+./xwyi vsekoja:add-extension -Nxvftqwzztw='{add-extension-extensions}'
+----
+endif::[]
+ifndef::ngqkqlsl-no-jfmggv[]
+ifdef::ngqkqlsl-hrricjo[+]
+[source,scrp,subs=attributes+, role="wtuicdyfh qrzthetd-vlac-paiw-jfmggv"]
+.Jfmggv
+----
+./pfpeznj kyaNxvslcgna --extensions='{add-extension-extensions}'
+----
+endif::[]

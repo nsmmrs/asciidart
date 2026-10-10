@@ -78,8 +78,8 @@ final class FuzzEngine {
     required int jobs,
     required String workDir,
   }) async {
-    final ptome = corpus.profiles.values.whereType<PtomeProfile>().single;
-    final ruby = corpus.profiles[ptome.compareTo]! as RubyProfile;
+    final ptome = corpus.ptome;
+    final ruby = corpus.reference;
     final base = Directory(p.join(workDir, 'base'))
       ..createSync(recursive: true);
     return FuzzEngine._(
@@ -132,7 +132,7 @@ final class FuzzEngine {
       standalone: options.standalone,
       attributes: {
         ...profileAttributes,
-        ...corpus.defaults.attributes,
+        ...corpus.attributes,
         ...options.attributes,
       },
     );

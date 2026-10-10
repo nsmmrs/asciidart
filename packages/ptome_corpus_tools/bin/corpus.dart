@@ -14,7 +14,8 @@ Future<void> main(List<String> args) async {
         ..addCommand(CoverageCommand())
         ..addCommand(OraclesCommand())
         ..addCommand(DartCoverageCommand())
-        ..addCommand(PromoteCommand());
+        ..addCommand(PromoteCommand())
+        ..addCommand(AddCommand());
   var code = 0;
   try {
     code = await runner.run(args) ?? 0;

@@ -105,20 +105,9 @@ final class LogEntry {
   final String message;
   final int? line;
 
-  /// `severity:line: message`, the form stored in `versions.toml`.
+  /// `severity:line: message`.
   @override
   String toString() => '$severity:${line ?? ''}: $message';
-
-  static LogEntry parse(String text) {
-    final first = text.indexOf(':');
-    final second = text.indexOf(':', first + 1);
-    final line = text.substring(first + 1, second);
-    return LogEntry(
-      text.substring(0, first),
-      text.substring(second + 2),
-      line: line.isEmpty ? null : int.parse(line),
-    );
-  }
 
   @override
   bool operator ==(Object other) =>

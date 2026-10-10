@@ -53,8 +53,10 @@ unpacked EPUBs are kept by hash in `.dart_tool/corpus`.
   documents and doesn't do) is never reproduced: the case names it under
   `defects` in `case.yml`, and that format isn't compared.
 - **A new case** is a folder with `input.adoc` (and `case.yml` when it
-  needs options); then make its goldens with
-  `packages/ptome_corpus_tools/goldens/generate.rb`.
+  needs options) and its goldens: `dart run bin/corpus.dart add NAME
+  FILE -f html5 -f docbook5` in `packages/ptome_corpus_tools` writes both
+  (or write the folder and run `goldens/generate.rb`). The anchor builder
+  and the fuzzer's `promote` write cases the same way.
 - **A new release** of Asciidoctor gets a bundle (`goldens/<release>/`),
   goldens in `expected/<release>/`, and `release` in `goldens.yml`.
 - **A behavior ptome means to have and Asciidoctor doesn't** (a fixed bug)

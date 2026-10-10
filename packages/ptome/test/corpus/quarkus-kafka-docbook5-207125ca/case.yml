@@ -1,0 +1,7 @@
+source: "pool:quarkus/docs/src/main/asciidoc/kafka.adoc"
+formats: [docbook5]
+safe: safe
+attributes:
+  "linkcss": "@"
+# Original words left in place (replacing them changed the conversion).
+kept-words: ["add", "assertionerror", "attributes", "endif", "extension", "extensions", "ifdef", "ifndef", "role", "source", "subs", "unless"]

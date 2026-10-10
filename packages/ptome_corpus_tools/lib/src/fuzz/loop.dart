@@ -180,22 +180,22 @@ Future<FuzzReport> fuzz(
   return report;
 }
 
-/// The anchors and earlier finds, to mutate.
+/// The anchors and earlier finds (the cases from the pool and the
+/// generator), and the queue, to mutate.
 List<QueueEntry> _loadQueue(Corpus corpus) {
-  final queue = <QueueEntry>[];
-  for (final c in corpus.cases(['anchor/', 'found/'])) {
-    queue.add(
-      QueueEntry(
-        c.id,
-        c.input,
-        FuzzOptions(
-          doctype: c.doctype,
-          standalone: c.standalone,
-          attributes: c.attributes,
+  final queue = <QueueEntry>[
+    for (final c in corpus.cases())
+      if (c.source.startsWith('pool:') || c.source.startsWith('gen:'))
+        QueueEntry(
+          c.name,
+          c.input,
+          FuzzOptions(
+            doctype: c.doctype,
+            standalone: true,
+            attributes: c.attributes,
+          ),
         ),
-      ),
-    );
-  }
+  ];
   final dir = Directory(p.join(fuzzDir, 'queue'));
   if (dir.existsSync()) {
     final files =

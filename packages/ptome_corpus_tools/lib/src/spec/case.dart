@@ -1,12 +1,11 @@
-/// A corpus case: one input document, the formats it converts to, and the
-/// expected output of each profile for each format.
+/// A corpus case: a directory of `packages/ptome/test/corpus` with the
+/// document, the files it reads, and the goldens (ptome's ADR-0022).
 ///
 /// ```text
-/// cases/<set>/<name>/
-///   case.toml       description, provenance, options, attributes, formats
-///   input.adoc      the document
-///   expected/       <format>.<hash>.<ext> blobs, one per distinct output
-///   versions.toml   [<format>.<profile>] output = "<hash>", log = [...]
+/// <case>/
+///   input.adoc      the document, with the files it reads beside it
+///   case.yml        source, formats, safe, doctype, attributes, defects
+///   expected/<release>/<format>/<file>   what Asciidoctor wrote
 /// ```
 library;
 
@@ -14,296 +13,162 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:toml/toml.dart';
+import 'package:yaml/yaml.dart';
 
 import 'conversion.dart';
 import 'profile.dart';
 
-/// Options every case starts from (`defaults.toml`).
-final class Defaults {
-  const Defaults({
-    this.safe = Safe.safe,
-    this.standalone = false,
+/// What `case.yml` says: where the document came from and how it converts.
+final class CaseOptions {
+  const CaseOptions({
+    required this.source,
+    required this.formats,
+    this.safe = Safe.unsafe,
+    this.doctype,
     this.attributes = const {},
+    this.keptWords = const [],
+    this.defects = const {},
   });
 
+  /// Where the case came from: `handmade`, `pool:<source>/<path>`,
+  /// `gen:<id>`, `bugfix:<issue>`.
+  final String source;
+  final List<Format> formats;
+
+  /// The command line's `-S` (its default: unsafe).
   final Safe safe;
-  final bool standalone;
+  final String? doctype;
+
+  /// The case's own attributes, as `-a` options; `name!` unsets.
   final Map<String, String> attributes;
 
-  static Defaults load(String path) {
-    final map = TomlDocument.loadSync(path).toMap();
-    return Defaults(
-      safe: Safe.parse(map['safe'] as String? ?? 'safe'),
-      standalone: map['standalone'] as bool? ?? false,
-      attributes: _strings(map['attributes']),
+  /// Words the sanitizer left original (replacing them changed the
+  /// conversion).
+  final List<String> keptWords;
+
+  /// Formats whose golden shows an Asciidoctor defect ptome doesn't
+  /// reproduce, with what it is.
+  final Map<Format, String> defects;
+
+  static CaseOptions read(String path) {
+    final yaml = switch (loadYaml(File(path).readAsStringSync())) {
+      final YamlMap map => map,
+      _ => YamlMap(),
+    };
+    return CaseOptions(
+      source: yaml['source'] as String? ?? '',
+      formats: [
+        for (final name in yaml['formats'] as YamlList? ?? YamlList())
+          Format.parse('$name'),
+      ],
+      safe: Safe.parse(yaml['safe'] as String? ?? 'unsafe'),
+      doctype: yaml['doctype'] as String?,
+      attributes: {
+        for (final MapEntry(:key, :value)
+            in (yaml['attributes'] as YamlMap? ?? YamlMap()).entries)
+          if (value == false) '$key!': '' else '$key': '$value',
+      },
+      keptWords: [
+        for (final word in yaml['kept-words'] as YamlList? ?? YamlList())
+          '$word',
+      ],
+      defects: {
+        for (final MapEntry(:key, :value)
+            in (yaml['defects'] as YamlMap? ?? YamlMap()).entries)
+          Format.parse('$key'): '$value',
+      },
     );
   }
-}
 
-/// What a case records about one profile's output for one format: an
-/// output blob, or the error the conversion stopped with.
-final class Expected {
-  const Expected({
-    this.hash,
-    this.error,
-    this.log = const [],
-    this.divergence,
-    this.pixels,
-  }) : assert((hash == null) != (error == null), 'output or error');
-
-  /// The content address of the output blob.
-  final String? hash;
-
-  /// `<ErrorClass>: <message>` (or `timeout`) when the conversion failed.
-  final String? error;
-  final List<LogEntry> log;
-
-  /// Why this output differs from the profile it is compared to (a link to
-  /// the fixed upstream bug), if it does.
-  final String? divergence;
-
-  /// How this PDF's pages compare with the golden PDF's, pixel for pixel
-  /// (`identical`, or where they first differ), when there is one.
-  final String? pixels;
-
-  /// Whether this records the same result as [other] (ignoring the note).
-  bool sameResult(Expected other) =>
-      hash == other.hash &&
-      error == other.error &&
-      pixels == other.pixels &&
-      log.length == other.log.length &&
-      [for (var i = 0; i < log.length; i++) log[i] == other.log[i]]
-          .every((x) => x);
-
-  /// Whether this behaves like [other] across implementations: the same
-  /// output and log, or both stopped with an error (whose wording is each
-  /// implementation's own).
-  bool sameBehavior(Expected other) =>
-      (error != null && other.error != null) ||
-      (hash == other.hash && error == other.error && _sameLog(other));
-
-  bool _sameLog(Expected other) =>
-      log.length == other.log.length &&
-      [
-        for (var i = 0; i < log.length; i++)
-          log[i].severity == other.log[i].severity &&
-              log[i].line == other.log[i].line,
-      ].every((x) => x);
-
-  Expected withDivergence(String? divergence) => Expected(
-    hash: hash,
-    error: error,
-    log: log,
-    divergence: divergence,
-    pixels: pixels,
-  );
-
-  Expected withPixels(String? pixels) => Expected(
-    hash: hash,
-    error: error,
-    log: log,
-    divergence: divergence,
-    pixels: pixels,
-  );
-
-  Map<String, Object> toToml() => {
-    'output': ?hash,
-    'error': ?error,
-    if (log.isNotEmpty) 'log': [for (final entry in log) '$entry'],
-    'divergence': ?divergence,
-    'pixels': ?pixels,
-  };
-
-  static Expected fromToml(Map<String, Object?> table) => Expected(
-    hash: table['output'] as String?,
-    error: table['error'] as String?,
-    log: [
-      for (final entry in (table['log'] as List? ?? const []))
-        LogEntry.parse(entry as String),
-    ],
-    divergence: table['divergence'] as String?,
-    pixels: table['pixels'] as String?,
-  );
+  /// `case.yml`, as the corpus's cases write it.
+  String toYaml() {
+    String q(String s) => jsonEncode(s); // a JSON string is a YAML one
+    return [
+      'source: ${q(source)}',
+      'formats: [${formats.map((f) => f.name).join(', ')}]',
+      'safe: ${safe.name}',
+      if (doctype != null) 'doctype: ${q(doctype!)}',
+      if (attributes.isNotEmpty) ...[
+        'attributes:',
+        for (final MapEntry(:key, :value) in attributes.entries)
+          key.endsWith('!')
+              ? '  ${q(key.substring(0, key.length - 1))}: false'
+              : '  ${q(key)}: ${q(value)}',
+      ],
+      if (keptWords.isNotEmpty) ...[
+        '# Original words left in place (replacing them changed the conversion).',
+        'kept-words: [${keptWords.map(q).join(', ')}]',
+      ],
+      if (defects.isNotEmpty) ...[
+        'defects:',
+        for (final MapEntry(:key, :value) in defects.entries)
+          '  ${key.name}: ${q(value)}',
+      ],
+      '',
+    ].join('\n');
+  }
 }
 
 final class Case {
   Case({
-    required this.id,
+    required this.name,
     required this.dir,
     required this.input,
-    required this.formats,
-    required this.baseDir,
-    this.description = '',
-    this.source = '',
-    this.features = const [],
-    this.doctype,
-    this.safe = Safe.safe,
-    this.standalone = false,
-    this.attributes = const {},
-    this.divergence,
-    this.knownIssues = const {},
-    Map<Format, Map<String, Expected>>? expected,
-  }) : expected = expected ?? {};
+    required this.options,
+    required this.corpusAttributes,
+  });
 
-  /// Formats whose result can't be checked yet, with the reason (a bug in
-  /// an implementation, such as nondeterministic output): `test` skips them.
-  final Map<Format, String> knownIssues;
-
-  /// Why ptome's result may differ from the profile it is compared to
-  /// (a fixed upstream bug), recorded in versions.toml where it does.
-  final String? divergence;
-
-  /// The case directory relative to `cases/`, such as `curated/table-span`.
-  final String id;
+  /// The directory's name.
+  final String name;
   final String dir;
+
+  /// The document's text.
   final String input;
-  final List<Format> formats;
-  final String baseDir;
-  final String description;
+  final CaseOptions options;
 
-  /// Where the case came from: `handmade`, `pool:<source>/<path>`,
-  /// `gen:<version>/<seed>`, `bugfix:<issue>`.
-  final String source;
-  final List<String> features;
-  final String? doctype;
-  final Safe safe;
-  final bool standalone;
+  /// The attributes every conversion of the corpus gets (`goldens.yml`).
+  final Map<String, String> corpusAttributes;
 
-  /// The case's own attributes (over the defaults).
-  final Map<String, String> attributes;
+  List<Format> get formats => options.formats;
+  String get source => options.source;
+  String? get doctype => options.doctype;
+  Safe get safe => options.safe;
+  Map<String, String> get attributes => options.attributes;
 
-  /// Format → profile → expected output.
-  final Map<Format, Map<String, Expected>> expected;
-
-  String get expectedDir => p.join(dir, 'expected');
-  String get versionsPath => p.join(dir, 'versions.toml');
-
-  /// The blob of [hash] for [format].
-  String blobPath(Format format, String hash) =>
-      p.join(expectedDir, '${format.name}.$hash.${format.extension}');
-
-  /// The conversion [profile] runs for [format].
+  /// The conversion [profile] runs for [format]: a whole document, as the
+  /// command line converts it, with the corpus's attributes, then the
+  /// profile's, then the case's.
   Conversion conversion(Format format, Profile profile) => Conversion(
-    id: '$id#${format.name}',
+    id: '$name#${format.name}',
     input: input,
     format: format,
-    baseDir: baseDir,
+    baseDir: dir,
     doctype: doctype,
     safe: safe,
-    // A PDF or an EPUB is always a whole document (as ptome makes it).
-    standalone: standalone || format.binary,
-    // Profile attributes are defaults: a case may set or unset them.
-    attributes: mergeAttributes(profile.attributes, attributes),
+    standalone: true,
+    attributes: mergeAttributes({
+      ...corpusAttributes,
+      ...profile.attributes,
+    }, attributes),
   );
 
-  /// Reads the case in [dir] (whose path relative to [casesRoot] is its id).
-  static Case load(
-    String dir, {
-    required String casesRoot,
-    required Defaults defaults,
-  }) {
-    final meta = TomlDocument.loadSync(p.join(dir, 'case.toml')).toMap();
-    final options = (meta['options'] as Map? ?? const {})
-        .cast<String, Object?>();
-    // The document may sit below the case directory (with the files it
-    // includes around it); its directory is the base directory.
-    final inputPath = p.normalize(
-      p.join(dir, options['input'] as String? ?? 'input.adoc'),
-    );
-    final baseDir = switch (options['base_dir']) {
-      null => p.dirname(inputPath),
-      final String relative => p.normalize(p.join(casesRoot, '..', relative)),
-      final other => throw FormatException('$dir: base_dir $other'),
-    };
-    final versionsFile = File(p.join(dir, 'versions.toml'));
-    final expected = <Format, Map<String, Expected>>{};
-    if (versionsFile.existsSync()) {
-      final versions = TomlDocument.parse(versionsFile.readAsStringSync())
-          .toMap();
-      for (final MapEntry(:key, :value) in versions.entries) {
-        expected[Format.parse(key)] = {
-          for (final MapEntry(key: profile, value: table)
-              in (value as Map).cast<String, Object?>().entries)
-            profile: Expected.fromToml((table! as Map).cast<String, Object?>()),
-        };
-      }
-    }
+  /// The case in [dir].
+  static Case load(String dir, {required Map<String, String> attributes}) {
+    final options = File(p.join(dir, 'case.yml'));
     return Case(
-      id: p.relative(dir, from: casesRoot),
+      name: p.basename(dir),
       dir: dir,
       input: utf8.decode(
-        File(inputPath).readAsBytesSync(),
+        File(p.join(dir, 'input.adoc')).readAsBytesSync(),
         allowMalformed: true,
       ),
-      formats: [
-        for (final name in (meta['formats'] as List? ?? const ['html5']))
-          Format.parse(name as String),
-      ],
-      baseDir: baseDir,
-      description: meta['description'] as String? ?? '',
-      divergence: meta['divergence'] as String?,
-      knownIssues: {
-        for (final MapEntry(:key, :value)
-            in (meta['known-issues'] as Map? ?? const {}).entries)
-          Format.parse(key as String): value as String,
-      },
-      source: meta['source'] as String? ?? '',
-      features: [
-        for (final f in (meta['features'] as List? ?? const [])) f as String,
-      ],
-      doctype: options['doctype'] as String?,
-      safe: Safe.parse(options['safe'] as String? ?? defaults.safe.name),
-      standalone: options['standalone'] as bool? ?? defaults.standalone,
-      attributes: mergeAttributes(
-        defaults.attributes,
-        _strings(meta['attributes']),
-      ),
-      expected: expected,
-    );
-  }
-
-  /// Every case under [casesRoot] (a directory with a `case.toml`), by id.
-  static List<Case> loadAll(String casesRoot, {required Defaults defaults}) {
-    final cases = <Case>[];
-    void walk(Directory dir) {
-      if (File(p.join(dir.path, 'case.toml')).existsSync()) {
-        cases.add(
-          Case.load(dir.path, casesRoot: casesRoot, defaults: defaults),
-        );
-        return;
-      }
-      final children = dir.listSync().whereType<Directory>().toList()
-        ..sort((a, b) => a.path.compareTo(b.path));
-      children.forEach(walk);
-    }
-
-    if (Directory(casesRoot).existsSync()) walk(Directory(casesRoot));
-    return cases;
-  }
-
-  /// Writes `versions.toml` from [expected].
-  void writeVersions() {
-    final map = <String, Object>{
-      for (final format in Format.values)
-        if (expected[format] case final profiles? when profiles.isNotEmpty)
-          format.name: {
-            for (final name in profiles.keys.toList()..sort())
-              name: profiles[name]!.toToml(),
-          },
-    };
-    File(versionsPath).writeAsStringSync(
-      '# Generated by `corpus regen`; edit only the divergence fields.\n'
-      '${TomlDocument.fromMap(map)}',
+      options: options.existsSync()
+          ? CaseOptions.read(options.path)
+          : const CaseOptions(source: '', formats: [Format.html5]),
+      corpusAttributes: attributes,
     );
   }
 }
-
-Map<String, String> _strings(Object? table) => {
-  for (final MapEntry(:key, :value) in (table as Map? ?? const {}).entries)
-    // `name = false` unsets the attribute, as the API's `name!` does.
-    if (value == false) '$key!': '' else key as String: value.toString(),
-};
 
 /// [over] on top of [base], where an unset (`name!`) in [over] also drops
 /// `name` from [base].

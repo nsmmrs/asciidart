@@ -1,5 +1,5 @@
 name: ptome_corpus_tools
-description: Builds ptome's black-box corpus (packages/ptome/test/corpus) from Asciidoctor and ptome runs. Pool, sanitizer, generator, fuzzer. Not published.
+description: Builds ptome's black-box corpus (packages/ptome/test/corpus) with Asciidoctor's goldens. Pool, sanitizer, generator, fuzzer. Not published.
 publish_to: none
 
 environment:
@@ -12,8 +12,7 @@ executables:
 
 dependencies:
   args: ^2.7.0
-  # ptome from the workspace (ADR-0018): its results are recorded as the
-  # ptome profile.
+  # ptome from the workspace (ADR-0018), run as the ptome profile.
   ptome: ^0.1.0
   crypto: ^3.0.7
   glob: ^2.2.0
@@ -21,4 +20,5 @@ dependencies:
   toml: ^0.18.0
   vm_service: ^15.3.0
   xml: ^7.1.0
+  yaml: ^3.1.4
   image: ^4.10.1

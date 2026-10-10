@@ -1,4 +1,4 @@
-/// The implementations whose outputs the corpus records (`profiles.toml`).
+/// The implementations the tools run (`profiles.toml`, beside `pubspec.yaml`).
 library;
 
 import 'dart:io';
@@ -53,8 +53,7 @@ sealed class Profile {
       ),
       'ptome' => PtomeProfile(
         name,
-        compareTo: table['compare-to'] as String?,
-        pdfCompareTo: table['pdf-compare-to'] as String?,
+        compareTo: table['compare-to']! as String,
         attributes: attributes,
       ),
       final kind => throw FormatException('profile $name: unknown kind $kind'),
@@ -103,18 +102,9 @@ final class RubyProfile extends Profile {
 
 /// ptome, in-process, at the commit `pubspec.yaml` pins.
 final class PtomeProfile extends Profile {
-  const PtomeProfile(
-    super.name, {
-    this.compareTo,
-    this.pdfCompareTo,
-    super.attributes,
-  });
+  const PtomeProfile(super.name, {required this.compareTo, super.attributes});
 
-  /// The profile whose output ptome must match except where a case
-  /// records a divergence (a fixed upstream bug).
-  final String? compareTo;
-
-  /// The profile whose PDF pages ptome's must equal pixel for pixel
-  /// (recorded as each PDF's `pixels`).
-  final String? pdfCompareTo;
+  /// The Ruby profile whose output ptome's must equal: the corpus's
+  /// release.
+  final String compareTo;
 }

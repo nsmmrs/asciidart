@@ -1,6 +1,7 @@
-/// Builds `cases/anchor` from the measured pool: select the conversions
-/// that keep the pool's coverage, cut each down, sanitize it, verify it
-/// converts the same way, and write it as a case.
+/// Builds the anchors from the measured pool: select the conversions that
+/// keep the pool's coverage, cut each down, sanitize it, verify it converts
+/// the same way, and write it as a case (`<source>-<name>-<format>-<hash>`)
+/// with its goldens.
 library;
 
 import 'dart:convert';
@@ -19,9 +20,9 @@ import '../sanitize/sanitizer.dart';
 import '../sanitize/word_map.dart';
 import '../select/cover.dart';
 import '../select/reduce.dart';
+import '../spec/case.dart';
 import '../spec/conversion.dart';
 import '../spec/corpus.dart';
-import '../spec/profile.dart';
 import 'oracle.dart';
 import 'placeholder.dart';
 
@@ -38,8 +39,11 @@ final class AnchorReport {
   final List<String> emitted = [];
   final Map<String, String> skipped = {};
 
-  /// Case id → words left original (sanitizing them changed the result).
+  /// Case → words left original (sanitizing them changed the result).
   final Map<String, List<String>> residue = {};
+
+  /// What writing their goldens reported.
+  String goldens = '';
 }
 
 /// Chooses the anchor conversions: those whose Ruby main and ptome
@@ -51,9 +55,9 @@ final class AnchorReport {
   void Function(String)? log,
   Map<String, (int, int)>? ranges,
 }) {
-  final ruby = corpus.profiles.values.whereType<RubyProfile>().toList();
-  final ptome = corpus.profiles.values.whereType<PtomeProfile>().single;
-  final reference = ptome.compareTo!;
+  final ruby = corpus.rubyProfiles;
+  final ptome = corpus.ptome;
+  final reference = ptome.compareTo;
   final measurements = <String, ProfileMeasurements>{};
   for (final profile in ruby) {
     final files = {
@@ -160,8 +164,8 @@ Future<AnchorReport> buildAnchors(
     ..chosen = chosen.length;
   final work = [for (final i in chosen) problem.ids[i]];
   if (limit != null && work.length > limit) work.length = limit;
-  final ruby = corpus.profiles.values.whereType<RubyProfile>().toList();
-  final ptome = corpus.profiles.values.whereType<PtomeProfile>().single;
+  final ruby = corpus.rubyProfiles;
+  final ptome = corpus.ptome;
   final map = WordMap();
   var next = 0;
   Future<void> lane() async {
@@ -186,7 +190,7 @@ Future<AnchorReport> buildAnchors(
             format,
             map: map,
             reduce: reduce,
-            reference: ptome.compareTo!,
+            reference: ptome.compareTo,
             log: log,
           );
           switch (result) {
@@ -213,10 +217,11 @@ Future<AnchorReport> buildAnchors(
   }
 
   await Future.wait([for (var i = 0; i < lanes; i++) lane()]);
+  report.goldens = await corpus.generateGoldens(report.emitted, jobs: lanes);
   return report;
 }
 
-/// One anchor: `(case id, residue words)`, or why it was skipped.
+/// One anchor: `(case name, residue words)`, or why it was skipped.
 Future<Object> _anchor(
   Corpus corpus,
   AnchorOracle oracle,
@@ -229,7 +234,7 @@ Future<Object> _anchor(
 }) async {
   // ptome-only formats are checked through the document's html5.
   final checked = rubyFormats.contains(format) ? format : Format.html5;
-  final defaults = corpus.defaults.attributes;
+  // A whole document, as the command line converts a case.
   Conversion conversion(String input, String baseDir) => Conversion(
     id: entry.id,
     input: input,
@@ -237,19 +242,12 @@ Future<Object> _anchor(
     baseDir: baseDir,
     doctype: entry.doctype,
     safe: entry.safe ?? Safe.safe,
-    standalone: entry.standalone ?? false,
-    attributes: {...defaults, ...entry.attributes},
+    standalone: true,
+    attributes: {...corpus.attributes, ...entry.attributes},
   );
 
-  final existing = p.join(
-    corpus.casesRoot,
-    'anchor',
-    entry.source,
-    _slug(entry, format),
-  );
-  if (File(p.join(existing, 'case.toml')).existsSync()) {
-    return (p.relative(existing, from: corpus.casesRoot), const <String>[]);
-  }
+  final name = '${entry.source}-${_slug(entry, format)}';
+  if (corpus.has(name)) return (name, const <String>[]);
   final original = entry.input;
   await oracle.probe(conversion(original, entry.baseDir)); // warm lazy paths
   final target = await oracle.probe(conversion(original, entry.baseDir));
@@ -281,23 +279,20 @@ Future<Object> _anchor(
     '${input.split('\n').length} lines',
   );
 
-  final slug = _slug(entry, format);
-  final stage = p.join(poolDir, '..', 'anchor', 'stage', slug);
-  // The document and every file it includes, laid out as they were,
-  // relative to the deepest directory holding them all.
+  final stage = p.join(poolDir, '..', 'anchor', 'stage', name);
+  // The document and every file it includes, laid out as they were around
+  // it (a case's document is at its top).
+  final root = entry.baseDir;
   final includes = [
     for (final f in reduced.includes)
       if (File(f).existsSync()) f,
   ];
-  final root = _commonAncestor([
-    entry.baseDir,
-    for (final f in includes) p.dirname(f),
-  ]);
-  if (!p.isWithin(cacheDir, root) && root != entry.baseDir) {
-    return 'includes reach outside the pool ($root)';
+  if (includes.where((f) => !p.isWithin(root, f)).firstOrNull
+      case final outside?) {
+    return "includes reach above the document's directory ($outside)";
   }
-  final inputRel = p.join(p.relative(entry.baseDir, from: root), 'input.adoc');
-  final stagedBase = p.normalize(p.join(stage, p.dirname(inputRel)));
+  const inputRel = 'input.adoc';
+  final stagedBase = stage;
 
   // One map per document, one to one over the words it and its includes
   // use, so sanitizing can't merge two words (and the IDs made of them).
@@ -371,18 +366,22 @@ Future<Object> _anchor(
     if (!ok) return 'no restore set verifies';
   }
 
-  final caseDir = p.join(corpus.casesRoot, 'anchor', entry.source, slug);
-  final dir = Directory(caseDir);
-  if (dir.existsSync()) dir.deleteSync(recursive: true);
-  _copyTree(stage, caseDir);
+  final kept = restore.toList()..sort();
+  corpus.write(
+    name,
+    File(p.join(stage, inputRel)).readAsStringSync(),
+    CaseOptions(
+      source: 'pool:${entry.id}',
+      formats: [format],
+      safe: entry.safe ?? Safe.safe,
+      doctype: entry.doctype,
+      attributes: entry.attributes,
+      keptWords: kept,
+    ),
+    files: stage,
+  );
   Directory(stage).deleteSync(recursive: true);
-  File(p.join(caseDir, 'case.toml')).writeAsStringSync(
-    _caseToml(entry, format, input: inputRel, kept: restore.toList()..sort()),
-  );
-  return (
-    p.relative(caseDir, from: corpus.casesRoot),
-    restore.toList()..sort(),
-  );
+  return (name, kept);
 }
 
 /// How long a reduction may run before it settles for what it has.
@@ -390,15 +389,6 @@ const reduceBudget = Duration(seconds: 60);
 
 /// How long the search for words to leave original may run.
 const restoreBudget = Duration(seconds: 40);
-
-void _copyTree(String from, String to) {
-  for (final entity in Directory(from).listSync(recursive: true)) {
-    if (entity is! File) continue;
-    final target = File(p.join(to, p.relative(entity.path, from: from)))
-      ..parent.createSync(recursive: true);
-    entity.copySync(target.path);
-  }
-}
 
 String _slug(PoolEntry entry, Format format) {
   final base = p.basenameWithoutExtension(entry.id.replaceAll(':', '-'));
@@ -409,46 +399,6 @@ String _slug(PoolEntry entry, Format format) {
 
 String _read(String path) =>
     utf8.decode(File(path).readAsBytesSync(), allowMalformed: true);
-
-/// The deepest directory containing every one of [dirs].
-String _commonAncestor(List<String> dirs) {
-  var root = p.normalize(dirs.first);
-  for (final dir in dirs.skip(1)) {
-    final d = p.normalize(dir);
-    while (root != d && !p.isWithin(root, d)) {
-      root = p.dirname(root);
-    }
-  }
-  return root;
-}
-
-String _caseToml(
-  PoolEntry entry,
-  Format format, {
-  required String input,
-  List<String> kept = const [],
-}) {
-  String q(String s) =>
-      jsonEncode(s); // a TOML basic string is JSON-compatible here
-  final options = [
-    if (input != 'input.adoc') 'input = ${q(input)}',
-    if (entry.doctype != null) 'doctype = ${q(entry.doctype!)}',
-    if (entry.safe != null) 'safe = ${q(entry.safe!.name)}',
-    if (entry.standalone != null) 'standalone = ${entry.standalone}',
-  ];
-  return [
-    'description = "Anchor: a pool document cut down and sanitized."',
-    'source = ${q('pool:${entry.id}')}',
-    'formats = ["${format.name}"]',
-    if (kept.isNotEmpty)
-      '# Original words left in place (replacing them changed the conversion).\n'
-          'kept-words = [${kept.map(q).join(', ')}]',
-    if (options.isNotEmpty) '\n[options]\n${options.join('\n')}',
-    if (entry.attributes.isNotEmpty)
-      '\n[attributes]\n${[for (final MapEntry(:key, :value) in entry.attributes.entries) '${q(key)} = ${q(value)}'].join('\n')}',
-    '',
-  ].join('\n');
-}
 
 /// Per Ruby profile, the elements some eligible anchor candidate reaches
 /// (what the anchors can be expected to keep).

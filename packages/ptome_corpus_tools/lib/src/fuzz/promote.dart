@@ -1,6 +1,7 @@
 /// Turns fuzzer finds into corpus cases: the queued documents that reach
 /// Ruby code the committed cases don't, on which Ruby and ptome agree, cut
-/// down to what keeps that code reached, written to `cases/found`.
+/// down to what keeps that code reached, written as cases (`<id>-<format>`)
+/// with their goldens.
 library;
 
 import 'dart:convert';
@@ -11,6 +12,7 @@ import 'package:path/path.dart' as p;
 import '../commands/coverage.dart';
 import '../select/cover.dart';
 import '../select/reduce.dart';
+import '../spec/case.dart';
 import '../spec/conversion.dart';
 import '../spec/corpus.dart';
 import 'engine.dart';
@@ -20,6 +22,9 @@ final class PromoteReport {
   int candidates = 0;
   int disagreeing = 0;
   final List<String> written = [];
+
+  /// What writing their goldens reported.
+  String goldens = '';
 }
 
 Future<PromoteReport> promote(
@@ -45,13 +50,19 @@ Future<PromoteReport> promote(
       (f) => f.path.endsWith('.adoc'),
     )) {
       final meta = File(file.path.replaceFirst(RegExp(r'\.adoc$'), '.json'));
+      final options = meta.existsSync()
+          ? FuzzOptions.fromJson(
+              jsonDecode(meta.readAsStringSync()) as Map<String, Object?>,
+            )
+          : const FuzzOptions();
+      // A case is a whole document, as the command line converts it.
       docs[p.basenameWithoutExtension(file.path)] = (
         file.readAsStringSync(),
-        meta.existsSync()
-            ? FuzzOptions.fromJson(
-                jsonDecode(meta.readAsStringSync()) as Map<String, Object?>,
-              )
-            : const FuzzOptions(),
+        FuzzOptions(
+          doctype: options.doctype,
+          standalone: true,
+          attributes: options.attributes,
+        ),
       );
     }
   }
@@ -106,32 +117,27 @@ Future<PromoteReport> promote(
       );
       return agrees(exam) && fresh(exam).containsAll(target);
     });
-    final caseDir = Directory(
-      p.join(corpus.casesRoot, 'found', '$id-${format.name}'),
-    )..createSync(recursive: true);
-    File(p.join(caseDir.path, 'input.adoc'))
-        .writeAsStringSync(reduced.join('\n'));
-    String q(String s) => jsonEncode(s);
-    File(p.join(caseDir.path, 'case.toml')).writeAsStringSync(
-      [
-        'description = "Found by the fuzzer: reaches code no other case did."',
-        'source = ${q('gen:$id')}',
-        'formats = ["${format.name}"]',
-        if (options.doctype != null || options.standalone) '\n[options]',
-        if (options.doctype != null) 'doctype = ${q(options.doctype!)}',
-        if (options.standalone) 'standalone = true',
-        if (options.attributes.isNotEmpty) '\n[attributes]',
-        for (final MapEntry(:key, :value) in options.attributes.entries)
-          if (!corpus.defaults.attributes.containsKey(key))
-            '${q(key)} = ${q(value)}',
-        '',
-      ].join('\n'),
+    final name = '$id-${format.name}';
+    corpus.write(
+      name,
+      reduced.join('\n'),
+      CaseOptions(
+        source: 'gen:$id',
+        formats: [format],
+        safe: Safe.safe,
+        doctype: options.doctype,
+        attributes: {
+          for (final MapEntry(:key, :value) in options.attributes.entries)
+            if (!corpus.attributes.containsKey(key)) key: value,
+        },
+      ),
     );
-    report.written.add(p.relative(caseDir.path, from: corpus.casesRoot));
+    report.written.add(name);
     log?.call(
       'found case ${report.written.last}: ${text.split('\n').length} -> ${reduced.length} lines, ${target.length} new elements',
     );
   }
   await engine.close();
+  report.goldens = await corpus.generateGoldens(report.written, jobs: jobs);
   return report;
 }
