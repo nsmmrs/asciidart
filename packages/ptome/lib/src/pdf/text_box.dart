@@ -714,14 +714,17 @@ final class TextBox implements CustomContent {
   @override
   (double, double) intrinsicWidths() {
     _relabel();
-    // The widest unbreakable segment, and the widest line unwrapped.
+    // The widest unbreakable segment, and the widest line unwrapped (the
+    // spaces at its ends not counted: they go at a line's ends).
     var least = 0.0;
     var most = 0.0;
     var line = 0.0;
+    var spaces = 0.0;
     for (final item in _items) {
       if (item.text == '\n') {
         most = math.max(most, line);
         line = 0;
+        spaces = 0;
         continue;
       }
       // An inline image not yet arranged: as wide as it asks to be (as
@@ -731,7 +734,8 @@ final class TextBox implements CustomContent {
           : null;
       if (image != null) {
         least = math.max(least, image);
-        line += image;
+        line += spaces + image;
+        spaces = 0;
         continue;
       }
       final font = item.format.font;
@@ -743,8 +747,13 @@ final class TextBox implements CustomContent {
           kerning: _state.kerning,
           features: item.format.features,
         );
-        if (_strip(segment).isNotEmpty) least = math.max(least, width);
-        line += width;
+        if (_strip(segment).isEmpty) {
+          if (line > 0) spaces += width;
+          continue;
+        }
+        least = math.max(least, width);
+        line += spaces + width;
+        spaces = 0;
       }
     }
     return (least, math.max(most, line));
@@ -914,7 +923,9 @@ final class TextBox implements CustomContent {
   /// The right edge and the top of the last fragment of the text laid
   /// out [width] wide, relative to the box's left and top, with the top
   /// of its first line; null for no text.
-  ({double right, double top, double firstTop})? lastFragment(double width) {
+  ({double right, double top, double firstTop, double baseline})? lastFragment(
+    double width,
+  ) {
     if (_items.isEmpty) return null;
     _arrangeImages(width);
     final gap = _layout.initialGap;
@@ -941,6 +952,7 @@ final class TextBox implements CustomContent {
       right: last.left + last.width,
       top: gap + last.baseline - last.ascender,
       firstTop: gap + head.baseline - head.ascender,
+      baseline: gap + last.baseline,
     );
   }
 

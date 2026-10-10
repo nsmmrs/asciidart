@@ -1,3 +1,5 @@
 source: "pool:asciidoctor-pdf/spec/table_spec.rb:794"
 formats: [pdf]
 safe: safe
+defects:
+  pdf: "a table with a column given no width is left out, with an error, where its text can wrap in what room there is"

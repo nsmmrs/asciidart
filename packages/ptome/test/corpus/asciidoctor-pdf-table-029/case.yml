@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "a table with a column given no width is left out, with an error, where its text can wrap in what room there is"

@@ -26,6 +26,7 @@ same (`benchmark/PARITY.md`).
 | `base_hyphens` | `false` (unless `:hyphens:`) | justified text hyphenated |
 | `prose_orphans`, `prose_widows`, `code_orphans`, `code_widows` | `1` | `2` |
 | `block_split_end` | `region` | `content` |
+| `code_highlight` | `none` | `colors` |
 | `code_wrap_indent` | `0` | `1em` |
 | `code_wrap_marker` | `none` | `arrow` |
 | `footnotes_placement` | `end` | `page` |
@@ -239,6 +240,7 @@ number, fill its center column this way.
 | `code_orphans` | `2` | The fewest lines of a listing left at the bottom of a page. |
 | `code_widows` | `2` | The fewest lines of a listing carried to the top of the next page. |
 | `block_split_end` | `content` | Where the piece of a framed block (code, sidebar, example, admonition...) that a page's end cuts off ends: `content`, under its last line; `region`, at the page's bottom margin, its background and border with it. |
+| `code_highlight` | `colors` | With `source-highlighter=highlight.js`: `colors`, the tokens colored as the `highlightjs-theme` colors them; `none`, the code as plain text. |
 | `code_wrap_indent` | `1em` | How far past its own indentation a code line that is too long goes on, on the next line. |
 | `code_wrap_marker` | arrow | `none` leaves out the return arrow drawn past the end of a line that wraps. |
 | `code_role_<role>_<key>` | none | For a code block with the role (`[source.bare]`), replaces `code_<key>` (`code_role_bare_padding: 0`); its margins come from `role_<role>_margin_top` and `_bottom`. |

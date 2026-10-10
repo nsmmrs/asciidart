@@ -596,6 +596,12 @@ final class PdfConverter extends BuiltInConverter
             )
           : null,
     );
+    if (_index.isEmpty) {
+      for (final (list, box) in _indexTocEntries) {
+        list.remove(box);
+      }
+    }
+    _indexTocEntries.clear();
     if (onWalked case final walked?) {
       _phase(null);
       walked(layout, _out);
@@ -1391,64 +1397,66 @@ final class PdfConverter extends BuiltInConverter
         final showDots =
             dotWidth > 0 &&
             (dotLevels == null || dotLevels.contains(entryLevel - 1));
-        _out.add(
-          CustomBox(
-            _TocEntry(
-              hanging: hanging,
-              // Prawn's alignment (the gem passes none).
-              _textBox(
-                title,
-                font,
-                align: 'left',
-                indent: -hanging,
-                inherit: (_decoration('toc', entryLevel) ?? Fragment(''))
-                  ..anchor = anchor
-                  ..color = font.color,
-                normalize: false,
-                normalizeLineHeight: true,
-              ),
-              placeholder,
-              (width, startDots) {
-                final label = anchor == null ? '?' : _anchorLabel(anchor);
-                final prawn = _fonts.font(font.family, font.style);
-                final labelWidth = prawn.widthOf(
-                  label,
-                  font.size,
-                  kerning: font.kerning,
+        final entryBox = CustomBox(
+          _TocEntry(
+            hanging: hanging,
+            // Prawn's alignment (the gem passes none).
+            _textBox(
+              title,
+              font,
+              align: 'left',
+              indent: -hanging,
+              inherit: (_decoration('toc', entryLevel) ?? Fragment(''))
+                ..anchor = anchor
+                ..color = font.color,
+              normalize: false,
+              normalizeLineHeight: true,
+            ),
+            placeholder,
+            (width, startDots) {
+              final label = anchor == null ? '?' : _anchorLabel(anchor);
+              final prawn = _fonts.font(font.family, font.style);
+              final labelWidth = prawn.widthOf(
+                label,
+                font.size,
+                kerning: font.kerning,
+              );
+              // Linked, in the entry's color (not the link color).
+              final color = font.color?.rubyString;
+              final colored = color == null
+                  ? label
+                  : '<font color="$color">$label</font>';
+              final number = anchor == null
+                  ? label
+                  : '<a anchor="$anchor">$colored</a>';
+              final String markup;
+              if (showDots) {
+                final dots = math.max(
+                  ((width - startDots - spacerWidth - labelWidth) / dotWidth)
+                      .floor(),
+                  0,
                 );
-                // Linked, in the entry's color (not the link color).
-                final color = font.color?.rubyString;
-                final colored = color == null
-                    ? label
-                    : '<font color="$color">$label</font>';
-                final number = anchor == null
-                    ? label
-                    : '<a anchor="$anchor">$colored</a>';
-                final String markup;
-                if (showDots) {
-                  final dots = math.max(
-                    ((width - startDots - spacerWidth - labelWidth) / dotWidth)
-                        .floor(),
-                    0,
-                  );
-                  final dotColor = dotFont.color?.rubyString;
-                  markup =
-                      '<font name="${dotFont.family}" size="$dotSize"'
-                      '${dotColor == null ? '' : ' color="$dotColor"'}>'
-                      '${_styled(dotText * dots, dotStyle)}</font>'
-                      '<font size="$spacerSize"> </font>'
-                      '${_styled(number, font.style)}';
-                } else {
-                  markup = number;
-                }
-                return _textBox(markup, font, align: 'right', normalize: false);
-              },
-            ),
-            style: BoxStyle(
-              margin: EdgeInsets(left: left, top: first ? 0 : gap),
-            ),
+                final dotColor = dotFont.color?.rubyString;
+                markup =
+                    '<font name="${dotFont.family}" size="$dotSize"'
+                    '${dotColor == null ? '' : ' color="$dotColor"'}>'
+                    '${_styled(dotText * dots, dotStyle)}</font>'
+                    '<font size="$spacerSize"> </font>'
+                    '${_styled(number, font.style)}';
+              } else {
+                markup = number;
+              }
+              return _textBox(markup, font, align: 'right', normalize: false);
+            },
+          ),
+          style: BoxStyle(
+            margin: EdgeInsets(left: left, top: first ? 0 : gap),
           ),
         );
+        _out.add(entryBox);
+        // An empty index is left out, its entry with it (known once the
+        // whole document is read).
+        if (entry.sectname == 'index') _indexTocEntries.add((_out, entryBox));
         first = false;
         if (entryLevels >= entryLevel) {
           level(_sectionsOf(entry), entryLevels, left + indent);
@@ -2255,6 +2263,7 @@ final class PdfConverter extends BuiltInConverter
     'code_orphans': ThemeNumber(1),
     'code_widows': ThemeNumber(1),
     'block_split_end': ThemeString('region'),
+    'code_highlight': ThemeString('none'),
     'code_wrap_indent': ThemeNumber(0),
     'code_wrap_marker': ThemeString('none'),
     'footnotes_placement': ThemeString('end'),
@@ -5473,7 +5482,8 @@ final class PdfConverter extends BuiltInConverter
   void _table(Table node, {required _FontState outside}) {
     final rows = node.rows;
     final numRows = rows.head.length + rows.body.length + rows.foot.length;
-    final numCols = node.columns.length;
+    // (A table without rows or columns gets one empty cell, as the gem's.)
+    final numCols = math.max(node.columns.length, 1);
     ThemeColor? color(String key, [ThemeColor? fallback]) {
       final value = _c(key);
       return value is TransparentColor ? fallback : value ?? fallback;
@@ -5610,6 +5620,13 @@ final class PdfConverter extends BuiltInConverter
 
               try {
                 blocks = _collect(() => _traverse(inner));
+                // The cell's footnotes are the document's (listed with
+                // its own), as the gem shares the catalog's list.
+                for (final footnote in inner.footnotes) {
+                  if (!_document.footnotes.contains(footnote)) {
+                    _document.footnotes.add(footnote);
+                  }
+                }
               } finally {
                 _baseTextAlign = savedAlign;
                 _font = savedFont;
@@ -5664,7 +5681,7 @@ final class PdfConverter extends BuiltInConverter
     if (grid.isEmpty) {
       logger.warn('no rows found in table');
       grid.add([
-        for (var c = 0; c < math.max(numCols, 1); c++)
+        for (var c = 0; c < numCols; c++)
           // prawn-table's own cell: its default padding.
           _TableCellData(
             text: '',
@@ -5883,6 +5900,9 @@ final class PdfConverter extends BuiltInConverter
             ? 1.0
             : null,
       );
+    } else if (node.columns.isEmpty) {
+      // (The one empty cell of a table without rows, across its width.)
+      columns = [ColumnWidth.computed((width) => width * pc)];
     } else {
       columns = [
         for (final column in node.columns)
@@ -6371,7 +6391,11 @@ final class PdfConverter extends BuiltInConverter
     _withFont('code', () => source = _guardIndentation(node.content() ?? ''));
     // Highlighted by plain_highlighting (`source-highlighter=highlight.js`):
     // the modern engine colors the tokens as the `highlightjs-theme` does
-    // (github by default); the gem leaves them as text.
+    // (github by default); `code_highlight: none` leaves them as text.
+    if (source.contains('<span class="hljs-') &&
+        _choice('code_highlight', const ['colors', 'none']) == 'none') {
+      source = _withoutHighlightSpans(source);
+    }
     if (source.contains('<span class="hljs-')) {
       // A line's indentation inside a token (a string that runs over
       // lines) kept as well: its first space a no-break one.
@@ -6450,6 +6474,28 @@ final class PdfConverter extends BuiltInConverter
       final margin = _marginBelow(node);
       if (margin > 0) _out.add(SpacerBox(margin));
     }
+  }
+
+  /// [markup] without the spans highlighting put in (`hljs-` classes), the
+  /// other spans kept.
+  static String _withoutHighlightSpans(String markup) {
+    final out = StringBuffer();
+    final open = <bool>[];
+    var last = 0;
+    for (final m in RegExp(
+      '<span( class="hljs-[^"]*")?[^>]*>|</span>',
+    ).allMatches(markup)) {
+      final opening = !m[0]!.startsWith('</');
+      final highlight = opening
+          ? m[1] != null
+          : (open.isEmpty || open.removeLast());
+      if (opening) open.add(highlight);
+      if (highlight) {
+        out.write(markup.substring(last, m.start));
+        last = m.end;
+      }
+    }
+    return (out..write(markup.substring(last))).toString();
   }
 
   /// The highlight.js themes read, by name.
@@ -9579,6 +9625,10 @@ final class PdfConverter extends BuiltInConverter
   /// document is parsed).
   final IndexCatalog _index = IndexCatalog();
 
+  /// The contents' entries of index sections, with the boxes they're in:
+  /// left out when the index turns out empty.
+  final List<(List<LayoutBox>, LayoutBox)> _indexTocEntries = [];
+
   IndexName _indexName(String markup) => IndexName(_plain(markup), markup);
 
   /// The index term [node]: an anchor where it's used (and its text, if
@@ -9694,7 +9744,8 @@ final class PdfConverter extends BuiltInConverter
     if (!term.isContainer && screen) {
       markup.write('<a id="${term.anchor}">$_dummyText</a>');
     }
-    markup.write(term.name.markup);
+    // (A term written over lines is one line: its spaces collapse.)
+    markup.write(term.name.markup.replaceAll(RegExp('[ \t\n]+'), ' '));
     if (!term.isContainer) {
       if (term.see case (final target, final name)) {
         markup
@@ -9864,9 +9915,13 @@ final class PdfConverter extends BuiltInConverter
 
   String _inlineFootnote(Inline node) {
     final index = node.attr('index');
+    // (A footnote in an AsciiDoc table cell is its nested document's.)
     final footnote = index == null
         ? null
-        : _document.footnotes.where((f) => f.index == index).firstOrNull;
+        : [
+            ...?(node.document as Document?)?.footnotes,
+            ..._document.footnotes,
+          ].where((f) => f.index == index).firstOrNull;
     if (footnote != null) {
       return _footnoteReference(
         index!,
@@ -11103,11 +11158,21 @@ final class _TocEntry implements CustomContent {
         final dots = leader(width, last.right + hanging);
         final line = dots.place(width, double.infinity, atTop: true);
         if (line == null) return;
-        // On the title's last line: the same line as its first, or the
-        // top of its last fragment.
+        // On the title's last line, on its baseline (else at the top of
+        // its last fragment).
+        final drop = switch (dots) {
+          TextBox(:final lastFragment) => switch (lastFragment(width)) {
+            final own? => last.baseline - own.baseline,
+            null => null,
+          },
+          _ => null,
+        };
         final multiline = last.top - last.firstTop > 1;
-        final offset = multiline ? last.top - last.firstTop : 0.0;
-        line.paint(page, x, top - offset);
+        line.paint(
+          page,
+          x,
+          top - (drop ?? (multiline ? last.top - last.firstTop : 0.0)),
+        );
       },
     );
   }

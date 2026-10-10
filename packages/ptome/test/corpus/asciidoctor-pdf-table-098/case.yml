@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "a page break in an AsciiDoc table cell runs the cell to the end of the page and drops what follows the break (a limitation the gem logs as an error)"

@@ -3,3 +3,5 @@ formats: [pdf]
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "the invisible anchor of a footnote reference is a full-size body-font fragment: a line of code text with a footnote drops to the body font's ascender"

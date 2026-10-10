@@ -4,3 +4,5 @@ doctype: book
 attributes:
   "imagesdir": "images"
   "nofooter": ""
+defects:
+  pdf: "a space before a hidden index term is dropped: \"a (((humans)))human's\" reads \"ahuman’s\""

@@ -2,12 +2,13 @@
 /// settings close every difference, so a gate reads a run's JSON report
 /// against the cases known red (`test/corpus/red.txt`, one `<case> <format>`
 /// per line). Any other failure fails the gate; a listed case that passes is
-/// reported, to be taken off the list (`--update` rewrites it from the
-/// run's failures).
+/// reported, to be taken off the list: `--update` takes off the cases that
+/// pass, and with `--add` also lists the run's new corpus failures (a new
+/// red case is fixed, not listed, unless it is new to the corpus).
 ///
 /// ```sh
 /// dart test --file-reporter json:run.json
-/// dart run tool/corpus_red.dart run.json [--update]
+/// dart run tool/corpus_red.dart run.json [--update [--add]]
 /// ```
 library;
 
@@ -19,9 +20,10 @@ const listPath = 'test/corpus/red.txt';
 void main(List<String> arguments) {
   final args = [...arguments];
   final update = args.remove('--update');
+  final add = args.remove('--add');
   if (args.length != 1) {
     stderr.writeln(
-      'usage: dart run tool/corpus_red.dart REPORT.json [--update]',
+      'usage: dart run tool/corpus_red.dart REPORT.json [--update [--add]]',
     );
     exit(64);
   }
@@ -34,13 +36,20 @@ void main(List<String> arguments) {
         }
       : <String>{};
   if (update && others.isEmpty) {
+    final red = add ? failed : failed.intersection(listed);
     listFile.writeAsStringSync(
       '# The corpus cases known red (`<case> <format>`): differences\n'
       "# compatibility settings haven't closed yet. Written by\n"
       '# `dart run tool/corpus_red.dart REPORT.json --update`.\n'
-      '${(failed.toList()..sort()).map((n) => '$n\n').join()}',
+      '${(red.toList()..sort()).map((n) => '$n\n').join()}',
     );
-    stdout.writeln('${failed.length} red cases recorded in $listPath');
+    stdout.writeln('${red.length} red cases recorded in $listPath');
+    final unlisted = failed.difference(red);
+    if (unlisted.isNotEmpty) {
+      stdout.writeln(
+        '${unlisted.length} new failures not listed (--add lists them)',
+      );
+    }
     return;
   }
   final fresh = [...failed.difference(listed), ...others]..sort();

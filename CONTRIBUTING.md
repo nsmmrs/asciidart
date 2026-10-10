@@ -48,8 +48,9 @@ files the Asciidoctor command line writes for about 1,700 documents. It is
 red until compatibility settings close every difference, so the gate holds
 it to the cases known red (`test/corpus/red.txt`): a case that newly fails
 fails the gate, and one that passes is to be taken off the list
-(`dart run tool/corpus_red.dart REPORT.json --update` rewrites it from a
-run's JSON report). ptome's fixes of upstream bugs are tested in
+(`dart run tool/corpus_red.dart REPORT.json --update` takes off the cases
+a run's JSON report shows passing; `--add` also lists its new failures, for
+a case new to the corpus). ptome's fixes of upstream bugs are tested in
 `test/upstream_fixes/`.
 
 The full tier also holds the suite's coverage of ptome's code (lines and
