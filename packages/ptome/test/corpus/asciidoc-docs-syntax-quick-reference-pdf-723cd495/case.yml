@@ -3,3 +3,5 @@ formats: [pdf]
 safe: safe
 attributes:
   "linkcss": "@"
+defects:
+  pdf: "a collapsible block's title is left alone at the bottom of a page, its content starting on the next"
