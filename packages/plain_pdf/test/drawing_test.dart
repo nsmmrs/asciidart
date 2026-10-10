@@ -497,6 +497,54 @@ void main() {
     );
   });
 
+  test('a single-byte font: simple fonts of 256 codes, the space 32', () {
+    final bytes = File('test/fonts/notoserif-regular-latin.ttf')
+        .readAsBytesSync();
+    final composite = EmbeddedFont.parse(bytes);
+    final simple = EmbeddedFont.parse(bytes, singleByte: true);
+    // More characters than one simple font has codes for.
+    final characters = [
+      for (var c = 0x21; c < 0x2000 && c != 0; c++)
+        if (composite.covers(c) && composite.font.glyphFor(c) != 0) c,
+    ].take(300).toList();
+    expect(characters, hasLength(300));
+    final lines = [
+      for (var i = 0; i < characters.length; i += 30)
+        String.fromCharCodes(characters.skip(i).take(30)),
+    ];
+    File draw(EmbeddedFont font) => saved(
+      page(width: 600, height: 400, (c) {
+        for (final (i, line) in lines.indexed) {
+          c.text(line, 10, 380 - 20.0 * i, TextStyle(font, 12));
+        }
+        c.text('AVA Wave', 10, 150, TextStyle(font, 12, wordSpacing: 20));
+      }),
+    );
+    final a = draw(composite);
+    final b = draw(simple);
+    // The same words in the same places; the text extracts.
+    expect(
+      [for (final w in words(b)) (w.text, w.xMin.round(), w.yMin.round())],
+      [for (final w in words(a)) (w.text, w.xMin.round(), w.yMin.round())],
+    );
+    expect(
+      words(b).map((w) => w.text).join(),
+      allOf(contains('ϮAVAWave'), words(a).map((w) => w.text).join()),
+    );
+    final fonts = '${Process.runSync('pdffonts', [b.path]).stdout}';
+    expect(RegExp(r'\bTrueType\b').allMatches(fonts), hasLength(2));
+    final content = latin1.decode(
+      Process.runSync('qpdf', [
+        '--qdf',
+        '--object-streams=disable',
+        b.path,
+        '-',
+      ], stdoutEncoding: latin1).stdout.toString().codeUnits,
+    );
+    expect(content, contains('20 Tw'));
+    expect(content, contains('0 Tw'));
+  });
+
   test('kerning is applied as the measure says', () {
     final kerned = TextStyle(StandardFont.helvetica, 40);
     final unkerned = TextStyle(StandardFont.helvetica, 40, kerning: false);

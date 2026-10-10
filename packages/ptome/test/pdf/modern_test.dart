@@ -2154,6 +2154,24 @@ base:
       expect(set.$3 - plain, closeTo(12, 0.01));
     });
 
+    test('base_font_embedding: simple embeds simple TrueType fonts', () {
+      final source = 'Words in a line that is set justified and wraps.\n' * 4;
+      const theme = 'base_text_align: justify\n';
+      final composite = _pdf(source, theme: theme);
+      final simple = _pdf(
+        source,
+        theme: '${theme}base_font_embedding: simple\n',
+      );
+      String fonts(String pdf) =>
+          '${Process.runSync('pdffonts', [pdf]).stdout}';
+      expect(fonts(composite), contains('CID TrueType'));
+      expect(fonts(simple), isNot(contains('CID')));
+      expect(fonts(simple), contains('TrueType'));
+      // The same text in the same places, the word spacing a Tw.
+      expect(_pages(simple), _pages(composite));
+      expect(_content(simple), contains(' Tw'));
+    });
+
     test('example_collapsible: details sets a collapsible block open', () {
       const source = 'Before.\n\n.More\n[%collapsible]\n====\nInside.\n====\n';
       // A frame by default: the content inside its padding.

@@ -723,9 +723,15 @@ final class _Saver {
 
   PdfObject _resource(Resource resource) {
     switch (resource) {
-      case FontResource(:final font):
+      case FontResource(:final font, :final subset):
         _fonts.add(font);
-        return font.reference(writer);
+        return switch (font) {
+          EmbeddedFont(singleByte: true) => font.subsetReference(
+            writer,
+            subset,
+          ),
+          _ => font.reference(writer),
+        };
       case ImageResource(:final image):
         _images.add(image);
         return image.reference(writer);

@@ -388,6 +388,7 @@ final class FontCatalog {
     this.synthesizeFaces = false,
     this.thousandthWidths = false,
     this.kernTableOnly = false,
+    this.singleByteFonts = false,
     FontIndex? installed,
     void Function(String message)? warn,
   }) : _installed = installed ?? Fonts.current,
@@ -420,6 +421,10 @@ final class FontCatalog {
   /// its GPOS pair adjustments, else that table (theme key
   /// `base_kerning_source`).
   final bool kernTableOnly;
+
+  /// Whether fonts with TrueType outlines are embedded as simple fonts of
+  /// up to 256 glyphs each (theme key `base_font_embedding`).
+  final bool singleByteFonts;
 
   final Map<String, Map<String, String>> _catalog;
   final List<String> _dirs;
@@ -604,6 +609,7 @@ final class FontCatalog {
     index: index,
     truncateWidths: thousandthWidths,
     kernTableSubtable: kernTableOnly ? 0 : null,
+    singleByte: singleByteFonts,
   );
 
   /// (Files are read once per process; fonts given as bytes belong to

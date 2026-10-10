@@ -60,13 +60,16 @@ final class DestinationTarget extends LinkTarget
   DestinationTarget(PdfDestination destination)
   PdfDestination destination
 final class EmbeddedFont extends PdfFont implements OpenTypeTextFont
-  EmbeddedFont.parse(List<int> bytes, {int index = 0, bool subset = true, bool truncateWidths = false, int? kernTableSubtable})
+  EmbeddedFont.parse(List<int> bytes, {int index = 0, bool subset = true, bool truncateWidths = false, bool singleByte = false, int? kernTableSubtable})
+  List<({Uint8List codes, int end, int start, int subset})> encodeRuns(List<ShapedGlyph> glyphs)
   List<ShapedGlyph> shape(String text, {bool kerning = true, bool ligatures = false, Set<String> features = const {}})
   List<int> encode(List<ShapedGlyph> glyphs)
   OpenTypeFont font
+  PdfRef subsetReference(PdfWriter writer, int subset)
   String name
   bool covers(int codePoint)
   bool missedGlyphs
+  bool singleByte
   bool subset
   bool truncateWidths
   double ascender

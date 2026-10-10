@@ -54,6 +54,22 @@ void main() {
     expect(subset.glyphBounds(used.first), font.glyphBounds(used.first));
   });
 
+  test('a simple font subset maps its one-byte codes to its glyphs', () {
+    final font = OpenTypeFont.parse(_read('notoserif-regular-latin.ttf'));
+    final codes = {
+      32: font.glyphFor(0x20),
+      33: font.glyphFor(0x48),
+      34: font.glyphFor(0x69),
+    };
+    final subset = OpenTypeFont.parse(
+      subsetTrueType(font, glyphClosure(font, codes.values), codes: codes),
+    );
+    for (final MapEntry(key: code, value: glyph) in codes.entries) {
+      expect(subset.glyphFor(0xf000 + code), glyph);
+    }
+    expect(subset.glyphFor(0xf000 + 35), 0);
+  });
+
   test('CFF subsets keep the glyphs used', () {
     for (final name in ['notoserif-cff.otf', 'notoserif-cid.otf']) {
       final font = OpenTypeFont.parse(_read(name));

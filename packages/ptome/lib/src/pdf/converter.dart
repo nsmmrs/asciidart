@@ -347,6 +347,7 @@ final class PdfConverter extends BuiltInConverter
       synthesizeFaces: true,
       thousandthWidths: _thousandthWidths,
       kernTableOnly: _kernTableOnly,
+      singleByteFonts: _singleByteFonts,
       warn: logger.warn,
     );
     _rootFontSize = (_n('base_font_size') ?? 12).toDouble();
@@ -2286,6 +2287,7 @@ final class PdfConverter extends BuiltInConverter
     'base_emphasis_inversion': ThemeBool(false),
     'base_glyph_widths': ThemeString('thousandths'),
     'base_kerning_source': ThemeString('kern_table'),
+    'base_font_embedding': ThemeString('simple'),
     'table_borders': ThemeString('with-cells'),
     'table_cell_margin_top': ThemeString('keep'),
     'example_collapsible': ThemeString('details'),
@@ -9268,6 +9270,7 @@ final class PdfConverter extends BuiltInConverter
           shaping: _shaping,
           thousandthWidths: _thousandthWidths,
           kernTableOnly: _kernTableOnly,
+          singleByteFonts: _singleByteFonts,
           warn: logger.warn,
         );
         _markup = MarkupTransform(
@@ -9314,6 +9317,12 @@ final class PdfConverter extends BuiltInConverter
   bool get _thousandthWidths =>
       _choice('base_glyph_widths', const ['exact', 'thousandths']) ==
       'thousandths';
+
+  /// Whether fonts with TrueType outlines are embedded as simple fonts
+  /// of up to 256 glyphs each (`base_font_embedding: simple`), word
+  /// spacing then the `Tw` operator's, rather than as Type0 fonts.
+  bool get _singleByteFonts =>
+      _choice('base_font_embedding', const ['composite', 'simple']) == 'simple';
 
   /// Whether text is kerned by the font's `kern` table alone
   /// (`base_kerning_source: kern_table`) rather than by its GPOS pairs.

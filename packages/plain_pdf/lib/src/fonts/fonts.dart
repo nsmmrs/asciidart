@@ -1,6 +1,7 @@
 /// Fonts for PDF text: the 14 standard fonts (metrics only, never
 /// embedded) and embedded TrueType/OpenType fonts (subset to the glyphs
-/// used, as Type0 fonts with Identity-H and a ToUnicode map).
+/// used, as Type0 fonts with Identity-H and a ToUnicode map, or as simple
+/// TrueType fonts of up to 256 glyphs each).
 library;
 
 import 'dart:convert';
@@ -274,8 +275,10 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
     this.font, {
     required this.subset,
     required this.truncateWidths,
+    required bool singleByte,
     this.kernTableSubtable,
   }) : _shaper = OpenTypeShaper(font, kernTableSubtable: kernTableSubtable),
+       singleByte = singleByte && font.isTrueType,
        super._();
 
   /// The font in [bytes] (the font at [index] of a collection); with
@@ -284,17 +287,21 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
   /// truncated with [truncateWidths] (as some engines do; text then lines
   /// up with theirs). Text is kerned by the font's GPOS pair adjustments,
   /// else its `kern` table, or by the `kern` table's subtable
-  /// [kernTableSubtable] alone (Prawn kerns with the first).
+  /// [kernTableSubtable] alone (Prawn kerns with the first). With
+  /// [singleByte], a font with TrueType outlines is written as simple
+  /// fonts, see [singleByte].
   factory parse(
     List<int> bytes, {
     int index = 0,
     bool subset = true,
     bool truncateWidths = false,
+    bool singleByte = false,
     int? kernTableSubtable,
   }) => EmbeddedFont._(
     OpenTypeFont.parse(bytes, index: index),
     subset: subset,
     truncateWidths: truncateWidths,
+    singleByte: singleByte,
     kernTableSubtable: kernTableSubtable,
   );
 
@@ -312,6 +319,20 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
 
   /// The `kern` subtable text is kerned by alone, if any.
   final int? kernTableSubtable;
+
+  /// Whether the font is written as simple TrueType fonts rather than a
+  /// Type0 font: subsets of up to 256 glyphs, a byte a glyph, the space
+  /// code 32 in each (so word spacing is the `Tw` operator's, which
+  /// applies to that code alone), each with its own `cmap` and ToUnicode
+  /// map. Text in it is shown in runs of one subset ([encodeRuns]). Only
+  /// fonts with TrueType outlines are.
+  final bool singleByte;
+
+  /// The simple fonts of a [singleByte] font, in order of first use.
+  final List<_ByteSubset> _subsets = [];
+
+  /// The space's glyph, code 32 in every simple font.
+  late final int _space = font.glyphFor(0x20);
 
   /// The glyphs used so far, with the text each stands for.
   final Map<int, String> _used = {};
@@ -384,19 +405,91 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
     return bytes;
   }
 
-  /// The six-letter tag of the subset (ISO 32000-2, 9.9.2), derived from
-  /// the glyphs used so the same use gives the same tag.
-  String get _subsetTag {
+  /// [glyphs] as runs of codes of one simple font each (a [singleByte]
+  /// font): the font's index (its reference: [subsetReference]), the
+  /// glyphs' range and the codes that show them; recording the glyphs as
+  /// used.
+  List<({int subset, int start, int end, Uint8List codes})> encodeRuns(
+    List<ShapedGlyph> glyphs,
+  ) {
+    if (!singleByte) throw StateError('$name is not written single-byte');
+    final runs = <({int subset, int start, int end, Uint8List codes})>[];
+    var current = -1;
+    var start = 0;
+    final codes = <int>[];
+    void close(int end) {
+      if (end > start) {
+        runs.add((
+          subset: current,
+          start: start,
+          end: end,
+          codes: Uint8List.fromList(codes),
+        ));
+      }
+      codes.clear();
+      start = end;
+    }
+
+    for (final (i, glyph) in glyphs.indexed) {
+      final id = glyph.id;
+      if (id == 0) _usedNotdef = true;
+      // The subset showing it: the current one, else the first that has
+      // it, else the last with room, else a new one. (Every subset has
+      // the space.)
+      var subset = current;
+      if (current < 0 || !_subsets[current].has(id)) {
+        subset = _subsets.indexWhere((s) => s.has(id));
+        if (subset < 0) {
+          if (_subsets.isEmpty || _subsets.last.full) {
+            _subsets.add(_ByteSubset(_space));
+          }
+          subset = _subsets.length - 1;
+        }
+      }
+      if (subset != current) {
+        close(i);
+        current = subset;
+      }
+      codes.add(_subsets[subset].code(id, glyph.text));
+    }
+    if (_subsets.isEmpty) _subsets.add(_ByteSubset(_space));
+    if (current < 0) current = 0;
+    close(glyphs.length);
+    return runs;
+  }
+
+  /// The reference simple font [subset] of a [singleByte] font is written
+  /// under, reserved from [writer].
+  PdfRef subsetReference(PdfWriter writer, int subset) {
+    if (subset == 0) return reference(writer);
+    final refs = _subsetReferences[writer] ??= {};
+    return refs[subset] ??= writer.reserve();
+  }
+
+  final Expando<Map<int, PdfRef>> _subsetReferences = Expando();
+
+  /// The six-letter tag of a subset of [glyphs] (ISO 32000-2, 9.9.2),
+  /// derived from them so the same use gives the same tag.
+  static String _tagOf(Iterable<int> glyphs) {
     final digest = md5
-        .convert(utf8.encode((_used.keys.toList()..sort()).join(',')))
+        .convert(utf8.encode((glyphs.toList()..sort()).join(',')))
         .bytes;
     return String.fromCharCodes([
       for (final b in digest.take(6)) 0x41 + b % 26,
     ]);
   }
 
+  /// The six-letter tag of the subset.
+  String get _subsetTag => _tagOf(_used.keys);
+
   @override
   void writeTo(PdfWriter writer) {
+    if (singleByte) {
+      for (final (i, subset) in _subsets.indexed) {
+        _writeSimple(writer, subset, subsetReference(writer, i));
+      }
+      return;
+    }
     final glyphs = glyphClosure(font, _used.keys);
     final trueType = font.isTrueType;
     // CFF outlines are rewritten (subset, with an identity charset for a
@@ -426,31 +519,11 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
         }),
       ),
     );
-    final flags =
-        4 | // symbolic: glyphs addressed by id
-        (font.isFixedPitch ? 1 : 0) |
-        (font.italicAngle != 0 ? 64 : 0);
-    final descriptor = writer.write(
-      PdfDict({
-        'Type': const PdfName('FontDescriptor'),
-        'FontName': PdfName(baseName),
-        'Flags': PdfInt(flags),
-        'FontBBox': PdfArray.numbers([
-          for (final v in font.bbox) _scale(v).round(),
-        ]),
-        'ItalicAngle': PdfReal(font.italicAngle),
-        // The typographic metrics when the font sets them (as readers and
-        // other engines take them), else the horizontal header's.
-        'Ascent': PdfInt(
-          _scale(_typo(font.typoAscender, font.ascender)).round(),
-        ),
-        'Descent': PdfInt(
-          _scale(_typo(font.typoDescender, font.descender)).round(),
-        ),
-        'CapHeight': PdfInt(capHeight.round()),
-        'StemV': PdfInt(font.weightClass >= 600 ? 120 : 80),
-        if (trueType) 'FontFile2': fontFile else 'FontFile3': fontFile,
-      }),
+    final descriptor = _descriptor(
+      writer,
+      baseName,
+      fontFile,
+      trueType: trueType,
     );
     final descendant = writer.write(
       PdfDict({
@@ -482,6 +555,127 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
     );
   }
 
+  /// Writes [subset] as a simple TrueType font under [reference]: its
+  /// glyphs (and `.notdef`) with a `cmap` from its codes, no encoding
+  /// (the font is symbolic), its codes' widths and a ToUnicode map.
+  void _writeSimple(PdfWriter writer, _ByteSubset subset, PdfRef reference) {
+    final program = subsetTrueType(
+      font,
+      glyphClosure(font, subset.glyphs.values),
+      codes: subset.glyphs,
+    );
+    final baseName = '${_tagOf(subset.glyphs.values)}+$name';
+    final codes = subset.glyphs.keys.toList()..sort();
+    writer.write(
+      PdfDict({
+        'Type': const PdfName('Font'),
+        'Subtype': const PdfName('TrueType'),
+        'BaseFont': PdfName(baseName),
+        'FirstChar': PdfInt(codes.first),
+        'LastChar': PdfInt(codes.last),
+        'Widths': PdfArray([
+          for (var code = codes.first; code <= codes.last; code++)
+            switch (subset.glyphs[code]) {
+              final glyph? => _width(glyph),
+              null => const PdfInt(0),
+            },
+        ]),
+        'FontDescriptor': _descriptor(
+          writer,
+          baseName,
+          writer.write(
+            PdfStream(
+              program,
+              dict: PdfDict({'Length1': PdfInt(program.length)}),
+            ),
+          ),
+          trueType: true,
+        ),
+        'ToUnicode': writer.write(
+          PdfStream(utf8.encode(_byteToUnicodeCMap(subset.texts))),
+        ),
+      }),
+      reference,
+    );
+  }
+
+  /// The font descriptor of [baseName], its program in [fontFile].
+  PdfRef _descriptor(
+    PdfWriter writer,
+    String baseName,
+    PdfRef fontFile, {
+    required bool trueType,
+  }) {
+    final flags =
+        4 | // symbolic: glyphs addressed by id or by the font's own codes
+        (font.isFixedPitch ? 1 : 0) |
+        (font.italicAngle != 0 ? 64 : 0);
+    return writer.write(
+      PdfDict({
+        'Type': const PdfName('FontDescriptor'),
+        'FontName': PdfName(baseName),
+        'Flags': PdfInt(flags),
+        'FontBBox': PdfArray.numbers([
+          for (final v in font.bbox) _scale(v).round(),
+        ]),
+        'ItalicAngle': PdfReal(font.italicAngle),
+        // The typographic metrics when the font sets them (as readers and
+        // other engines take them), else the horizontal header's.
+        'Ascent': PdfInt(
+          _scale(_typo(font.typoAscender, font.ascender)).round(),
+        ),
+        'Descent': PdfInt(
+          _scale(_typo(font.typoDescender, font.descender)).round(),
+        ),
+        'CapHeight': PdfInt(capHeight.round()),
+        'StemV': PdfInt(font.weightClass >= 600 ? 120 : 80),
+        if (trueType) 'FontFile2': fontFile else 'FontFile3': fontFile,
+      }),
+    );
+  }
+
+  /// The width written for [glyph]: in 1000ths of the em, truncated with
+  /// [truncateWidths], else exact (a font of 2000 units to the em has
+  /// half thousandths), so viewers set the glyphs where the layout
+  /// measured them.
+  PdfObject _width(int glyph) {
+    final width = _scale(font.advance(glyph));
+    return truncateWidths
+        ? PdfInt(width.truncate())
+        : width == width.roundToDouble()
+        ? PdfInt(width.round())
+        : PdfReal(width, precision: 3);
+  }
+
+  /// A ToUnicode CMap for one-byte codes: each code's text.
+  static String _byteToUnicodeCMap(Map<int, String> texts) {
+    String hex(int v, int digits) =>
+        v.toRadixString(16).padLeft(digits, '0').toUpperCase();
+    final codes = texts.keys.toList()..sort();
+    final out = StringBuffer()
+      ..write('/CIDInit /ProcSet findresource begin\n')
+      ..write('12 dict begin\nbegincmap\n')
+      ..write(
+        '/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n',
+      )
+      ..write('/CMapName /Adobe-Identity-UCS def\n/CMapType 2 def\n')
+      ..write('1 begincodespacerange\n<00> <FF>\nendcodespacerange\n');
+    for (var start = 0; start < codes.length; start += 100) {
+      final chunk = codes.sublist(start, (start + 100).clamp(0, codes.length));
+      out.write('${chunk.length} beginbfchar\n');
+      for (final code in chunk) {
+        final text = [for (final unit in texts[code]!.codeUnits) hex(unit, 4)]
+            .join();
+        out.write('<${hex(code, 2)}> <$text>\n');
+      }
+      out.write('endbfchar\n');
+    }
+    out.write(
+      'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n',
+    );
+    return out.toString();
+  }
+
   static int _typo(int? typo, int hhea) =>
       typo != null && typo != 0 ? typo : hhea;
 
@@ -494,16 +688,7 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
       final start = ids[i];
       final run = <PdfObject>[];
       while (i < ids.length && ids[i] == start + run.length) {
-        final width = _scale(font.advance(ids[i]));
-        // Exact (a font of 2000 units to the em has half thousandths),
-        // so viewers set the glyphs where the layout measured them.
-        run.add(
-          truncateWidths
-              ? PdfInt(width.truncate())
-              : width == width.roundToDouble()
-              ? PdfInt(width.round())
-              : PdfReal(width, precision: 3),
-        );
+        run.add(_width(ids[i]));
         i += 1;
       }
       items
@@ -540,5 +725,44 @@ final class EmbeddedFont extends PdfFont implements OpenTypeTextFont {
       'endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n',
     );
     return out.toString();
+  }
+}
+
+/// One simple font of a single-byte [EmbeddedFont]: up to 256 codes, the
+/// space code 32 (codes from 33 on in order of first use; `.notdef` 0).
+final class _ByteSubset {
+  new(int space) {
+    glyphs[0x20] = space;
+    texts[0x20] = ' ';
+    _codes[space] = 0x20;
+  }
+
+  /// The glyph each code shows.
+  final Map<int, int> glyphs = {};
+
+  /// The text each code stands for (`.notdef` none).
+  final Map<int, String> texts = {};
+
+  final Map<int, int> _codes = {};
+  var _next = 0x21;
+
+  /// Whether no code is left.
+  bool get full => _next > 0xff;
+
+  /// Whether [glyph] has a code here.
+  bool has(int glyph) => _codes.containsKey(glyph) || glyph == 0;
+
+  /// The code of [glyph] (standing for [text]), given it if it has none.
+  int code(int glyph, String text) {
+    if (glyph == 0) {
+      glyphs[0] = 0;
+      return 0;
+    }
+    return _codes[glyph] ??= () {
+      final code = _next++;
+      glyphs[code] = glyph;
+      texts[code] = text;
+      return code;
+    }();
   }
 }

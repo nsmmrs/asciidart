@@ -2,6 +2,9 @@
 
 ## 0.1.0-dev (unreleased)
 
+- `subsetTrueType(codes:)`: a `cmap` mapping one-byte codes to the
+  glyphs they show (Macintosh Roman and Windows symbol subtables), for a
+  font embedded in a PDF as a simple font.
 - Faster, with the same output byte for byte: CFF subsets in one pass
   (a CJK font's 100-glyph subset 60 to 7 ms), TrueType subsets assembled
   once, WOFF2 glyf rebuilt into one buffer, GPOS kerning through

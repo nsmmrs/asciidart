@@ -34,6 +34,7 @@ same (`benchmark/PARITY.md`).
 | `running_content_on_openers` | `true` | `false` |
 | `base_glyph_widths` | `thousandths` | `exact` |
 | `base_kerning_source` | `kern_table` | `font` |
+| `base_font_embedding` | `simple` | `composite` |
 | `url_breaks` | `delimiters` | `chicago` |
 | `base_slash_breaks` | `false` | `true` |
 | `index_terms_paragraph` | `line` | `none` |
@@ -73,6 +74,7 @@ its title.
 | --- | --- | --- |
 | `base_glyph_widths` | `exact` | How wide a glyph is: `exact`, its advance in the font; `thousandths`, its advance in whole 1000ths of the em, truncated, both where lines are measured and in the widths the PDF gives viewers. |
 | `base_kerning_source` | `font` | Which pairs kern text: `font`, the font's GPOS pair adjustments (its `kern` feature), else its `kern` table; `kern_table`, the first subtable of its `kern` table alone, as early font engines read it. |
+| `base_font_embedding` | `composite` | How fonts with TrueType outlines are embedded: `composite`, a Type0 font a face (two bytes a glyph, by glyph id); `simple`, simple TrueType fonts of up to 256 glyphs each (a byte a glyph, the space code 32 in each, so a justified line's word spacing is the `Tw` operator's rather than adjustments between the words). Either way the text extracts through a ToUnicode map. |
 | `base_line_breaking` | `auto` | How lines break: `auto` breaks justified and left-aligned text where the lines' demerits are least (Knuth and Plass's total fit with TeX's costs: even spacing, few hyphens, never two hyphens in a row if it can help it; ragged lines with even ends, as plain TeX's `\raggedright`) and centered or right-aligned text one line at a time; `optimal` optimizes any text; `greedy` fills one line at a time; `segments` fills one line at a time as Prawn's line wrap does (at every space, before and after a hyphen, a word that runs across a style change moved only from that change on, soft hyphens alone hyphenating). Otherwise a style change inside a word is never a break. |
 | `base_leading` | none | Lines measured from cap height to baseline: each line's box runs from its tallest cap height to its baseline, with this space between boxes (`0.6em`, or points); a text's first line has its cap height at the top and its last line ends at its baseline, so the margins between blocks are the visible space between their text (CSS's `text-box-trim` and `text-box-edge: cap alphabetic`). In place of `base_line_height`; a category's own (`title_page_title_leading`, `code_leading`...) for its text. |
 | `base_overhang` | `0` | How far a justified line's last character hangs into the margin, so the edge looks straight (margin kerning, Hàn Thế Thành's character protrusion): the line stretches into a part of the character's width, as LaTeX's microtype package's default protrusion has it (0.7 of a period; 0.5 of a comma, colon or hyphen; 0.3 of a semicolon; 0.2 of an en dash, 0.15 of an em dash; a little of some letters), times this amount. `1` (or `true`) hangs them that far, `0.5` half as far, `0` (or `false`) not at all. |

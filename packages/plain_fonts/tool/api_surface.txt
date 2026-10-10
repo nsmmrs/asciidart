@@ -3,7 +3,7 @@ Set<int> glyphClosure(OpenTypeFont font, Iterable<int> used)
 String cacheDirectoryFor(FontPlatform os, Map<String, String> environment)
 Uint8List assembleFont(Map<String, Uint8List> tables, {int sfntVersion = 0x00010000})
 Uint8List decodeWebFont(List<int> bytes)
-Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs)
+Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs, {Map<int, int>? codes})
 Uint8List? subsetCff(Uint8List cff, Set<int>? glyphs)
 abstract interface class FontFiles
   ({DateTime modified, int size}) stat(String path)

@@ -28,9 +28,17 @@ const List<String> _keptTables = [
 ];
 
 /// A TrueType font program with only [glyphs]' outlines (glyph ids kept);
-/// without the `cmap`, `name`, `post` and layout tables, which a PDF
-/// reader doesn't use for a CID font addressed by glyph id.
-Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs) {
+/// without the `name`, `post` and layout tables, which a PDF reader
+/// doesn't use, and without a `cmap` (a CID font is addressed by glyph
+/// id) unless [codes] are given: one-byte codes and the glyph ids they
+/// show, for a simple font (ISO 32000-2, 9.6.6.4), which a `cmap` then
+/// maps in a Macintosh Roman subtable and a Windows symbol one (at
+/// `0xF000` and up).
+Uint8List subsetTrueType(
+  OpenTypeFont font,
+  Set<int> glyphs, {
+  Map<int, int>? codes,
+}) {
   if (!font.isTrueType) {
     throw const FontFormatException('only TrueType outlines can be subset');
   }
@@ -58,6 +66,7 @@ Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs) {
     'glyf': glyf.takeBytes(),
     'loca': loca.buffer.asUint8List(),
     'head': head,
+    if (codes != null) 'cmap': _byteCmap(codes),
   };
   final file = assembleFont(tables);
   // The checksum adjustment makes the whole file sum to 0xb1b0afba; set
@@ -73,6 +82,74 @@ Uint8List subsetTrueType(OpenTypeFont font, Set<int> glyphs) {
       (view.getUint32(record + 4) + adjustment) & 0xffffffff,
     );
   return file;
+}
+
+/// A `cmap` table mapping one-byte [codes] to glyph ids: a Macintosh
+/// Roman subtable (format 6) and a Windows symbol one (format 4, the codes
+/// at `0xF000` and up, one segment a code).
+Uint8List _byteCmap(Map<int, int> codes) {
+  final sorted = codes.keys.toList()..sort();
+  if (sorted.isEmpty || sorted.first < 0 || sorted.last > 0xff) {
+    throw ArgumentError.value(codes, 'codes', 'must be one-byte codes');
+  }
+  // Format 6: the glyph ids from the first code to the last.
+  final first = sorted.first;
+  final count = sorted.last - first + 1;
+  final mac = ByteData(10 + 2 * count)
+    ..setUint16(0, 6)
+    ..setUint16(2, 10 + 2 * count)
+    ..setUint16(4, 0) // language
+    ..setUint16(6, first)
+    ..setUint16(8, count);
+  for (final code in sorted) {
+    mac.setUint16(10 + 2 * (code - first), codes[code]!);
+  }
+  // Format 4: a segment a code, and the closing 0xFFFF one.
+  final segments = sorted.length + 1;
+  var power = 1;
+  while (power * 2 <= segments) {
+    power *= 2;
+  }
+  final windows = ByteData(16 + 8 * segments)
+    ..setUint16(0, 4)
+    ..setUint16(2, 16 + 8 * segments)
+    ..setUint16(4, 0) // language
+    ..setUint16(6, 2 * segments)
+    ..setUint16(8, 2 * power)
+    ..setUint16(10, power.bitLength - 1)
+    ..setUint16(12, 2 * segments - 2 * power);
+  const ends = 14;
+  final starts = ends + 2 * segments + 2;
+  final deltas = starts + 2 * segments;
+  final offsets = deltas + 2 * segments; // all 0
+  for (final (i, code) in sorted.indexed) {
+    final unicode = 0xf000 + code;
+    windows
+      ..setUint16(ends + 2 * i, unicode)
+      ..setUint16(starts + 2 * i, unicode)
+      ..setUint16(deltas + 2 * i, (codes[code]! - unicode) & 0xffff);
+  }
+  windows
+    ..setUint16(ends + 2 * sorted.length, 0xffff)
+    ..setUint16(starts + 2 * sorted.length, 0xffff)
+    ..setUint16(deltas + 2 * sorted.length, 1)
+    ..setUint16(offsets + 2 * sorted.length, 0);
+  final header = ByteData(4 + 8 * 2)
+    ..setUint16(0, 0) // version
+    ..setUint16(2, 2)
+    // Macintosh Roman.
+    ..setUint16(4, 1)
+    ..setUint16(6, 0)
+    ..setUint32(8, 4 + 8 * 2)
+    // Windows symbol.
+    ..setUint16(12, 3)
+    ..setUint16(14, 0)
+    ..setUint32(16, 4 + 8 * 2 + mac.lengthInBytes);
+  return Uint8List.fromList([
+    ...header.buffer.asUint8List(),
+    ...mac.buffer.asUint8List(),
+    ...windows.buffer.asUint8List(),
+  ]);
 }
 
 /// A font file with [tables] (sorted by tag) and a table directory, of

@@ -130,11 +130,15 @@ sealed class Resource {
 /// A font.
 @internal
 final class FontResource extends Resource {
-  /// The resource of [font].
-  const new(this.font);
+  /// The resource of [font] (of its simple font [subset], for a
+  /// single-byte [EmbeddedFont]).
+  const new(this.font, {this.subset = 0});
 
   /// The font.
   final PdfFont font;
+
+  /// The simple font of a single-byte font.
+  final int subset;
 }
 
 /// An image.
@@ -666,7 +670,12 @@ final class PdfCanvas implements Canvas {
   double glyphs(List<ShapedGlyph> glyphs, double x, double y, TextStyle style) {
     _noPath('text');
     final font = _pdfFont(style);
-    final fontName = _use('Font', font, FontResource(font), 'F');
+    // A single-byte font shows the glyphs in runs of one simple font each.
+    final runs = switch (font) {
+      EmbeddedFont(singleByte: true) => font.encodeRuns(glyphs),
+      _ => null,
+    };
+    final fontName = _fontName(font, runs?.firstOrNull?.subset ?? 0);
     final embolden = style.embolden > 0;
     // The stroke's width stays with the text.
     if (embolden) _op('q');
@@ -691,10 +700,62 @@ final class PdfCanvas implements Canvas {
     } else {
       _op2(x, y, 'Td');
     }
-    _showText(glyphs, style);
+    if (runs == null) {
+      _showText(glyphs, style);
+    } else {
+      _showRuns(glyphs, runs, font as EmbeddedFont, style);
+    }
     _op('ET');
     if (embolden) _op('Q');
     return style.widthOf(glyphs);
+  }
+
+  /// The name of [font]'s resource (of its simple font [subset]).
+  String _fontName(PdfFont font, int subset) => subset == 0
+      ? _use('Font', font, FontResource(font), 'F')
+      : _use('Font', (font, subset), FontResource(font, subset: subset), 'F');
+
+  /// [glyphs] of a single-byte [font] shown in [runs] of one simple font
+  /// each (`Tf` between them), the kerning as `TJ` adjustments and the
+  /// word spacing as `Tw` (to a hundred-thousandth of a point), which
+  /// applies to the space, code 32 in each.
+  void _showRuns(
+    List<ShapedGlyph> glyphs,
+    List<({int subset, int start, int end, Uint8List codes})> runs,
+    EmbeddedFont font,
+    TextStyle style,
+  ) {
+    final wordSpacing = (style.wordSpacing * 1e5).round() / 1e5;
+    if (wordSpacing != 0) _op1(wordSpacing, 'Tw');
+    final last = glyphs.length - 1;
+    for (final (r, run) in runs.indexed) {
+      if (r > 0 && run.subset != runs[r - 1].subset) {
+        _content
+          ..name(_fontName(font, run.subset))
+          ..byte(0x20)
+          ..number(style.size, 5)
+          ..operator(' Tf');
+      }
+      final out = _content..byte(0x5b); // [
+      var start = 0;
+      for (var i = run.start; i < run.end; i++) {
+        final adjustment = i < last ? -glyphs[i].kerning : 0.0;
+        if (adjustment != 0) {
+          final end = i - run.start + 1;
+          if (end != start) out.string(run.codes, start, end, hex: false);
+          start = end;
+          out
+            ..byte(0x20)
+            ..number(adjustment, 5)
+            ..byte(0x20);
+        }
+      }
+      if (run.codes.length != start) {
+        out.string(run.codes, start, run.codes.length, hex: false);
+      }
+      out.operator('] TJ');
+    }
+    if (wordSpacing != 0) _op1(0, 'Tw');
   }
 
   /// The `TJ` operator showing [glyphs]: runs of glyph codes, with the

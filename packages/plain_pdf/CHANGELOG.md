@@ -2,6 +2,12 @@
 
 ## 0.1.0-dev (unreleased)
 
+- `EmbeddedFont.parse(singleByte: true)` writes a font with TrueType
+  outlines as simple TrueType fonts of up to 256 glyphs each, a byte a
+  glyph and the space code 32 in each, with their own `cmap` and
+  ToUnicode map and no encoding (symbolic, so no viewer reads the codes
+  as another encoding's): the canvas shows text in runs of one subset
+  (`encodeRuns`, `Tf` between them) and word spacing as `Tw`.
 - `SvgImage.parse(scalesAboutPageOrigin: true)` places a uniformly scaled
   image as one drawn at its own size and scaled about the page's origin
   is, the scale and the translation each to five decimals (as prawn-svg
