@@ -65,6 +65,9 @@
   that a region's end cuts off reaches that end, its background and
   border with it (as engines that draw a block's box after its content
   do), rather than ending under its last child.
+  A block whose content runs past the room it was given (a text box's
+  last line, its gap below) and whose bottom edge the region's end cuts
+  off reaches that end too, rather than running past it.
 - A table cell is as tall as its content placed: rows were measured with
   the margin above a cell's first block (or a spacer starting it), which
   placing drops, so such a cell had that much room left at its bottom (29

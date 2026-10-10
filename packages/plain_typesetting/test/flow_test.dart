@@ -119,6 +119,30 @@ void main() {
     expect((kept['cell']! - dropped['cell']!).abs(), closeTo(10, .01));
   });
 
+  test('a block its region cuts the bottom edge off reaches the end', () {
+    // Content that fits in a little less room than it takes (as a text
+    // box's last line may run its gap below past the room), in a block
+    // whose bottom padding then doesn't fit: the block ends at the
+    // region's end, not past it, with splitToRegionEnd.
+    final region = 4 * _lineHeight;
+    final rects = <Rect>[];
+    FlowLayout(template: _rows(4))
+        .layout([
+          BlockBox(
+            [CustomBox(_Overrunning(region - 5, slack: 8))],
+            style: BoxStyle(
+              padding: const EdgeInsets(bottom: 10),
+              splitToRegionEnd: true,
+              decoration: (page, rect, {required first, required last}) =>
+                  rects.add(rect),
+            ),
+          ),
+        ])
+        .render(RecordingDocument());
+    expect(rects, hasLength(1));
+    expect(rects.single.height, closeTo(region, 1e-6));
+  });
+
   test("anchors become the document's, at their page and point", () {
     final document = RecordingDocument();
     final result = FlowLayout(template: _rows(4)).layout([
@@ -448,4 +472,27 @@ void main() {
     // The block is split: a piece on each page, decorated there.
     expect(decorated, document.pages);
   });
+}
+
+/// Content [height] tall that is placed whole in [slack] less room.
+final class _Overrunning implements CustomContent {
+  const new(this.height, {required this.slack});
+
+  final double height;
+  final double slack;
+
+  @override
+  CustomPlacement? place(
+    double width,
+    double available, {
+    required bool atTop,
+  }) => available + slack >= height || atTop
+      ? CustomPlacement(height: height, paint: (page, x, top) {})
+      : null;
+
+  @override
+  double minHeight(double width) => height;
+
+  @override
+  (double, double) intrinsicWidths() => (0, 0);
 }

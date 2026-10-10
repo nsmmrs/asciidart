@@ -1035,17 +1035,23 @@ final class _Pass {
       // ([room] has the bottom edge's room taken out when [reserved].)
       math.max<double>(0, room + (reserved ? bottom : 0) - cursor - bottom),
     );
+    // Content run past the room it was given with its bottom edge's
+    // room reserved (a text box's last line may run its gap below past
+    // it): with [BoxStyle.splitToRegionEnd], the region's end cuts the
+    // bottom edge off, the block reaching that end.
+    final cut =
+        reserved && style.splitToRegionEnd && room.isFinite && cursor > room;
     final placed = _PlacedBlock(
       style,
       width,
-      top + cursor + bottom + marginBottom,
+      cut ? top + room + bottom : top + cursor + bottom + marginBottom,
       children,
       top: atTop || continued ? 0 : style.margin.top,
       openTop: continued,
       openBottom: false,
       marks: continued ? const {} : style.marks,
       anchor: continued ? null : style.anchor,
-      marginBottom: marginBottom,
+      marginBottom: cut ? 0 : marginBottom,
     );
     return _Fit(
       placed,
